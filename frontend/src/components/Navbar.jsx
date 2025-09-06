@@ -23,7 +23,7 @@ const Navbar = () => (
       />
       <span
         style={{
-          color: "#2260ff",
+          color: "#123180ff",
           fontWeight: "bold",
           fontSize: "1.4rem",
           marginRight: "2rem",
@@ -33,22 +33,22 @@ const Navbar = () => (
       </span>
 
       {/* Nav Links */}
-      <a href="/" style={{ margin: "0 1rem" }}>
+      <a href="/" style={{ margin: "0 1rem", color: "black"}}>
         Home
       </a>
-      <a href="/donate" style={{ margin: "0 1rem" }}>
+      <a href="/donate" style={{ margin: "0 1rem", color: "black" }}>
         Donate
       </a>
-      <a href="/request" style={{ margin: "0 1rem" }}>
+      <a href="/request" style={{ margin: "0 1rem", color: "black" }}>
         Request Assistance
       </a>
-      <a href="/dashboard" style={{ margin: "0 1rem" }}>
+      <a href="/dashboard" style={{ margin: "0 1rem", color: "black" }}>
         NGO Dashboard
       </a>
-      <a href="/campaigns" style={{ margin: "0 1rem" }}>
+      <a href="/campaigns" style={{ margin: "0 1rem", color: "black" }}>
         Campaigns
       </a>
-      <a href="/about" style={{ margin: "0 1rem" }}>
+      <a href="/about" style={{ margin: "0 1rem", color: "black" }}>
         About Us
       </a>
     </div>
