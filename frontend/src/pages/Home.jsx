@@ -64,7 +64,7 @@ const Home = () => (
         justifyContent: "space-between",
         maxWidth: 1200,
         margin: "0 auto",
-        padding: "4rem 2rem",
+        padding: "2rem 2rem",
         gap: "1rem",
       }}
     >
@@ -97,7 +97,7 @@ const Home = () => (
               padding: "1rem 2rem",
               background: "#FFD600",
               color: "#111",
-              border: "none",
+              border: "2px solid #f1ca56ff",
               borderRadius: "8px",
               fontWeight: "bold",
               fontSize: "1.05rem",
@@ -123,9 +123,26 @@ const Home = () => (
         </div>
       </div>
       <img
-        src="/src/assets/hero-family.png"
+        src="/src/assets/hero-family.jpeg"
         alt="Family donating"
-        style={{ flex: 1, maxWidth: 520 }}
+        style={{
+          flex: 1,
+          maxWidth: 610,
+          WebkitMaskImage: `
+    linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 10%),
+    linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 10%),
+    linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 10%)
+  `,
+          WebkitMaskComposite: 'source-in',
+          maskImage: `
+    linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 10%),
+    linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 10%),
+    linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 10%)
+  `,
+          maskComposite: 'intersect'
+        }}
+
+
       />
     </section>
 
@@ -161,7 +178,7 @@ const Home = () => (
               textAlign: "center",
             }}
           >
-            
+
             <img src={feat.img} alt={feat.title} style={{ width: 150, height: 100 }} />
 
             <h3
@@ -169,6 +186,7 @@ const Home = () => (
                 fontSize: "1.2rem",
                 marginBottom: 2,
                 fontWeight: "600",
+                color: "black",
               }}
             >
               {feat.title}
