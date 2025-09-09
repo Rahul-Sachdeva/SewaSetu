@@ -19,13 +19,13 @@ const Navbar = () => (
       <img
         src="/src/assets/logo.png"
         alt="SewaSetu"
-        style={{ height: 32, marginRight: 8 }}
+        style={{ height: 36, marginRight: 12 }}
       />
       <span
         style={{
           color: "#123180ff",
           fontWeight: "bold",
-          fontSize: "1.4rem",
+          fontSize: "1.6rem",
           marginRight: "2rem",
         }}
       >
@@ -57,7 +57,7 @@ const Navbar = () => (
     <button
       style={{
         padding: "0.6rem 1.4rem",
-        background: "#2260ff",
+        background: "#1b47b5ff",
         color: "#fff",
         border: "none",
         borderRadius: "6px",

@@ -1,7 +1,7 @@
 import React from "react";
 import Navbar from "../components/Navbar";
 
-// Feature data with icons (replace with SVGs if available)
+// Feature data with icons
 const features = [
   {
     img: "/src/assets/donate.png",
@@ -9,17 +9,17 @@ const features = [
     desc: "Easily donate essentials and schedule pickups for convenience.",
   },
   {
-    icon: "🖐️",
+    img: "/src/assets/help.png",
     title: "Request for Help",
     desc: "Report urgent needs for vulnerable individuals in your community.",
   },
   {
-    icon: "📢",
+    img: "/src/assets/ngo.png",
     title: "NGO Campaigns & Fundraising",
     desc: "Support ongoing campaigns and fundraising projects transparently.",
   },
   {
-    icon: "📈",
+    img: "/src/assets/impact.png",
     title: "Impact Reporting",
     desc: "Track donations and contributions with full transparency.",
   },
@@ -110,8 +110,8 @@ const Home = () => (
             style={{
               padding: "1rem 2rem",
               background: "#fff",
-              border: "2px solid #2260ff",
-              color: "#2260ff",
+              border: "2px solid #1b47b5ff",
+              color: "#1b47b5ff",
               borderRadius: "8px",
               fontWeight: "bold",
               fontSize: "1.05rem",
@@ -147,13 +147,14 @@ const Home = () => (
     </section>
 
     {/* Features */}
-    <section style={{ maxWidth: 1200, margin: "0 auto", padding: "2rem 1rem" }}>
+    <section style={{ maxWidth: 1000, margin: "0 auto", padding: "2rem 1rem" }}>
       <h2
         style={{
           fontSize: "2rem",
           textAlign: "center",
           marginBottom: "2rem",
           fontWeight: "700",
+          color: "black",
         }}
       >
         Key Features
@@ -179,7 +180,7 @@ const Home = () => (
             }}
           >
 
-            <img src={feat.img} alt={feat.title} style={{ width: 150, height: 100 }} />
+            <img src={feat.img} alt={feat.title} style={{ width: 125, height: 120 }} />
 
             <h3
               style={{
@@ -205,6 +206,7 @@ const Home = () => (
           textAlign: "center",
           marginBottom: "2rem",
           fontWeight: "700",
+          color: "black",
         }}
       >
         Live Campaigns
@@ -234,7 +236,7 @@ const Home = () => (
               style={{ height: 180, width: "100%", objectFit: "cover" }}
             />
             <div style={{ padding: "1.2rem" }}>
-              <h4 style={{ fontWeight: 700, fontSize: "1.1rem" }}>{c.title}</h4>
+              <h4 style={{ fontWeight: 700, fontSize: "1.1rem", color: "black" }}>{c.title}</h4>
               <p
                 style={{
                   color: "#555",
@@ -275,7 +277,7 @@ const Home = () => (
               style={{
                 fontWeight: 700,
                 fontSize: "2rem",
-                color: "#2260ff",
+                color: "#16347dff",
               }}
             >
               {stat.value}
@@ -286,7 +288,7 @@ const Home = () => (
       </div>
       <button
         style={{
-          background: "#2260ff",
+          background: "#16347dff",
           color: "#fff",
           padding: "1rem 2rem",
           border: "none",
