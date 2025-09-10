@@ -1,5 +1,6 @@
 import React from "react";
 import Navbar from "../components/Navbar";
+import "./css/Home.css";
 
 // Feature data with icons
 const features = [
@@ -58,6 +59,7 @@ const Home = () => (
 
     {/* Hero Section */}
     <section
+      className="hero-section"   // Responsive handled in CSS
       style={{
         display: "flex",
         alignItems: "center",
@@ -110,8 +112,8 @@ const Home = () => (
             style={{
               padding: "1rem 2rem",
               background: "#fff",
-              border: "2px solid #1b47b5ff",
-              color: "#1b47b5ff",
+              border: "2px solid #19398aff",
+              color: "#19398aff",
               borderRadius: "8px",
               fontWeight: "bold",
               fontSize: "1.05rem",
@@ -128,21 +130,7 @@ const Home = () => (
         style={{
           flex: 1,
           maxWidth: 610,
-          WebkitMaskImage: `
-    linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 10%),
-    linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 10%),
-    linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 10%)
-  `,
-          WebkitMaskComposite: 'source-in',
-          maskImage: `
-    linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 10%),
-    linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 10%),
-    linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 10%)
-  `,
-          maskComposite: 'intersect'
         }}
-
-
       />
     </section>
 
@@ -160,6 +148,7 @@ const Home = () => (
         Key Features
       </h2>
       <div
+        className="features-container"
         style={{
           display: "flex",
           gap: 24,
@@ -179,9 +168,11 @@ const Home = () => (
               textAlign: "center",
             }}
           >
-
-            <img src={feat.img} alt={feat.title} style={{ width: 125, height: 120 }} />
-
+            <img
+              src={feat.img}
+              alt={feat.title}
+              style={{ width: 125, height: 120 }}
+            />
             <h3
               style={{
                 fontSize: "1.2rem",
@@ -212,6 +203,7 @@ const Home = () => (
         Live Campaigns
       </h2>
       <div
+        className="campaigns-container"
         style={{
           display: "flex",
           gap: 24,
@@ -236,7 +228,11 @@ const Home = () => (
               style={{ height: 180, width: "100%", objectFit: "cover" }}
             />
             <div style={{ padding: "1.2rem" }}>
-              <h4 style={{ fontWeight: 700, fontSize: "1.1rem", color: "black" }}>{c.title}</h4>
+              <h4
+                style={{ fontWeight: 700, fontSize: "1.1rem", color: "black" }}
+              >
+                {c.title}
+              </h4>
               <p
                 style={{
                   color: "#555",
@@ -263,6 +259,7 @@ const Home = () => (
       }}
     >
       <div
+        className="stats-container"
         style={{
           display: "flex",
           justifyContent: "center",
@@ -277,7 +274,7 @@ const Home = () => (
               style={{
                 fontWeight: 700,
                 fontSize: "2rem",
-                color: "#16347dff",
+                color: "#19398aff",
               }}
             >
               {stat.value}
@@ -288,7 +285,7 @@ const Home = () => (
       </div>
       <button
         style={{
-          background: "#16347dff",
+          background: "#19398aff",
           color: "#fff",
           padding: "1rem 2rem",
           border: "none",
