@@ -1,21 +1,27 @@
 {
-  "name": "backend",
+  "name": "sewasetu-backend",
   "version": "1.0.0",
-  "main": "app.js",
+  "type": "module",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "seed": "node utils/seed.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "Backend for SewaSetu",
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
     "express": "^5.1.0",
-    "mongoose": "^8.18.1",
+    "mongoose": "^8.18.1"
+  },
+  "devDependencies": {
     "nodemon": "^3.1.10"
   }
 }

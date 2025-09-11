@@ -3,7 +3,7 @@ import express from "express";              // To create express server
 import cookieParser from "cookie-parser";   // For Parsing User Cookies
 import cors from "cors";                    // To allow requests from only allowed URLs to backend
 // import routers
-// import userRouter from "./Routes.user.routes.js";
+import requestRoutes from "./Routes/requestRoutes.js";
 
 // initialize server
 const app = express();
@@ -17,9 +17,9 @@ app.use(cors({
 
 app.use(express.json());                        // Allows to parse content in json
 app.use(express.urlencoded({extended: true}))   // Allows to parse only urlencoded requests
-app.use(cookieParser());    // To parse current user cookies
+app.use(cookieParser());                        // To parse current user cookies
 
 // move requests to router as per url
-// app.use("/api/v1/user", userRouter);
+app.use("/api/requests", requestRoutes);
 
 export {app} 
