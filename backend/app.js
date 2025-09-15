@@ -4,6 +4,9 @@ import cookieParser from "cookie-parser";   // For Parsing User Cookies
 import cors from "cors";                    // To allow requests from only allowed URLs to backend
 // import routers
 import requestRoutes from "./Routes/requestRoutes.js";
+import userRouter from "./Routes/user.routes.js";
+import ngoRouter from "./Routes/ngo.routes.js";
+import campaignRouter from "./Routes/campaign.routes.js";
 
 // initialize server
 const app = express();
@@ -21,5 +24,8 @@ app.use(cookieParser());                        // To parse current user cookies
 
 // move requests to router as per url
 app.use("/api/requests", requestRoutes);
+app.use("/api/v1/user", userRouter);
+app.use("api/v1/ngo", ngoRouter);
+app.use("api/v1/campaign", campaignRouter);
 
 export {app} 

@@ -26,6 +26,10 @@ const ngoSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        state: {
+            type: String,
+            required: true,
+        },
         valiation_certificate: {
             type: String, 
         },
@@ -50,3 +54,4 @@ const ngoSchema = new mongoose.Schema(
     {timestamps: true}
 );
 
+export const NGO = mongoose.model("NGO", ngoSchema);
