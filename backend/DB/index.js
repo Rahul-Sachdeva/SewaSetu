@@ -1,5 +1,5 @@
 import mongoose from "mongoose" // to connect with mongoDB
-const DB_NAME = "sewaSetu";
+const DB_NAME = "Sewa-Setu";
 
 // This function is used to connect with mongoDB using mongoose and connection URL
 // Since it is a request on database, we preferably always use try and catch for error handling and await since request may take time

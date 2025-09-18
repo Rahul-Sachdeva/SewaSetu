@@ -1,29 +1,112 @@
 import { NGO } from "../Models/ngo.model.js";
+import mongoose from "mongoose";
+import uploadCloudinary from "../Utils/cloudinary.js";
+import { User } from "../Models/user.model.js";
 
 // NGO Registration
-export const registerNGO = async(requestAnimationFrame, res) => {
+export const registerNGO = async (req, res) => {
     try {
-        const {name, registrationNumber, email, phone, address, city, state, documents, description} = req.body;
-        const existing = await NGO.findOne({registrationNumber});
-        if(existing) return res.status(400).json({message: "NGO already registered"});
-
-        const ngo = await NGO.create({
-            name, 
-            registrationNumber, 
+        const {
+            name,
+            registration_number,
             email,
-            phone, 
+            phone,
             address,
             city,
-            state, 
-            documents,
+            state,
+            location_coordinates,
             description,
-            website,
-            createdBy: req.user._id,
-            members: [req.user._id],
-        })
-        return res.status(201).json({message: "NGO registered successfully, verification pending", ngo});
+            userId,
+        } = req.body;
+
+        // Check mandatory fields
+        if (!name || !email || !phone || !registration_number || !city || !state || !address || !location_coordinates) {
+            return res.status(400).json({ message: "All required fields must be provided" });
+        }
+
+        if (!userId) {
+            return res.status(400).json({ message: "User Id must be provided" });
+        }
+
+        // Validate ObjectId
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json({ message: "Invalid User Id" });
+        }
+
+        if (!req.files?.documents || req.files.documents.length === 0) {
+            return res.status(400).json({ message: "At least one document must be uploaded" });
+        }
+
+        // Check if NGO already exists by registration number or email
+        const existing = await NGO.findOne({
+            $or: [{ registration_number }, { email }]
+        });
+        if (existing) {
+            return res.status(400).json({ message: "NGO with same email or registration Id already registered" });
+        }
+
+        // Ensure location coordinates is array of [long, lat]
+        let coords = location_coordinates;
+        if (typeof coords === "string") {
+            coords = coords.split(",").map(Number);
+        }
+        if (!Array.isArray(coords) || coords.length !== 2) {
+            return res.status(400).json({ message: "location_coordinates must be [longitude, latitude]" });
+        }
+
+        // --- Handle file uploads ---
+        let logoUrl = "";
+        let documentUrls = [];
+        let galleryUrls = [];
+
+        if (req.files?.profile_image?.[0]) {
+            const logoRes = await uploadCloudinary(req.files.profile_image[0].buffer, "sewasetu/ngos/logo");
+            logoUrl = logoRes.secure_url;
+        }
+        if (req.files?.documents?.length) {
+            const docsRes = await Promise.all(
+                req.files.documents.map(file => uploadCloudinary(file.buffer, "sewasetu/ngos/documents"))
+            );
+            documentUrls = docsRes.map(doc => doc.secure_url);
+        }
+        if (req.files?.gallery?.length) {
+            const galleryRes = await Promise.all(
+                req.files.gallery.map(file => uploadCloudinary(file.buffer, "sewasetu/ngos/gallery"))
+            );
+            galleryUrls = galleryRes.map(img => img.secure_url);
+        }
+
+        // Create NGO
+        const ngo = await NGO.create({
+            name,
+            registration_number,
+            email,
+            phone,
+            address,
+            city,
+            state,
+            location_coordinates: coords,
+            documents: documentUrls,   // ✅ only array of strings
+            logo: logoUrl,             // ✅ only string
+            description,
+            gallery: galleryUrls,      // ✅ array of strings
+            account: userId,
+            members: [userId],
+        });
+
+        // Update user to link with NGO
+        await User.findByIdAndUpdate(userId, { ngo: ngo._id });
+
+        return res.status(201).json({
+            message: "NGO registered successfully, pending admin verification",
+            ngo
+        });
     } catch (err) {
-        return res.status(500).json({message: "Error registering NGO", error: err.message});
+        console.error("NGO registration error:", err);
+        return res.status(500).json({
+            message: "Error registering NGO",
+            error: err.message
+        });
     }
 };
 

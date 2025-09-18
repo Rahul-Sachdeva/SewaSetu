@@ -25,7 +25,7 @@ app.use(cookieParser());                        // To parse current user cookies
 // move requests to router as per url
 app.use("/api/requests", requestRoutes);
 app.use("/api/v1/user", userRouter);
-app.use("api/v1/ngo", ngoRouter);
-app.use("api/v1/campaign", campaignRouter);
+app.use("/api/v1/ngo", ngoRouter);
+app.use("/api/v1/campaign", campaignRouter);
 
 export {app} 

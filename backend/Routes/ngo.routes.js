@@ -8,10 +8,17 @@ import {
 } from "../Controllers/ngo.controller.js";
 
 import { authMiddleware, roleMiddleware } from "../Middlewares/auth.middleware.js";
+import multer from "multer";
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 const ngoRouter = express.Router();
 
-ngoRouter.post("/register", authMiddleware, regsiterNGO);
+ngoRouter.post("/register", upload.fields([
+        { name: "profile_image", maxCount: 1 },
+        { name: "documents", maxCount: 5 },
+        { name: "gallery", maxCount: 20 }
+    ]), registerNGO);
 ngoRouter.put("/:id", authMiddleware, updateNGO);
 ngoRouter.get("/:id", getNGOById);
 ngoRouter.get("/", listNGOs);

@@ -1,0 +1,28 @@
+.component-btn {
+  width: 100%;                /* w-full */
+  padding-top: 0.75rem;       /* py-3 */
+  padding-bottom: 0.75rem;
+  border-radius: 0.5rem;      /* rounded-lg */
+  font-weight: 600;           /* font-semibold */
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-duration: 200ms; /* duration-200 */
+  cursor: pointer;
+}
+
+.component-btn-primary {
+  background-color: #19398a;
+  color: #ffffff;
+}
+
+.component-btn-primary:hover {
+  background-color: #142d6a;
+}
+
+.component-btn-secondary {
+  background-color: #ffd600;
+  color: #19398a;
+}
+
+.component-btn-secondary:hover {
+  background-color: #facc15; /* Tailwind's yellow-400 */
+}

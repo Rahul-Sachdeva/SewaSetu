@@ -1,0 +1,67 @@
+.auth-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #ffffff;
+  position: relative;
+  padding: 1rem; /* keeps spacing on very small devices */
+}
+
+.auth-wrapper::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6rem;
+  height: 6rem;
+  background-color: #ffd600;
+  border-bottom-right-radius: 9999px;
+}
+
+.auth-wrapper::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 7rem;
+  height: 7rem;
+  background-color: #19398a;
+  border-top-left-radius: 9999px;
+}
+
+.auth-card {
+  position: relative;
+  background-color: #ffffff;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+              0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-radius: 1rem;
+  padding: 2rem 1.5rem;
+  width: 100%;
+  max-width: 24rem;
+  z-index: 10;
+}
+
+/* Tablets (≥640px) */
+@media (min-width: 640px) {
+  .auth-wrapper::before {
+    width: 8rem;
+    height: 8rem;
+  }
+  .auth-wrapper::after {
+    width: 10rem;
+    height: 10rem;
+  }
+  .auth-card {
+    padding: 2.5rem 2rem;
+    max-width: 28rem;
+  }
+}
+
+/* Desktops (≥1024px) */
+@media (min-width: 1024px) {
+  .auth-card {
+    padding: 3rem 2.5rem;
+    max-width: 32rem;
+  }
+}

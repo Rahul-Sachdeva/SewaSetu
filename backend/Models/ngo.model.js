@@ -2,56 +2,35 @@ import mongoose from "mongoose";
 
 const ngoSchema = new mongoose.Schema(
     {
-        name: {
-            type: String,
+        name: { type: String, required: true },
+        email: { type: String, required: true, unique: true },
+        phone: { type: String, required: true },
+        registration_number: { type: String, required: true, unique: true },
+
+        address: { type: String, required: true },
+        city: { type: String, required: true },
+        state: { type: String, required: true },
+        location_coordinates: {
+            type: [Number], 
             required: true,
         },
-        email: {
-            type: String, 
-            required: true, 
-        },
-        phone: {
-            type: String,
-            required: true,
-        },
-        darpanID: {
-            type: String, 
-            required: true, 
-        },
-        address: {
-            type: String,
-            required: true,
-        },
-        city: {
-            type: String,
-            required: true,
-        },
-        state: {
-            type: String,
-            required: true,
-        },
-        valiation_certificate: {
-            type: String, 
-        },
+
+        documents: [{ type: String }], // cloudinary URLs
+        logo: { type: String },        // NGO logo
+        description: { type: String },
+        gallery: [{type: String}],
+
         verification_status: {
-            type: String, 
+            type: String,
             enum: ["pending", "verified", "rejected"],
             default: "pending",
         },
-        members: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "User",
-            }
-        ],
-        campaigns: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "Campaign",
-            }
-        ]
+
+        account: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+        members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+        campaigns: [{ type: mongoose.Schema.Types.ObjectId, ref: "Campaign" }]
     },
-    {timestamps: true}
+    { timestamps: true }
 );
 
 export const NGO = mongoose.model("NGO", ngoSchema);

@@ -3,9 +3,9 @@ import bcrypt from "bcrypt";
 
 const userSchema = new mongoose.Schema(
     {
-        name: {
-            type: String,
-            required: true,
+        name: { 
+            type: String, 
+            required: true 
         },
         email: {
             type: String,
@@ -21,20 +21,39 @@ const userSchema = new mongoose.Schema(
         },
         user_type: {
             type: String,
-            enum: ["donor", "ngo_member", "volunteer", "admin"],
+            enum: [
+                "user",        // general donors
+                "ngo",          // organization’s main account
+                "admin"         // system super-admin
+            ],
             required: true,
+        },
+        ngo: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "NGO"
+        },
+        address: {
+            type: String
         },
         city: {
             type: String,
             required: true,
         },
-        profileImage: {
+        state: {
+            type: String,
+            required: true,
+        },
+        profile_image: {
             type: String, 
         },
         location_coordinates: {
             type: [Number], 
             required: true,
-        }
+        },
+        // 🔑 For email verification
+        isVerified: { type: Boolean, default: false },
+        verificationToken: { type: String }, 
+        verificationTokenExpiry: { type: Date },
     },
     {timestamps: true}
 );
