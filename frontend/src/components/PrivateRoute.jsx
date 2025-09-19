@@ -2,6 +2,7 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 import { isLoggedIn } from "../utils/authUtils";
+import { useAuth } from "../context/AuthContext";
 
 const PrivateRoute = ({ children, roles }) => {
   const { user } = useAuth();

@@ -289,31 +289,59 @@ const RegisterNGO = () => {
           </div>
 
           {/* Verification Documents */}
-          <div className="flex flex-col border-2 border-dashed border-gray-300 rounded-lg p-4">
+          <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-4">
             <label className="block text-sm font-medium text-gray-600 mb-2">
               Upload Verification Documents (PDF, up to 5)
             </label>
             <input
+              id="verificationDocsInput"
               type="file"
               accept="application/pdf"
               multiple
               onChange={handleVerificationDocsChange}
-              className="text-sm"
+              className="hidden"
             />
+            <label
+              htmlFor="verificationDocsInput"
+              className="px-4 py-2 bg-[#19398a] text-white text-sm rounded-lg cursor-pointer hover:bg-[#2e58c2] transition"
+            >
+              Choose File
+            </label>
+            {verificationDocs.map((file, idx) => (
+              <div key={idx} className="flex items-center gap-2">
+                <span className="text-sm text-gray-700">{file.name}</span>
+                <a
+                  href={URL.createObjectURL(file)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 underline"
+                >
+                  View
+                </a>
+              </div>
+            ))}
           </div>
 
           {/* Gallery */}
-          <div className="flex flex-col border-2 border-dashed border-gray-300 rounded-lg p-4">
+          <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-4">
             <label className="block text-sm font-medium text-gray-600 mb-2">
               Upload NGO Gallery (Images, up to 5)
             </label>
             <input
+              id="galleryInput"
               type="file"
               accept="image/*"
               multiple
               onChange={handleGalleryChange}
-              className="text-sm"
+              className="hidden"
             />
+            <label
+              htmlFor="galleryInput"
+              className="px-4 py-2 bg-[#19398a] text-white text-sm rounded-lg cursor-pointer hover:bg-[#2e58c2] transition"
+            >
+              Choose File
+            </label>
+            
             <div className="flex gap-2 mt-2 flex-wrap">
               {galleryImages.map((img, idx) => (
                 <img

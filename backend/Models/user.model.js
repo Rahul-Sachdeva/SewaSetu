@@ -19,6 +19,9 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        about: {
+            type: String,
+        },
         user_type: {
             type: String,
             enum: [

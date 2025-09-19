@@ -11,7 +11,7 @@ const userRouter = express.Router();
 userRouter.post("/register", upload.single("profile_image"), registerUser);
 userRouter.post("/login", loginUser);
 userRouter.get("/profile", authMiddleware, getProfile);
-userRouter.put("/profile", authMiddleware, updateProfile);
+userRouter.put("/profile", upload.single("profile_image"), authMiddleware, updateProfile);
 userRouter.post("/verify-email", verifyEmail);
 
 export default userRouter;

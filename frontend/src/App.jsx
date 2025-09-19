@@ -5,6 +5,8 @@ import RegisterUser from "./pages/RegisterUser";
 import VerifyEmail from "./pages/VerifyEmail";
 import RegisterNGO from "./pages/RegisterNGO";
 import PrivateRoute from "./components/PrivateRoute";
+import UserProfile from "./pages/UserProfile";
+import NGOProfile from "./pages/NgoProfile";
 
 function App() {
   return (
@@ -17,6 +19,8 @@ function App() {
         
         {/*  <PrivateRoute roles={["admin","ngo","user"]}> */}
         <Route path="/" element={<Home />} />
+        <Route path="/profile" element={<UserProfile />} />
+        <Route path="/ngo-profile" element={<NGOProfile />} />
         {/* </PrivateRoute> */}
         
         {/* Add routes for other pages here */}

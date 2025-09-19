@@ -14,5 +14,6 @@ export const generateToken = (user) => {
 };
 
 export const verifyToken = (token) => {
+    const JWT_VAL = process.env.JWT_SECRET;
     return jwt.verify(token, JWT_VAL);
 }

@@ -16,14 +16,15 @@ export const registerUser = async (req, res) => {
             state,
             address,
             ngo,
+            about
         } = req.body;
+        
         let {location_coordinates} = req.body;
-
         // Check mandatory fields
         if (!name || !email || !phone || !password || !user_type || !city || !state || !location_coordinates) {
             return res.status(400).json({ message: "All required fields must be provided" });
         }
-
+        
         // Ensure it's parsed from string to array
         if (typeof location_coordinates === "string") {
             try {
@@ -56,6 +57,7 @@ export const registerUser = async (req, res) => {
             name,
             email,
             phone,
+            about,
             password, // hashed automatically in pre("save")
             user_type,
             city,
@@ -156,12 +158,32 @@ export const verifyEmail = async (req, res) => {
 };
 
 export const getProfile = async(req, res) => {
-    return res.json(req.user);
+    try {
+        return await res.json(req.user);
+    } catch (error) {
+        console.log("Error: ", error.message);
+    }
 }
 
 export const updateProfile = async(req, res) => {
     try {
         const updates = req.body;
+        let {location_coordinates} = req.body;
+        // Ensure it's parsed from string to array
+        if (typeof location_coordinates === "string") {
+            try {
+                location_coordinates = location_coordinates.split(",").map(Number);
+            } catch (err) {
+                console.log(err.message);
+                return res.status(400).json({ message: "Invalid location_coordinates format" });
+            }
+        }
+        
+        // Ensure location_coordinates is an array of numbers
+        if (!Array.isArray(location_coordinates) || location_coordinates.length !== 2) {
+            return res.status(400).json({ message: "location_coordinates must be [longitude, latitude]" });
+        }
+        updates.location_coordinates = location_coordinates;
         const user = await User.findByIdAndUpdate(req.user._id, updates, {new: true}).select("-password");
 
         return res.status(200).json({ message: "Profile Updated Successfully", user });
