@@ -1,5 +1,27 @@
 import mongoose from "mongoose";
 
+const participantSchema = new mongoose.Schema({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    },
+    role: {
+        type: String,
+        enum: ["volunteer", "donor", "attendee"],
+        default: "attendee"
+    },
+    registeredAt: {
+        type: Date,
+        default: Date.now
+    },
+    status: {
+        type: String,
+        enum: ["pending", "approved", "rejected"],
+        default: "pending"
+    }
+});
+
 const campaignSchema = new mongoose.Schema(
     {
         ngo: {
@@ -32,33 +54,20 @@ const campaignSchema = new mongoose.Schema(
             type: [Number],
             required: true
         },
-        address: String,
-        bannerImage: {
-
-            type: String,
-        },
-        participants: [
-            {
-                user: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: "User"
-                },
-                role: {
-                    type: String,
-                    enum: ["volunteer", "donor", "attendee"],
-                    default: "attendee"
-                },
-                registeredAt: {
-                    type: Date, 
-                    default: Date.now
-                },
-            }
-        ],
-        targetFunds: {
+        address: {
             type: String
         },
-        collectedFunds: {
+        bannerImage: {
             type: String,
+        },
+        participants: [participantSchema],
+        targetFunds: {
+            type: Number,
+            default: 0
+        },
+        collectedFunds: {
+            type: Number,
+            default: 0
         },
         targetVolunteers: {
             type: Number, 
@@ -71,6 +80,6 @@ const campaignSchema = new mongoose.Schema(
         }
     },
     {timestamps: true}
-)
+);
 
 export const Campaign = mongoose.model("Campaign", campaignSchema);

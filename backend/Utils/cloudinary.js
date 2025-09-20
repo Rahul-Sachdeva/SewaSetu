@@ -41,7 +41,6 @@ const uploadCloudinary = async (fileBuffer) => {
         },
         (error, result) => {
           if (result){ 
-            console.log("Uploaded file type:", result.resource_type); 
             resolve(result); 
           } 
           else reject(error);

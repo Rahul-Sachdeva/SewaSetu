@@ -14,7 +14,7 @@ const Navbar = () => {
         borderBottom: "1px solid #eee",
         position: "sticky",
         top: 0,
-        zIndex: 100,
+        zIndex: 3000,
       }}
     >
       {/* Logo + Brand */}

@@ -14,7 +14,7 @@ const PrivateRoute = ({ children, roles }) => {
 
   // If roles are specified, check user's role
   if (roles && roles.length > 0 && !roles.includes(user.user_type)) {
-    return <Navigate to="/home" replace />; 
+    return <Navigate to="/" replace />; 
     // You can create a custom "Unauthorized" page or redirect home
   }
 

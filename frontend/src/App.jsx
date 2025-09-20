@@ -7,6 +7,7 @@ import RegisterNGO from "./pages/RegisterNGO";
 import PrivateRoute from "./components/PrivateRoute";
 import UserProfile from "./pages/UserProfile";
 import NGOProfile from "./pages/NgoProfile";
+import CampaignCreatePage from "./pages/CampaignCreatePage";
 
 function App() {
   return (
@@ -19,8 +20,14 @@ function App() {
         
         {/*  <PrivateRoute roles={["admin","ngo","user"]}> */}
         <Route path="/" element={<Home />} />
-        <Route path="/profile" element={<UserProfile />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/profile" element={
+          <PrivateRoute roles={["admin","user"]}>
+            <UserProfile />
+          </PrivateRoute>
+        } />
         <Route path="/ngo-profile" element={<NGOProfile />} />
+        <Route path="/create-campaign" element={<CampaignCreatePage />} />
         {/* </PrivateRoute> */}
         
         {/* Add routes for other pages here */}

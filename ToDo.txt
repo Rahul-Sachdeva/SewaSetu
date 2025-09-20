@@ -1,0 +1,7 @@
+Add a Contribution Model to keep track of User and NGO Contributions like donations, campaigns participation, assistance provided, pickups assisted etc.
+Add Tagline to NGO Model
+Allow NGO to add and Manage Member Cards
+Build Communities of NGOs for questions, track users in NGO community through a field
+Similarly Track user Community for a user in another field
+
+// For now Future: Integrate Payment gateway for fund raisers

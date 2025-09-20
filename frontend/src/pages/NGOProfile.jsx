@@ -8,6 +8,7 @@ import { useAuth } from "../context/AuthContext";
 import Slider from "react-slick"; // Carousel library
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import EditNGOProfileDialog from "../components/EditNGOProfileDialog";
 
 const NGOProfile = () => {
   const { user } = useAuth();
@@ -51,20 +52,19 @@ const NGOProfile = () => {
     { name: "Sara Patel", role: "Volunteer Lead", img: "https://randomuser.me/api/portraits/women/44.jpg" },
   ];
 
+  const fetchNGO = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const ngoId = user.ngo;
+      const res = await axios.get(`${BaseURL}/api/v1/ngo/${ngoId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setNgo(res.data);
+    } catch (err) {
+      console.error("Failed to fetch NGO profile", err);
+    }
+  };
   useEffect(() => {
-    const fetchNGO = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const ngoId = user.ngo;
-        const res = await axios.get(`${BaseURL}/api/v1/ngo/${ngoId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setNgo(res.data);
-      } catch (err) {
-        console.error("Failed to fetch NGO profile", err);
-      }
-    };
-
     fetchNGO();
   }, []);
 
@@ -300,6 +300,15 @@ const NGOProfile = () => {
           </Tab.Group>
         </div>
       </div>
+      <EditNGOProfileDialog
+        isOpen={isEditOpen}
+        setIsOpen={setIsEditOpen}
+        ngoData={ngo}  // Pass current NGO details
+        onSuccess={() => {
+          // refetch NGO details after update
+          fetchNGO();
+        }}
+      />
     </>
   );
 };

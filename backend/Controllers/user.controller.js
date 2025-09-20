@@ -165,10 +165,23 @@ export const getProfile = async(req, res) => {
     }
 }
 
-export const updateProfile = async(req, res) => {
+export const updateProfile = async (req, res) => {
     try {
         const updates = req.body;
-        let {location_coordinates} = req.body;
+        let { location_coordinates } = req.body;
+
+        // Handle profile image update
+        let profileImageUrl = "";
+        if (req.file && req.file.buffer) {
+            try {
+                const uploadResult = await uploadCloudinary(req.file.buffer);
+                profileImageUrl = uploadResult.secure_url;
+                updates.profile_image = profileImageUrl; // save in updates
+            } catch (err) {
+                return res.status(500).json({ message: "Error uploading profile image", error: err.message });
+            }
+        }
+
         // Ensure it's parsed from string to array
         if (typeof location_coordinates === "string") {
             try {
@@ -178,17 +191,30 @@ export const updateProfile = async(req, res) => {
                 return res.status(400).json({ message: "Invalid location_coordinates format" });
             }
         }
-        
+
         // Ensure location_coordinates is an array of numbers
         if (!Array.isArray(location_coordinates) || location_coordinates.length !== 2) {
             return res.status(400).json({ message: "location_coordinates must be [longitude, latitude]" });
         }
-        updates.location_coordinates = location_coordinates;
-        const user = await User.findByIdAndUpdate(req.user._id, updates, {new: true}).select("-password");
 
-        return res.status(200).json({ message: "Profile Updated Successfully", user });
-    } catch(err){
-        return res.status(500).json({message: "Error updating profile", error: err.message});
+        updates.location_coordinates = location_coordinates;
+
+        // Update user
+        const user = await User.findByIdAndUpdate(
+            req.user._id,
+            updates,
+            { new: true }
+        ).select("-password");
+
+        return res.status(200).json({
+            message: "Profile Updated Successfully",
+            user,
+        });
+    } catch (err) {
+        return res.status(500).json({
+            message: "Error updating profile",
+            error: err.message,
+        });
     }
 };
 

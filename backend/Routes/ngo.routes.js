@@ -4,7 +4,7 @@ import {
     updateNGO,
     getNGOById,
     listNGOs,
-    updateNGOStaus
+    updateNGOStatus
 } from "../Controllers/ngo.controller.js";
 
 import { authMiddleware, roleMiddleware } from "../Middlewares/auth.middleware.js";
@@ -19,10 +19,13 @@ ngoRouter.post("/register", upload.fields([
         { name: "documents", maxCount: 5 },
         { name: "gallery", maxCount: 20 }
     ]), registerNGO);
-ngoRouter.put("/:id", authMiddleware, updateNGO);
+ngoRouter.put("/:id", upload.fields([
+        { name: "profile_image", maxCount: 1 },
+        { name: "documents", maxCount: 5 },
+        { name: "gallery", maxCount: 20 }]), authMiddleware, updateNGO);
 ngoRouter.get("/:id", getNGOById);
 ngoRouter.get("/", listNGOs);
 
-ngoRouter.put("/:id/status", authMiddleware, roleMiddleware(["admin"]), updateNGOStaus);
+ngoRouter.put("/:id/status", authMiddleware, roleMiddleware(["admin"]), updateNGOStatus);
 
 export default ngoRouter;
