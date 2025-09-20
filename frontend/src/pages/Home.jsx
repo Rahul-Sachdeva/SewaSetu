@@ -1,6 +1,7 @@
 import React from "react";
 import Navbar from "../components/Navbar";
 import "./css/Home.css";
+import { Link } from "react-router-dom";
 
 // Feature data with icons
 const features = [
@@ -108,20 +109,22 @@ const Home = () => (
           >
             Donate Now
           </button>
-          <button
-            style={{
-              padding: "1rem 2rem",
-              background: "#fff",
-              border: "2px solid #19398aff",
-              color: "#19398aff",
-              borderRadius: "8px",
-              fontWeight: "bold",
-              fontSize: "1.05rem",
-              cursor: "pointer",
-            }}
-          >
-            Request Assistance
-          </button>
+          <Link to="/request">
+            <button
+              style={{
+                padding: "1rem 2rem",
+                background: "#fff",
+                border: "2px solid #19398aff",
+                color: "#19398aff",
+                borderRadius: "8px",
+                fontWeight: "bold",
+                fontSize: "1.05rem",
+                cursor: "pointer",
+              }}
+            >
+              Request Assistance
+            </button>
+          </Link>
         </div>
       </div>
       <img

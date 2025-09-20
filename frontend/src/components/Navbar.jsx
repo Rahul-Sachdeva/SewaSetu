@@ -6,7 +6,7 @@ const Navbar = () => {
   return (
     <nav
       style={{
-        padding: "1rem 2rem",
+        padding: "1rem 2.5rem",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
@@ -34,7 +34,7 @@ const Navbar = () => {
           SewaSetu
         </span>
       </div>
-
+<tab>  space  </tab>
       {/* Desktop Nav */}
       <div className="nav-links desktop">
         <a href="/">Home</a>
@@ -83,7 +83,7 @@ const Navbar = () => {
             color: black;
             text-decoration: none;
           }
-
+          
           .signup-btn {
             padding: 0.6rem 1.4rem;
             background: #19398aff;

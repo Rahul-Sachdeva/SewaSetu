@@ -8,6 +8,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import UserProfile from "./pages/UserProfile";
 import NGOProfile from "./pages/NgoProfile";
 import CampaignCreatePage from "./pages/CampaignCreatePage";
+import Request from "./pages/Request";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
         <Route path="/create-campaign" element={<CampaignCreatePage />} />
         {/* </PrivateRoute> */}
         
+        <Route path="/request" element={<Request />} />
         {/* Add routes for other pages here */}
       </Routes>
     </BrowserRouter>
