@@ -11,7 +11,7 @@ const Navbar = () => {
         alignItems: "center",
         justifyContent: "space-between",
         background: "#fff",
-        borderBottom: "1px solid #eee",
+        borderBottom: "3px solid #eee",
         position: "sticky",
         top: 0,
         zIndex: 3000,

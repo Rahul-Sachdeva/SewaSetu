@@ -8,6 +8,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import UserProfile from "./pages/UserProfile";
 import NGOProfile from "./pages/NgoProfile";
 import CampaignCreatePage from "./pages/CampaignCreatePage";
+import Campaigns from "./pages/Campaigns";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
         } />
         <Route path="/ngo-profile" element={<NGOProfile />} />
         <Route path="/create-campaign" element={<CampaignCreatePage />} />
+        <Route path="/campaigns" element={<Campaigns/>} />
         {/* </PrivateRoute> */}
         
         {/* Add routes for other pages here */}

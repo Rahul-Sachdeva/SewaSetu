@@ -36,7 +36,6 @@ campaignRouter.get("/:id", getCampaignById);
 campaignRouter.post(
     "/:id/register",
     authMiddleware,
-    roleMiddleware(["ngo", "admin"]),
     registerForCampaign
 );
 
