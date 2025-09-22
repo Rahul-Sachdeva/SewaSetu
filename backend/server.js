@@ -8,6 +8,9 @@ import {app} from "./app.js";               // Includes server and configuration
 import { Server } from "socket.io";
 import http from "http";
 
+import { Message } from "./Models/message.model.js";
+import { Conversation } from "./Models/conversation.model.js";
+
 const port = process.env.PORT               // Localhost PORT where backend Runs
 
 const server = http.createServer(app); // Wrap Express app inside HTTP server
@@ -28,18 +31,42 @@ app.use((req, res, next)=> {
 });
 
 io.on("connection", (socket) => {
-    console.log("User connected: ", socket.id);
+  console.log("User connected: ", socket.id);
 
-    // User joins a conversation room
-    socket.on("joinConversation", (conversationId) => {
-        socket.join(conversationId);
-        console.log(`User joined conversation: ${conversationId}`);
-    })
+  socket.on("joinConversation", (conversationId) => {
+    socket.join(conversationId);
+    console.log(`User joined conversation: ${conversationId}`);
+  });
 
-    socket.on("disconnect", () => {
-        console.log("user disconnected", socket.id);
-    });
-})
+  socket.on("sendMessage", async (data) => {
+    try {
+      console.log("data: ", data);
+      const message = await Message.create({
+        conversation: data.conversationId,
+        sender: data.sender,
+        senderType: data.senderType,
+        text: data.text,
+        attachments: data.attachments || [],
+        seenBy: [data.sender],
+      });
+
+      // Update conversation last message
+      await Conversation.findByIdAndUpdate(data.conversationId, { lastMessage: message._id });
+
+      // Emit to all clients in the room
+      io.to(data.conversationId).emit("newMessage", message);
+
+      console.log("Message saved and emitted:", message);
+    } catch (err) {
+      console.error("Error saving message:", err);
+    }
+  });
+
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
+});
 
 // First connect with DB, if connection is successful, app server starts listening on specified port,
 // If any error occurs, handle it through catch block.

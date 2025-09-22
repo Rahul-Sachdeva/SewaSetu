@@ -200,7 +200,7 @@ export const listNGOs = async(req, res) => {
         if(city) filter.city = city;
         if(status) filter.status = status;
 
-        const ngos = await NGO.find(filter).select("name city status createdAt");
+        const ngos = await NGO.find(filter);
         return res.status(200).json(ngos);
     } catch (err) {
         return res.status(500).json({message: "Error listing NGOs", error: err.message});

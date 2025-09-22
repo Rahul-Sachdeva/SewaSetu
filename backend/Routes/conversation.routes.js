@@ -1,10 +1,10 @@
 import express from "express";
-import {createConversation, getUserConversation} from "../Controllers/campaign.controller.js";
+import {createConversation, getUserConversations} from "../Controllers/conversation.controller.js";
 import {authMiddleware} from "../Middlewares/auth.middleware.js";
 
-const conversationRouter = express.router();
+const conversationRouter = express.Router();
 
 conversationRouter.post("/", authMiddleware, createConversation);
-conversationRouter.get("/", authMiddleware, getUserConversation);
+conversationRouter.get("/", authMiddleware, getUserConversations);
 
 export default conversationRouter;

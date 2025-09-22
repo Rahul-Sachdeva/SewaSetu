@@ -9,6 +9,10 @@ import UserProfile from "./pages/UserProfile";
 import NGOProfile from "./pages/NgoProfile";
 import CampaignCreatePage from "./pages/CampaignCreatePage";
 import Campaigns from "./pages/Campaigns";
+import ConversationList from "./components/ConversationList";
+import ConversationPage from "./components/ConversationPage";
+import ChatLayout from "./pages/ChatLayout";
+import NGOListPage from "./pages/NGOListPage";
 
 function App() {
   return (
@@ -28,10 +32,13 @@ function App() {
           </PrivateRoute>
         } />
         <Route path="/ngo-profile" element={<NGOProfile />} />
+        <Route path="/ngo-list" element={<NGOListPage />} />
         <Route path="/create-campaign" element={<CampaignCreatePage />} />
         <Route path="/campaigns" element={<Campaigns/>} />
-        {/* </PrivateRoute> */}
-        
+        <Route path="/chat">
+          <Route index element={<ChatLayout />} />              {/* shows list + "empty" */}
+          <Route path=":id" element={<ChatLayout />} />         {/* shows list + chat */}
+        </Route>
         {/* Add routes for other pages here */}
       </Routes>
     </BrowserRouter>

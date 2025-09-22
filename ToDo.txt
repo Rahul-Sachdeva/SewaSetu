@@ -3,5 +3,7 @@ Add Tagline to NGO Model
 Allow NGO to add and Manage Member Cards
 Build Communities of NGOs for questions, track users in NGO community through a field
 Similarly Track user Community for a user in another field
+Add Campaign Deletion, Unregistration
+
 
 // For now Future: Integrate Payment gateway for fund raisers

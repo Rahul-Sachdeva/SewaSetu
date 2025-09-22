@@ -7,6 +7,8 @@ import requestRoutes from "./Routes/requestRoutes.js";
 import userRouter from "./Routes/user.routes.js";
 import ngoRouter from "./Routes/ngo.routes.js";
 import campaignRouter from "./Routes/campaign.routes.js";
+import conversationRouter from "./Routes/conversation.routes.js";
+import messageRouter from "./Routes/message.routes.js";
 
 // initialize server
 const app = express();
@@ -27,5 +29,7 @@ app.use("/api/requests", requestRoutes);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/ngo", ngoRouter);
 app.use("/api/v1/campaign", campaignRouter);
+app.use("/api/v1/conversation", conversationRouter);
+app.use("/api/v1/message", messageRouter);
 
 export {app} 
