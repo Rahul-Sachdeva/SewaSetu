@@ -13,6 +13,7 @@ import ConversationList from "./components/ConversationList";
 import ConversationPage from "./components/ConversationPage";
 import ChatLayout from "./pages/ChatLayout";
 import NGOListPage from "./pages/NGOListPage";
+import Request from "./pages/Request";
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
           <Route index element={<ChatLayout />} />              {/* shows list + "empty" */}
           <Route path=":id" element={<ChatLayout />} />         {/* shows list + chat */}
         </Route>
+        <Route path="/request" element={<Request />} />
         {/* Add routes for other pages here */}
       </Routes>
     </BrowserRouter>
