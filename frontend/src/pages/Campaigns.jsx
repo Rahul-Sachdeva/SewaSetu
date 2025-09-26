@@ -87,7 +87,7 @@ const Campaigns = () => {
             placeholder="Search campaigns..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-1 text-lg text-[#19398a] rounded-lg border border-[#19398a] shadow-sm transition"
+            className="w-full pl-10 pr-4 py-1 text-lg text-[#19398a] rounded-lg border-2 border-[#19398a] shadow-sm transition"
           />
           <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-lg text-[#19398a]" />
         </div>

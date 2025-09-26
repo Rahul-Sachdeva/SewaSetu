@@ -22,7 +22,7 @@ const NGOCard = ({ ngo }) => {
         `${BaseURL}/api/v1/conversation`,
         {
           type: "private",
-          receiverId: ngo._id,
+          receiverId: ngo.account,
         },
         {
           headers: { Authorization: `Bearer ${token}` },

@@ -6,7 +6,8 @@ import {
     listCampaigns,
     getCampaignById,
     registerForCampaign,
-    updateParticipantStatus
+    updateParticipantStatus,
+    unregisterFromCampaign
 } from "../Controllers/campaign.controller.js";
 
 import { authMiddleware, roleMiddleware } from "../Middlewares/auth.middleware.js";
@@ -33,11 +34,8 @@ campaignRouter.get("/", listCampaigns);
 campaignRouter.get("/:id", getCampaignById);
 
 // Register a user for a campaign
-campaignRouter.post(
-    "/:id/register",
-    authMiddleware,
-    registerForCampaign
-);
+campaignRouter.post("/:id/register",authMiddleware,registerForCampaign);
+campaignRouter.post("/:id/unregister", authMiddleware, unregisterFromCampaign);
 
 // Update participant status (approve/reject) - NGO/Admin only
 campaignRouter.post(

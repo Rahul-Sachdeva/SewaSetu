@@ -14,6 +14,7 @@ import ConversationPage from "./components/ConversationPage";
 import ChatLayout from "./pages/ChatLayout";
 import NGOListPage from "./pages/NGOListPage";
 import Request from "./pages/Request";
+import PendingNGOsPage from "./pages/PendingNGOsPage";
 
 function App() {
   return (
@@ -32,7 +33,11 @@ function App() {
             <UserProfile />
           </PrivateRoute>
         } />
-        <Route path="/ngo-profile" element={<NGOProfile />} />
+        {/* // Profile mode (own NGO) */}
+        <Route path="/ngo-profile" element={<NGOProfile mode="profile" />} />
+
+        {/* Visit mode (view another NGO) */}
+        <Route path="/ngo/:ngoId" element={<NGOProfile mode="visit" />} />
         <Route path="/ngo-list" element={<NGOListPage />} />
         <Route path="/create-campaign" element={<CampaignCreatePage />} />
         <Route path="/campaigns" element={<Campaigns/>} />
@@ -41,6 +46,7 @@ function App() {
           <Route path=":id" element={<ChatLayout />} />         {/* shows list + chat */}
         </Route>
         <Route path="/request" element={<Request />} />
+        <Route path="/pending-ngo" element={<PendingNGOsPage/>}/>
         {/* Add routes for other pages here */}
       </Routes>
     </BrowserRouter>

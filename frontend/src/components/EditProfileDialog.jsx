@@ -63,7 +63,7 @@ const EditProfileDialog = ({ isEditOpen, setIsEditOpen, onProfileUpdated }) => {
     <Dialog
       open={isEditOpen}
       onClose={() => setIsEditOpen(false)}
-      className="relative z-[200]"
+      className="relative z-[4000]"
     >
       {/* Background overlay */}
       <div className="fixed inset-0 bg-black/40" aria-hidden="true" />

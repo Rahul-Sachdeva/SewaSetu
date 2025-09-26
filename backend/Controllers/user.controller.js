@@ -3,6 +3,8 @@ import { generateToken } from "../Utils/jwt.js";
 import uploadCloudinary from "../Utils/cloudinary.js";
 import { sendEmail } from "../Utils/sendEmail.js";
 import jwt from "jsonwebtoken";
+import { NGO } from "../Models/ngo.model.js";
+import { Conversation } from "../Models/conversation.model.js";
 
 export const registerUser = async (req, res) => {
     try {
@@ -165,6 +167,26 @@ export const getProfile = async(req, res) => {
     }
 }
 
+export const getUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find user by ID and exclude sensitive fields
+    const user = await User.findById(id).select("-password -__v");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json(user);
+  } catch (err) {
+    console.error("Error fetching user:", err);
+    return res
+      .status(500)
+      .json({ message: "Error fetching user", error: err.message });
+  }
+};
+
 export const updateProfile = async (req, res) => {
     try {
         const updates = req.body;
@@ -218,3 +240,116 @@ export const updateProfile = async (req, res) => {
     }
 };
 
+// Follow an NGO
+export const followNGO = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const ngoId = req.params.id;
+
+    const user = await User.findById(userId);
+    const ngo = await NGO.findById(ngoId);
+
+    if (!user || !ngo) return res.status(404).json({ message: "User or NGO not found" });
+
+    // Prevent duplicate following
+    if (user.following.includes(ngoId)) {
+      return res.status(400).json({ message: "Already following NGO" });
+    }
+
+    // Add NGO to user's following
+    user.following.push(ngoId);
+    await user.save();
+
+    // Add user to NGO's followers
+    ngo.followers = ngo.followers || [];
+    if (!ngo.followers.includes(userId)) {
+      ngo.followers.push(userId);
+      await ngo.save();
+    }
+
+    // 🔹 Add user to NGO conversation
+    let conversation = await Conversation.findOne({
+      type: "ngo_followers",
+      ngo: ngo._id,
+    });
+
+    if (!conversation) {
+      conversation = await Conversation.create({
+        type: "ngo_followers",
+        ngo: ngo._id,
+        participants: [],
+      });
+    }
+
+    if (
+      !conversation.participants.some(
+        (p) => p.participant.toString() === userId.toString()
+      )
+    ) {
+      conversation.participants.push({
+        participantType: "User",
+        participant: userId,
+      });
+      await conversation.save();
+    }
+
+    return res.status(200).json({ message: "NGO followed & added to chat", ngo });
+  } catch (err) {
+    return res.status(500).json({ message: "Error following NGO", error: err.message });
+  }
+};
+
+// Unfollow an NGO
+export const unfollowNGO = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const ngoId = req.params.id;
+
+    const user = await User.findById(userId);
+    const ngo = await NGO.findById(ngoId);
+
+    if (!user || !ngo) return res.status(404).json({ message: "User or NGO not found" });
+
+    // Remove NGO from user's following
+    user.following = user.following.filter((id) => id.toString() !== ngoId);
+    await user.save();
+
+    // Remove user from NGO's followers
+    ngo.followers = ngo.followers?.filter((id) => id.toString() !== userId);
+    await ngo.save();
+
+    // 🔹 Remove user from NGO conversation
+    const conversation = await Conversation.findOne({
+      type: "ngo_followers",
+      ngo: ngo._id,
+    });
+
+    if (conversation) {
+      conversation.participants = conversation.participants.filter(
+        (p) => p.participant.toString() !== userId
+      );
+      await conversation.save();
+    }
+
+    return res.status(200).json({ message: "Unfollowed NGO & removed from chat" });
+  } catch (err) {
+    return res.status(500).json({ message: "Error unfollowing NGO", error: err.message });
+  }
+};
+
+// Check if the current user is following an NGO
+export const checkFollowing = async (req, res) => {
+  try {
+    const userId = req.user.id; // From auth middleware
+    const { ngoId } = req.params;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const isFollowing = user.following.includes(ngoId);
+    return res.status(200).json({ isFollowing });
+  } catch (err) {
+    console.error("Error checking following:", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};

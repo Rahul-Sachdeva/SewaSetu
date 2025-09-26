@@ -57,6 +57,12 @@ const userSchema = new mongoose.Schema(
         isVerified: { type: Boolean, default: false },
         verificationToken: { type: String }, 
         verificationTokenExpiry: { type: Date },
+        following: [
+            { 
+                type: mongoose.Schema.Types.ObjectId, 
+                ref: "NGO" 
+            }
+        ]
     },
     {timestamps: true}
 );

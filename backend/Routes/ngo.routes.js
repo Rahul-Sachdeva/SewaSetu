@@ -4,7 +4,8 @@ import {
     updateNGO,
     getNGOById,
     listNGOs,
-    updateNGOStatus
+    updateNGOStatus,
+    getPendingNGOs,
 } from "../Controllers/ngo.controller.js";
 
 import { authMiddleware, roleMiddleware } from "../Middlewares/auth.middleware.js";
@@ -14,6 +15,8 @@ const upload = multer({ storage });
 
 const ngoRouter = express.Router();
 
+ngoRouter.put("/:id/status", authMiddleware, roleMiddleware(["admin"]), updateNGOStatus);
+ngoRouter.get("/pending", authMiddleware, roleMiddleware(["admin"]),getPendingNGOs);
 ngoRouter.post("/register", upload.fields([
         { name: "profile_image", maxCount: 1 },
         { name: "documents", maxCount: 5 },
@@ -26,6 +29,5 @@ ngoRouter.put("/:id", upload.fields([
 ngoRouter.get("/:id", getNGOById);
 ngoRouter.get("/", listNGOs);
 
-ngoRouter.put("/:id/status", authMiddleware, roleMiddleware(["admin"]), updateNGOStatus);
 
 export default ngoRouter;

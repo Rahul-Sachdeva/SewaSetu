@@ -1,74 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/context/AuthContext";
-import axios from "axios";
-import { BaseURL } from "@/BaseURL";
 import dayjs from "dayjs";
 
 const ConversationCard = ({ conversation, onClick }) => {
   const { user } = useAuth();
   const lastMsg = conversation?.lastMessage;
 
-  const [chatPerson, setChatPerson] = useState(null);
+  // Use title & avatar passed from ConversationList
+  const title = conversation.title || "Unknown";
+  const avatarUrl = conversation.avatar || "";
 
-  useEffect(() => {
-    const fetchChatPerson = async () => {
-      try {
-        let chatPersonId = null;
-        let chatPersonType = null;
-
-        console.log(conversation.participants)
-        if (conversation.type === "private") {
-          // find participant != current user
-          const other = conversation.participants.find(
-            (p) => p.participant?._id!==user.id
-          );
-          if (other) {
-            chatPersonId = other.participant._id;
-            chatPersonType = "NGO"; // as per your logic for now
-          }
-        } else if (conversation.type === "ngo_followers") {
-          const ngoParticipant = conversation.participants.find(
-            (p) => p.participantType === "NGO"
-          );
-          if (ngoParticipant) {
-            chatPersonId = ngoParticipant.participant._id;
-            chatPersonType = "NGO";
-          }
-        } else if (conversation.type === "campaign") {
-          chatPersonId = conversation.ngo?._id;
-          chatPersonType = "NGO";
-        }
-        console.log("not user id: ", chatPersonId)
-
-        if (chatPersonId && chatPersonType) {
-          const token = localStorage.getItem("token");
-          const res = await axios.get(
-            `${BaseURL}/api/v1/${chatPersonType.toLowerCase()}/${chatPersonId}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          setChatPerson(res.data);
-        }
-      } catch (err) {
-        console.error("Failed to fetch chat person details", err);
-      }
-    };
-
-    fetchChatPerson();
-  }, [conversation, user.id]);
-
-  const title = chatPerson
-    ? chatPerson.name
-    : conversation.type === "ngo_followers"
-    ? `${conversation.ngo?.name} Followers`
-    : conversation.campaign?.title || "Chat";
-
-  const avatarUrl =
-    chatPerson?.logo || chatPerson?.avatar || conversation.campaign?.image;
-
-  const hasUnread = lastMsg?.readBy?.every((id) => id.toString() !== user.id);
+  // Determine if message is unread
+  const hasUnread =
+    lastMsg?.readBy?.every((id) => id.toString() !== user.id);
 
   return (
     <Card

@@ -81,7 +81,7 @@ const EditNGOProfileDialog = ({ isOpen, setIsOpen, ngoData, onSuccess }) => {
   };
 
   return (
-    <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-[200]">
+    <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-[4000]">
       {/* Overlay */}
       <div className="fixed inset-0 bg-black/40" aria-hidden="true" />
 

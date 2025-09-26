@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Dialog, Tab } from "@headlessui/react";
+import { Tab } from "@headlessui/react";
 import { Pencil } from "lucide-react";
 import axios from "axios";
 import { BaseURL } from "../BaseURL";
@@ -9,37 +9,26 @@ import Slider from "react-slick"; // Carousel library
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import EditNGOProfileDialog from "../components/EditNGOProfileDialog";
+import { useParams } from "react-router-dom";
 
-const NGOProfile = () => {
+const NGOProfile = ({ mode = "profile" }) => {
   const { user } = useAuth();
+  const { ngoId } = useParams(); // Used in visit mode
   const [ngo, setNgo] = useState(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
 
-  // Sample Data
+  const isVisitor = mode === "visit";
+  const token = localStorage.getItem("token");
+
+  // Sample Stats (replace with backend)
   const stats = [
     { label: "Campaigns Run", value: 12, icon: "📢" },
     { label: "Donations Received", value: 340, icon: "💰" },
     { label: "Volunteers Engaged", value: 120, icon: "🤝" },
   ];
 
-  const campaigns = [
-    {
-      title: "Food for All",
-      description: "Providing meals to underprivileged communities.",
-      image: "https://media.gettyimages.com/id/1498170916/photo/a-couple-is-taking-a-bag-of-food-at-the-food-and-clothes-bank.jpg?s=612x612&w=0&k=20&c=0fnD_g46lvoZ5NdzX5zYOSM4PzM95ezfs5uMe9D1QKs=",
-    },
-    {
-      title: "Clean Water Project",
-      description: "Installing water purifiers in rural villages.",
-      image: "https://media.gettyimages.com/id/1498170916/photo/a-couple-is-taking-a-bag-of-food-at-the-food-and-clothes-bank.jpg?s=612x612&w=0&k=20&c=0fnD_g46lvoZ5NdzX5zYOSM4PzM95ezfs5uMe9D1QKs=",
-    },
-    {
-      title: "Education Drive",
-      description: "Supplying books and resources to school children.",
-      image: "https://media.gettyimages.com/id/1498170916/photo/a-couple-is-taking-a-bag-of-food-at-the-food-and-clothes-bank.jpg?s=612x612&w=0&k=20&c=0fnD_g46lvoZ5NdzX5zYOSM4PzM95ezfs5uMe9D1QKs=",
-    },
-  ];
-
+  // Sample Data (replace with backend calls if needed)
   const contributions = [
     { donor: "John Doe", amount: "$100", date: "Sep 5, 2025" },
     { donor: "Jane Smith", amount: "$250", date: "Sep 2, 2025" },
@@ -52,21 +41,60 @@ const NGOProfile = () => {
     { name: "Sara Patel", role: "Volunteer Lead", img: "https://randomuser.me/api/portraits/women/44.jpg" },
   ];
 
+  // Check if user is following this NGO
+  const checkFollowing = async (ngoIdToCheck) => {
+    try {
+      const res = await axios.get(`${BaseURL}/api/v1/user/following/${ngoIdToCheck}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setIsFollowing(res.data.isFollowing);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Follow / Unfollow toggle
+  const handleFollowToggle = async () => {
+    try {
+      if (isFollowing) {
+        await axios.post(
+          `${BaseURL}/api/v1/user/unfollow/${ngo._id}`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else {
+        await axios.post(
+          `${BaseURL}/api/v1/user/follow/${ngo._id}`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
+      setIsFollowing(!isFollowing);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Fetch NGO details
   const fetchNGO = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const ngoId = user.ngo;
-      const res = await axios.get(`${BaseURL}/api/v1/ngo/${ngoId}`, {
+      const idToFetch = isVisitor ? ngoId : user.ngo;
+      const res = await axios.get(`${BaseURL}/api/v1/ngo/${idToFetch}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setNgo(res.data);
+
+      if (isVisitor) checkFollowing(res.data._id);
     } catch (err) {
       console.error("Failed to fetch NGO profile", err);
     }
   };
+
   useEffect(() => {
-    fetchNGO();
-  }, []);
+    if (user || ngoId) {
+      fetchNGO();
+    }
+  }, [ngoId, user]);
 
   if (!ngo)
     return (
@@ -102,7 +130,7 @@ const NGOProfile = () => {
           <div>
             <h1 className="text-3xl font-bold">{ngo.name}</h1>
             <p className="text-sm italic text-gray-200">
-              "Empowering lives, changing futures." {/* Hardcoded tagline */}
+              {ngo.tagline || `"Empowering lives, changing futures."`}
             </p>
             <span
               className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold ${
@@ -118,13 +146,22 @@ const NGOProfile = () => {
           </div>
         </div>
 
-        {/* Edit button */}
-        <button
-          onClick={() => setIsEditOpen(true)}
-          className="absolute top-6 right-6 flex items-center px-4 py-2 bg-white text-[#19398a] text-sm font-medium rounded-lg hover:bg-gray-200 shadow"
-        >
-          <Pencil className="w-4 h-4 mr-2" /> Edit NGO Profile
-        </button>
+        {/* Conditional buttons */}
+        {isVisitor ? (
+          <button
+            onClick={handleFollowToggle}
+            className="absolute top-6 right-6 flex items-center px-4 py-2 bg-[#19398a] text-white text-sm font-medium rounded-lg hover:bg-[#2e58c2] shadow"
+          >
+            {isFollowing ? "Unfollow" : "Follow"}
+          </button>
+        ) : (
+          <button
+            onClick={() => setIsEditOpen(true)}
+            className="absolute top-6 right-6 flex items-center px-4 py-2 bg-white text-[#19398a] text-sm font-medium rounded-lg hover:bg-gray-200 shadow"
+          >
+            <Pencil className="w-4 h-4 mr-2" /> Edit NGO Profile
+          </button>
+        )}
       </div>
 
       {/* Main Grid */}
@@ -136,12 +173,9 @@ const NGOProfile = () => {
             <p><span className="font-semibold">Registration No:</span> {ngo.registration_number}</p>
             <p><span className="font-semibold">Email:</span> {ngo.email}</p>
             <p><span className="font-semibold">Phone:</span> {ngo.phone}</p>
-            
-            <div>
-              <p><span className="font-semibold">City:</span> {ngo.city}</p>
-              <p><span className="font-semibold">State:</span> {ngo.state}</p>
-              <p><span className="font-semibold">Address:</span> {ngo.address}</p>
-            </div>
+            <p><span className="font-semibold">City:</span> {ngo.city}</p>
+            <p><span className="font-semibold">State:</span> {ngo.state}</p>
+            <p><span className="font-semibold">Address:</span> {ngo.address}</p>
           </div>
 
           {/* Map Embed */}
@@ -165,7 +199,7 @@ const NGOProfile = () => {
                   className={({ selected }) =>
                     `px-4 py-2 text-sm font-semibold border-b-2 ${
                       selected
-                        ? "border-[#19398a] !border-x-0 !border-t-0 text-[#19398a]"
+                        ? "border-[#19398a] text-[#19398a]"
                         : "border-transparent text-gray-500 hover:text-[#19398a]"
                     }`
                   }
@@ -224,21 +258,25 @@ const NGOProfile = () => {
               {/* Campaigns */}
               <Tab.Panel>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {campaigns.map((c, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition"
-                    >
-                      <img src={c.image} alt={c.title} className="h-40 w-full object-cover" />
-                      <div className="p-4">
-                        <h4 className="font-bold text-[#19398a]">{c.title}</h4>
-                        <p className="text-sm text-gray-600 mt-1">{c.description}</p>
-                        <button className="mt-3 px-3 py-1 text-sm bg-[#19398a] text-white rounded-md hover:bg-[#2e58c2]">
-                          View Details
-                        </button>
+                  {ngo.campaigns?.length > 0 ? (
+                    ngo.campaigns.map((c, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition"
+                      >
+                        <img src={c.image} alt={c.title} className="h-40 w-full object-cover" />
+                        <div className="p-4">
+                          <h4 className="font-bold text-[#19398a]">{c.title}</h4>
+                          <p className="text-sm text-gray-600 mt-1">{c.description}</p>
+                          <button className="mt-3 px-3 py-1 text-sm bg-[#19398a] text-white rounded-md hover:bg-[#2e58c2]">
+                            View Details
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500">No campaigns available</p>
+                  )}
                 </div>
               </Tab.Panel>
 
@@ -300,15 +338,16 @@ const NGOProfile = () => {
           </Tab.Group>
         </div>
       </div>
-      <EditNGOProfileDialog
-        isOpen={isEditOpen}
-        setIsOpen={setIsEditOpen}
-        ngoData={ngo}  // Pass current NGO details
-        onSuccess={() => {
-          // refetch NGO details after update
-          fetchNGO();
-        }}
-      />
+
+      {/* Edit Profile Dialog */}
+      {!isVisitor && (
+        <EditNGOProfileDialog
+          isOpen={isEditOpen}
+          setIsOpen={setIsEditOpen}
+          ngoData={ngo}
+          onSuccess={fetchNGO}
+        />
+      )}
     </>
   );
 };

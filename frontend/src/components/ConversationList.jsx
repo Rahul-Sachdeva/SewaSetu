@@ -7,7 +7,6 @@ import ConversationCard from "./ConversationCard";
 import { BaseURL } from "@/BaseURL";
 import { useAuth } from "@/context/AuthContext";
 
-// ConversationList Component
 const ConversationList = () => {
   const [conversations, setConversations] = useState([]);
   const [filtered, setFiltered] = useState([]);
@@ -19,89 +18,50 @@ const ConversationList = () => {
   useEffect(() => {
     const fetchConversations = async () => {
       try {
-        const userId = user.role=="user"?user.id:user.ngo;
         const token = localStorage.getItem("token");
-        const res = await axios.post(`${BaseURL}/api/v1/conversation`, {userId}, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          },
+        const res = await axios.get(`${BaseURL}/api/v1/conversation`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
-        setConversations(res.data);
-        setFiltered(res.data);
+
+        const data = Array.isArray(res.data) ? res.data : res.data.conversations || [];
+
+        // No need to fetch separately: backend already populated
+        setConversations(data);
+        setFiltered(data);
       } catch (err) {
         console.error("Error fetching conversations", err);
       }
     };
-    fetchConversations();
-  }, []);
 
-//    useEffect(() => {
-//   const fetchConversations = async () => {
-//     try {
-//       // Temporarily replace API with mock data
-//       const sampleData = [
-//         {
-//           _id: "68d02090ae7eeab3110f129c",
-//           type: "private",
-//           participants: [
-//             {
-//               participantType: "User",
-//               participant: { name: "Ravi Kumar" },
-//             },
-//           ],
-//           lastMessage: {
-//             text: "Hey! Are we meeting tomorrow?",
-//             createdAt: new Date(),
-//             readBy: [],
-//           },
-//         },
-//         {
-//           _id: "2",
-//           type: "ngo_followers",
-//           ngo: { name: "Helping Hands NGO", logo: "https://placehold.co/50x50" },
-//           lastMessage: {
-//             text: "Welcome to the followers group 🎉",
-//             createdAt: new Date(),
-//             readBy: ["currentUserId"],
-//           },
-//         },
-//         {
-//           _id: "3",
-//           type: "campaign",
-//           campaign: {
-//             title: "Clean Water Drive",
-//             image: "https://placehold.co/50x50",
-//           },
-//           lastMessage: {
-//             attachments: ["https://example.com/file.pdf"],
-//             createdAt: new Date(),
-//             readBy: [],
-//           },
-//         },
-//       ];
+    if (user) fetchConversations();
+  }, [user]);
 
-//       setConversations(sampleData);
-//       setFiltered(sampleData);
-//     } catch (err) {
-//       console.error("Error fetching conversations", err);
-//     }
-//   };
-
-//   fetchConversations();
-// }, []); 
-
+  // Filter conversations based on tab and search
   useEffect(() => {
-    let result = conversations;
+    let result = Array.isArray(conversations) ? [...conversations] : [];
+
     if (activeTab !== "all") {
       result = result.filter((c) => c.type === activeTab);
     }
+
     if (search) {
-      result = result.filter((c) =>
-        (c.ngo?.name || c.campaign?.title || "").toLowerCase().includes(search.toLowerCase())
-      );
+      const lowerSearch = search.toLowerCase();
+      result = result.filter((c) => {
+        const name =
+          c.type === "private"
+            ? // pick the other participant's name
+              c.participants.find(p => p.participant?._id !== user.id)?.participant?.name
+            : c.type === "ngo_followers"
+            ? c.ngo?.name
+            : c.type === "campaign"
+            ? c.campaign?.title
+            : "";
+        return name?.toLowerCase().includes(lowerSearch);
+      });
     }
+
     setFiltered(result);
-  }, [search, activeTab, conversations]);
+  }, [search, activeTab, conversations, user.id]);
 
   return (
     <div className="flex flex-col w-full bg-gray-100 h-[100vh] max-w-md mx-auto p-4 gap-4">
@@ -126,13 +86,31 @@ const ConversationList = () => {
       {/* Conversation Cards */}
       <div className="flex-1 scrollbar overflow-y-scroll space-y-3">
         {filtered.length ? (
-          filtered.map((conv) => (
-            <ConversationCard
-              key={conv._id}
-              conversation={conv}
-              onClick={() => navigate(`/chat/${conv._id}`)}
-            />
-          ))
+          filtered.map((conv) => {
+            // Determine display name & avatar
+            let title = "";
+            let avatar = "";
+
+            if (conv.type === "private") {
+              const other = conv.participants.find(p => p.participant?._id !== user.id);
+              title = other?.participant?.name || "Unknown";
+              avatar = other?.participant?.avatar || "";
+            } else if (conv.type === "ngo_followers") {
+              title = conv.ngo?.name || "NGO";
+              avatar = conv.ngo?.logo || "";
+            } else if (conv.type === "campaign") {
+              title = conv.campaign?.title || "Campaign";
+              avatar = conv.campaign?.bannerImage || "";
+            }
+
+            return (
+              <ConversationCard
+                key={conv._id}
+                conversation={{ ...conv, title, avatar }}
+                onClick={() => navigate(`/chat/${conv._id}`)}
+              />
+            );
+          })
         ) : (
           <p className="text-center text-gray-500">No conversations found</p>
         )}

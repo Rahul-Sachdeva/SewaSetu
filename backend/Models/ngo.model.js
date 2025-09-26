@@ -28,7 +28,10 @@ const ngoSchema = new mongoose.Schema(
 
         account: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
         members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-        campaigns: [{ type: mongoose.Schema.Types.ObjectId, ref: "Campaign" }]
+        campaigns: [{ type: mongoose.Schema.Types.ObjectId, ref: "Campaign" }],
+        followers: [
+            { type: mongoose.Schema.Types.ObjectId, ref: "User" }
+        ],
     },
     { timestamps: true }
 );

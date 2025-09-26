@@ -34,7 +34,6 @@ const Navbar = () => {
           SewaSetu
         </span>
       </div>
-<tab>  space  </tab>
       {/* Desktop Nav */}
       <div className="nav-links desktop">
         <a href="/">Home</a>
