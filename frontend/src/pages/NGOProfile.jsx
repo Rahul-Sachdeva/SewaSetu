@@ -117,7 +117,7 @@ const NGOProfile = ({ mode = "profile" }) => {
 
   return (
     <>
-      <Navbar />
+      
 
       {/* Header Section */}
       <div className="relative bg-gradient-to-r from-[#19398a] via-[#345ec9] to-[#19398a] text-white py-7 px-6 lg:px-20 rounded-b-3xl shadow-lg">

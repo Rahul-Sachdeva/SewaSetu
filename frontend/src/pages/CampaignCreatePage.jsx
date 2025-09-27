@@ -18,7 +18,6 @@ import {
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import Navbar from "@/components/Navbar";
 import { useNavigate, useParams } from "react-router-dom";
 
 const customIcon = new L.Icon({
@@ -193,7 +192,6 @@ useEffect(() => {
 
   return (
     <>
-    <Navbar/>
     <div className="flex justify-center items-center min-h-screen bg-slate-50 p-4">
       <Card className="w-full max-w-4xl shadow-lg border border-gray-200 rounded-2xl">
         <CardContent className="p-6 md:p-10">

@@ -40,7 +40,8 @@ const MyCampaignsPage = () => {
   if (loading) return <div className="text-center py-10">Loading...</div>;
 
   return (
-    <div className="px-4 md:px-12 py-8">
+    <div className="px-4 md:px-12 pt-0.7 pb-6">
+
       <h1 className="text-2xl font-bold mb-6">My Campaigns</h1>
       {campaigns.length === 0 ? (
         <p className="text-gray-600">You haven’t created any campaigns yet.</p>
