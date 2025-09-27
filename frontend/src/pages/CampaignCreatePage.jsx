@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { BaseURL } from "../BaseURL";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import Navbar from "@/components/Navbar";
+import { useNavigate, useParams } from "react-router-dom";
 
 const customIcon = new L.Icon({
   iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
@@ -45,7 +46,7 @@ function LocationMarker({ setFormData, selectedCoords, setSelectedCoords }) {
   ) : null;
 }
 
-const CampaignCreatePage = () => {
+const CampaignCreatePage = ({mode="create"}) => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -57,12 +58,65 @@ const CampaignCreatePage = () => {
     targetFunds: "",
     targetVolunteers: "",
   });
+  const { id } = useParams(); // campaignId when editing
+  const navigate = useNavigate();
 
   const [selectedCoords, setSelectedCoords] = useState([20.5937, 78.9629]); // Default India
   const [bannerImage, setBannerImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const mapRef = useRef();
+
+  // 🟢 Fetch existing campaign when editing
+useEffect(() => {
+  if (mode === "edit" && id) {
+    const fetchCampaign = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get(`${BaseURL}/api/v1/campaign/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const data = res.data;
+
+        setFormData({
+          title: data.title,
+          description: data.description,
+          category: data.category,
+          startDate: data.startDate?.slice(0, 10),
+          endDate: data.endDate?.slice(0, 10),
+          address: data.address,
+          location_coordinates: data.location_coordinates, // store as-is
+          targetFunds: data.targetFunds,
+          targetVolunteers: data.targetVolunteers,
+        });
+
+        if (data.bannerImage) {
+          setPreviewUrl(data.bannerImage);
+        }
+
+        if (data.location_coordinates) {
+          let lat, lng;
+
+          // If array → [lng, lat]
+          if (Array.isArray(data.location_coordinates)) {
+            [lng, lat] = data.location_coordinates;
+          } 
+          // If string → "lng,lat"
+          else if (typeof data.location_coordinates === "string") {
+            [lng, lat] = data.location_coordinates.split(",").map(Number);
+          }
+
+          setSelectedCoords([lat, lng]);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Failed to load campaign details");
+      }
+    };
+    fetchCampaign();
+  }
+}, [mode, id]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -110,30 +164,28 @@ const CampaignCreatePage = () => {
 
       const token = localStorage.getItem("token");
 
-      await axios.post(`${BaseURL}/api/v1/campaign`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      if (mode === "create") {
+        await axios.post(`${BaseURL}/api/v1/campaign`, data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        alert("✅ Campaign created successfully!");
+      } else {
+        await axios.put(`${BaseURL}/api/v1/campaign/${id}`, data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        alert("✅ Campaign updated successfully!");
+      }
 
-      alert("✅ Campaign created successfully!");
-      setFormData({
-        title: "",
-        description: "",
-        category: "",
-        startDate: "",
-        endDate: "",
-        address: "",
-        location_coordinates: "",
-        targetFunds: "",
-        targetVolunteers: "",
-      });
-      setBannerImage(null);
-      setPreviewUrl(null);
+      navigate("/ngo/my-campaigns");
     } catch (err) {
       console.error(err);
-      alert("❌ Error creating campaign: " + err.response?.data?.message);
+      alert("❌ Error: " + err.response?.data?.message);
     } finally {
       setLoading(false);
     }
@@ -147,7 +199,7 @@ const CampaignCreatePage = () => {
         <CardContent className="p-6 md:p-10">
           {/* Header */}
           <h1 className="text-2xl md:text-3xl font-bold text-[#19398a] mb-2">
-            Create a New Campaign
+            {mode === "create" ? "Create a New Campaign" : "Edit Campaign"}
           </h1>
           <p className="text-gray-600 mb-6">
             Fill in the details below to start a new campaign for your NGO.
@@ -373,7 +425,13 @@ const CampaignCreatePage = () => {
                 disabled={loading}
                 className="bg-[#19398a] hover:bg-[#142a66] text-white"
               >
-                {loading ? "Creating..." : "Create Campaign"}
+                {loading
+                  ? mode === "create"
+                    ? "Creating..."
+                    : "Updating..."
+                  : mode === "create"
+                  ? "Create Campaign"
+                  : "Update Campaign"}
               </Button>
             </div>
           </form>

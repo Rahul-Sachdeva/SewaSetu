@@ -15,6 +15,9 @@ import ChatLayout from "./pages/ChatLayout";
 import NGOListPage from "./pages/NGOListPage";
 import Request from "./pages/Request";
 import PendingNGOsPage from "./pages/PendingNGOsPage";
+import MyCampaignsPage from "./pages/MyCampaignsPage";
+import CampaignRegistrationsPage from "./pages/CampaignRegistrationsPage";
+import SelectNGO from "./pages/SelectNGO";
 import DonationPage from "./pages/DonationPage";
 
 function App() {
@@ -40,14 +43,18 @@ function App() {
         {/* Visit mode (view another NGO) */}
         <Route path="/ngo/:ngoId" element={<NGOProfile mode="visit" />} />
         <Route path="/ngo-list" element={<NGOListPage />} />
-        <Route path="/create-campaign" element={<CampaignCreatePage />} />
+        <Route path="/create-campaign" element={<CampaignCreatePage mode="create"/>} />
+        <Route path="/campaign/:id/edit" element={<CampaignCreatePage mode="edit"/>} />
         <Route path="/campaigns" element={<Campaigns/>} />
         <Route path="/chat">
           <Route index element={<ChatLayout />} />              {/* shows list + "empty" */}
           <Route path=":id" element={<ChatLayout />} />         {/* shows list + chat */}
         </Route>
         <Route path="/request" element={<Request />} />
+        <Route path="/select-ngo" element={<SelectNGO />} />
         <Route path="/pending-ngo" element={<PendingNGOsPage/>}/>
+        <Route path="/ngo/my-campaigns" element={<MyCampaignsPage/>}/>
+        <Route path="/campaign/:id/registrations" element={<CampaignRegistrationsPage/>}/>
         {/* Add routes for other pages here */}
         <Route path="/donate" element={<DonationPage />} />
       </Routes>

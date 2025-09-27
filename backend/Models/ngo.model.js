@@ -6,6 +6,7 @@ const ngoSchema = new mongoose.Schema(
         email: { type: String, required: true, unique: true },
         phone: { type: String, required: true },
         registration_number: { type: String, required: true, unique: true },
+        category: { type: [String], required: true, default: [] },
 
         address: { type: String, required: true },
         city: { type: String, required: true },
@@ -29,7 +30,7 @@ const ngoSchema = new mongoose.Schema(
             type: [String],
             default: []
         },
-        
+
         account: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
         members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
         campaigns: [{ type: mongoose.Schema.Types.ObjectId, ref: "Campaign" }],

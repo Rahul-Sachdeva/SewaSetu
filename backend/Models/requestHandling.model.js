@@ -1,44 +1,43 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
 
-const requestHandlingSchema = new mongoose.Schema(
-    {
-        request_id: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "AssistanceRequest"
-        },
-        handlerType: {
-            type: String, 
-            enum: ["ngo", "volunteer"],
-            required: true
-        },
-        handledBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            refPath: "handlerType"
-        },
-        status: {
-            type: String,
-            enum: ["assigned", "in_progress", "resolved", "failed"],
-            default: "assigned"
-        },
-        resourcesProvided: [
-            {
-                category: {
-                    type: String,
-                    enum: ["food", "clothes", "medicine", "shelter", "funds", "others"]
-                },
-                quantity: String,
-            }
-        ],
-        notes: String,
-        images: [String],
-        assignedAt: {
-            type: Date
-        },
-        completedAt: {
-            type: Date
-        }
+const RequestHandlingSchema = new mongoose.Schema(
+  {
+    request_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "AssistanceRequest",
+      required: true,
     },
-    {timestamps: true}
-)
+    handledBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "NGO",
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ["pending", "accepted", "rejected", "scheduled", "completed", "cancelled"],
+      default: "pending", // All new handling entries start as pending
+    },
+    assignedAt: {
+      type: Date,
+      default: Date.now, // When the NGO was assigned to this request
+    },
+    updatedAt: {
+      type: Date,
+      default: Date.now,
+    },
+    scheduled_details: {
+      volunteer_name: { type: String },
+      volunteer_contact: { type: String },
+      schedule_date: { type: Date },
+      schedule_time: { type: String }, // e.g., "14:30"
+    },
+  },
+  {
+    timestamps: true, // createdAt & updatedAt
+  }
+);
 
-export const RequestHandling = mongoose.model("RequestHandling", requestHandlingSchema);
+export const RequestHandling = mongoose.model(
+  "RequestHandling",
+  RequestHandlingSchema
+);

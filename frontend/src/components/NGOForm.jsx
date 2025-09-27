@@ -10,6 +10,88 @@ const customIcon = new L.Icon({
   popupAnchor: [0, -30],
 });
 
+// Predefined categories
+const categoriesList = [
+  "Food & Shelter",
+  "Clothes",
+  "Medical Help",
+  "Education Support",
+  "Financial Help",
+  "Legal Assistance",
+  "Emergency/Disaster Relief",
+  "Other",
+];
+
+const CategorySelector = ({ formData, setFormData }) => {
+  const [inputValue, setInputValue] = useState("");
+
+  const addCategory = (category) => {
+    if (!formData.category.includes(category)) {
+      setFormData((prev) => ({
+        ...prev,
+        category: [...prev.category, category],
+      }));
+    }
+    setInputValue("");
+  };
+
+  const removeCategory = (category) => {
+    setFormData((prev) => ({
+      ...prev,
+      category: prev.category.filter((c) => c !== category),
+    }));
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && inputValue.trim() !== "") {
+      addCategory(inputValue.trim());
+      e.preventDefault();
+    }
+  };
+
+  return (
+    <div className="border border-gray-300 rounded p-2 flex flex-wrap gap-2">
+      {formData.category.map((cat, idx) => (
+        <div
+          key={idx}
+          className="flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm"
+        >
+          {cat}
+          <button
+            type="button"
+            onClick={() => removeCategory(cat)}
+            className="ml-1 font-bold"
+          >
+            ×
+          </button>
+        </div>
+      ))}
+      <input
+        type="text"
+        placeholder="Add category..."
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        onKeyDown={handleKeyDown}
+        className="flex-1 min-w-[120px] border-none outline-none text-sm"
+      />
+      <div className="w-full mt-1 flex flex-wrap gap-1">
+        {categoriesList
+          .filter((cat) => !formData.category.includes(cat))
+          .map((cat, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => addCategory(cat)}
+              className="text-sm px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
+            >
+              {cat}
+            </button>
+          ))}
+      </div>
+    </div>
+  );
+};
+
 const NGOForm = ({
   formData,
   setFormData,
@@ -25,6 +107,16 @@ const NGOForm = ({
   const mapRef = useRef();
   const [previewUrl, setPreviewUrl] = useState(null);
   const [selectedCoords, setSelectedCoords] = useState([20.5937, 78.9629]);
+
+  const handleChangeMulti = (e) => {
+    const selectedOptions = Array.from(e.target.selectedOptions).map(
+      (option) => option.value
+    );
+    setFormData((prev) => ({
+      ...prev,
+      category: selectedOptions,
+    }));
+  };
 
   // Component to handle map clicks
   function LocationMarker({ setFormData, selectedCoords, setSelectedCoords }) {
@@ -172,6 +264,10 @@ const NGOForm = ({
         onChange={handleChange}
         className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm"
       />
+      {/* Category */}
+      <CategorySelector formData={formData} setFormData={setFormData} />
+
+
 
       <textarea
         name="description"
