@@ -1,16 +1,23 @@
 // src/pages/Request.jsx
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 
 const Request = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    contact: "",
-    location: "",
-    helpType: "",
-    priority: "Regular",
-    file: null,
-  });
+  const navigate = useNavigate();
+
+const [formData, setFormData] = useState({
+  name: "",
+  phone: "",
+  email: "",
+  address: "",
+  coordinates: "",
+  category: "",
+  description: "",
+  priority: "Regular",
+  file: null,
+});
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,223 +29,206 @@ const Request = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const formDataObj = new FormData();
-    Object.keys(formData).forEach((key) => {
-      if (formData[key]) formDataObj.append(key, formData[key]);
+  e.preventDefault();
+  const formDataObj = new FormData();
+
+  Object.keys(formData).forEach((key) => {
+    let value = formData[key];
+    // Convert coordinates string to array if present
+    if (key === "coordinates" && value) {
+      value = JSON.stringify(value.split(",").map(Number));
+    }
+    if (value) formDataObj.append(key, value);
+  });
+
+  try {
+    const res = await fetch("http://localhost:3000/api/requests", {
+      method: "POST",
+      body: formDataObj,
     });
 
-    try {
-      const res = await fetch("http://localhost:5000/api/requests", {
-        method: "POST",
-        body: formDataObj,
-      });
-
-      if (res.ok) {
-        alert("✅ Request submitted successfully!");
-        setFormData({
-          name: "",
-          contact: "",
-          location: "",
-          helpType: "",
-          priority: "Regular",
-          file: null,
-        });
-      } else {
-        alert("Something went wrong");
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Server error");
+    if (res.ok) {
+      const result = await res.json();
+      alert("✅ Request submitted successfully!");
+      navigate(`/select-ngo/${result.requestId}`);
+    } else {
+      const err = await res.json();
+      console.error(err);
+      alert("Something went wrong: " + (err.message || res.statusText));
     }
-  };
+  } catch (error) {
+    console.error(error);
+    alert("Server error");
+  }
+};
 
   return (
-    <div
-      style={{
-        fontFamily: "'Inter', Arial, sans-serif",
-        background: "#f4f6f8",
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <div style={{ fontFamily: "'Inter', Arial, sans-serif", background: "#f4f6f8", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Navbar />
-
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: "2rem",
-        }}
-      >
-        <section
-          style={{
-            width: "100%",
-            maxWidth: 800,
-            background: "#fff",
-            borderRadius: 20,
-            boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
-            padding: "3rem 2.5rem",
-            transition: "all 0.3s",
-          }}
-        >
-          <h2
-            style={{
-              fontSize: "2.25rem",
-              fontWeight: "700",
-              marginBottom: "2.5rem",
-              color: "#0f2a66",
-              textAlign: "center",
-            }}
-          >
+      <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", padding: "2rem" }}>
+        <section style={{ width: "100%", maxWidth: 800, background: "#fff", borderRadius: 20, boxShadow: "0 10px 25px rgba(0,0,0,0.08)", padding: "3rem 2.5rem", transition: "all 0.3s" }}>
+          <h2 style={{ fontSize: "2.25rem", fontWeight: "700", marginBottom: "2.5rem", color: "#0f2a66", textAlign: "center" }}>
             Need Help? Submit Your Request
           </h2>
 
-          <form
-            onSubmit={handleSubmit}
-            style={{
-              display: "grid",
-              gap: "2rem",
-            }}
-          >
+          <form onSubmit={handleSubmit} style={{ display: "grid", gap: "2rem" }}>
             {/* Full Name */}
             <div>
-              <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
-                Full Name
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                placeholder="Jane Doe"
-                required
-                style={{
-                  width: "100%",
-                  padding: "1rem 1.2rem",
-                  border: "1px solid #d1d5db",
-                  borderRadius: 12,
-                  fontSize: "1rem",
-                  outline: "none",
-                  transition: "all 0.2s",
-                }}
+              <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>Full Name</label>
+              <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Jane Doe" required
+                style={{ width: "100%", padding: "1rem 1.2rem", border: "1px solid #d1d5db", borderRadius: 12, fontSize: "1rem", outline: "none", transition: "all 0.2s" }}
                 onFocus={(e) => (e.target.style.borderColor = "#0f2a66")}
                 onBlur={(e) => (e.target.style.borderColor = "#d1d5db")}
               />
             </div>
 
-            {/* Contact */}
+{/* Contact Information */}
+<div style={{ display: "flex", gap: "1.5rem" }}>
+  {/* Phone */}
+  <div style={{ flex: 1 }}>
+    <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>Phone</label>
+    <input
+      type="tel"
+      name="phone"
+      value={formData.phone || ""}
+      onChange={handleChange}
+      placeholder="1234567890"
+      required
+      style={{
+        width: "100%",
+        padding: "1rem 1.2rem",
+        border: "1px solid #d1d5db",
+        borderRadius: 12,
+        fontSize: "1rem",
+        outline: "none",
+        transition: "all 0.2s",
+      }}
+      onFocus={(e) => (e.target.style.borderColor = "#0f2a66")}
+      onBlur={(e) => (e.target.style.borderColor = "#d1d5db")}
+    />
+  </div>
+
+  {/* Email */}
+  <div style={{ flex: 1 }}>
+    <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>Email (optional)</label>
+    <input
+      type="email"
+      name="email"
+      value={formData.email || ""}
+      onChange={handleChange}
+      placeholder="email@example.com"
+      style={{
+        width: "100%",
+        padding: "1rem 1.2rem",
+        border: "1px solid #d1d5db",
+        borderRadius: 12,
+        fontSize: "1rem",
+        outline: "none",
+        transition: "all 0.2s",
+      }}
+      onFocus={(e) => (e.target.style.borderColor = "#0f2a66")}
+      onBlur={(e) => (e.target.style.borderColor = "#d1d5db")}
+    />
+  </div>
+</div>
+
+
+            {/* Address */}
             <div>
-              <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
-                Phone / Email
-              </label>
-              <input
-                type="text"
-                name="contact"
-                value={formData.contact}
-                onChange={handleChange}
-                placeholder="1234567890 / email@example.com"
-                required
-                style={{
-                  width: "100%",
-                  padding: "1rem 1.2rem",
-                  border: "1px solid #d1d5db",
-                  borderRadius: 12,
-                  fontSize: "1rem",
-                  outline: "none",
-                  transition: "all 0.2s",
-                }}
+              <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>Address</label>
+              <input type="text" name="address" value={formData.address} onChange={handleChange} placeholder="123 Main St, Anytown" required
+                style={{ width: "100%", padding: "1rem 1.2rem", border: "1px solid #d1d5db", borderRadius: 12, fontSize: "1rem", outline: "none", transition: "all 0.2s" }}
                 onFocus={(e) => (e.target.style.borderColor = "#0f2a66")}
                 onBlur={(e) => (e.target.style.borderColor = "#d1d5db")}
               />
             </div>
 
-            {/* Location */}
+            {/* Coordinates */}
+            {/* Coordinates */}
+<div>
+  <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>Current Location Coordinates (optional)</label>
+  <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+    <input
+      type="text"
+      name="coordinates"
+      value={formData.coordinates}
+      onChange={handleChange}
+      placeholder="e.g., 30.7333, 76.7794"
+      style={{
+        flex: 1,
+        padding: "1rem 1.2rem",
+        border: "1px solid #d1d5db",
+        borderRadius: 12,
+        fontSize: "1rem",
+        outline: "none",
+        transition: "all 0.2s",
+      }}
+      onFocus={(e) => (e.target.style.borderColor = "#0f2a66")}
+      onBlur={(e) => (e.target.style.borderColor = "#d1d5db")}
+    />
+    <button
+      type="button"
+      onClick={() => {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const coords = `${position.coords.latitude}, ${position.coords.longitude}`;
+              setFormData((prev) => ({ ...prev, coordinates: coords }));
+            },
+            (error) => {
+              console.error("Error fetching location:", error);
+              alert("Unable to fetch location. Please allow location access or enter manually.");
+            }
+          );
+        } else {
+          alert("Geolocation is not supported by your browser.");
+        }
+      }}
+      style={{
+        padding: "0.8rem 1rem",
+        borderRadius: 8,
+        border: "1px solid #0f2a66",
+        background: "#0f2a66",
+        color: "#fff",
+        cursor: "pointer",
+        fontWeight: 600,
+        transition: "all 0.3s",
+      }}
+      onMouseEnter={(e) => (e.target.style.background = "#0c1f52")}
+      onMouseLeave={(e) => (e.target.style.background = "#0f2a66")}
+    >
+      Use my location
+    </button>
+  </div>
+</div>
+
+
+            {/* Category */}
             <div>
-              <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
-                Location
-              </label>
-              <input
-                type="text"
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                placeholder="123 Main St, Anytown"
-                required
-                style={{
-                  width: "100%",
-                  padding: "1rem 1.2rem",
-                  border: "1px solid #d1d5db",
-                  borderRadius: 12,
-                  fontSize: "1rem",
-                  outline: "none",
-                  transition: "all 0.2s",
-                }}
+              <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>Assistance Category</label>
+              <select name="category" value={formData.category} onChange={handleChange} required
+                style={{ width: "100%", padding: "1rem 1.2rem", border: "1px solid #d1d5db", borderRadius: 12, fontSize: "1rem", outline: "none", transition: "all 0.2s" }}
+              >
+                <option value="">Select Category</option>
+                <option value="Food&Shelter">Food & Shelter</option>
+                <option value="Clothes">Clothes</option>
+                <option value="Medical">Medical Help</option>
+                <option value="Education">Education Support</option>
+                <option value="Financial">Financial Help</option>
+                <option value="Legal">Legal Assistance</option>
+                <option value="Disaster">Emergency/Disaster Relief</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            {/* Description */}
+            <div>
+              <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>Describe Your Need</label>
+              <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Explain what kind of help you need..." required
+                style={{ width: "100%", padding: "1rem 1.2rem", border: "1px solid #d1d5db", borderRadius: 12, minHeight: 120, fontSize: "1rem", outline: "none", transition: "all 0.2s" }}
                 onFocus={(e) => (e.target.style.borderColor = "#0f2a66")}
                 onBlur={(e) => (e.target.style.borderColor = "#d1d5db")}
               />
-            </div>
-
-            {/* Help Type + File */}
-            <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
-                  Type of Help Needed
-                </label>
-                <textarea
-                  name="helpType"
-                  value={formData.helpType}
-                  onChange={handleChange}
-                  placeholder="Describe your need (food, clothes, medical, etc.)"
-                  required
-                  style={{
-                    width: "100%",
-                    padding: "1rem 1.2rem",
-                    border: "1px solid #d1d5db",
-                    borderRadius: 12,
-                    minHeight: 120,
-                    fontSize: "1rem",
-                    outline: "none",
-                    transition: "all 0.2s",
-                  }}
-                  onFocus={(e) => (e.target.style.borderColor = "#0f2a66")}
-                  onBlur={(e) => (e.target.style.borderColor = "#d1d5db")}
-                />
-              </div>
-
-              <div style={{ flex: 1 }}>
-                <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
-                  Upload Photo/Video
-                </label>
-                <div
-                  style={{
-                    border: "2px dashed #d1d5db",
-                    borderRadius: 12,
-                    padding: "2rem 1rem",
-                    textAlign: "center",
-                    background: "#f9fafb",
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                  }}
-                  onClick={() => document.getElementById("fileUpload").click()}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "#f3f4f6")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "#f9fafb")}
-                >
-                  <input
-                    type="file"
-                    accept="image/*,video/*"
-                    onChange={handleFileChange}
-                    style={{ display: "none" }}
-                    id="fileUpload"
-                  />
-                  <p style={{ color: "#6b7280", fontSize: "0.95rem", margin: 0 }}>
-                    {formData.file ? formData.file.name : "Drag & drop or click to upload"}
-                  </p>
-                </div>
-              </div>
             </div>
 
             {/* Priority */}
@@ -288,7 +278,7 @@ const Request = () => {
               onMouseEnter={(e) => (e.target.style.background = "#0c1f52")}
               onMouseLeave={(e) => (e.target.style.background = "#0f2a66")}
             >
-              Submit Request
+              Select NGOs
             </button>
           </form>
         </section>

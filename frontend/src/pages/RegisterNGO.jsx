@@ -32,6 +32,7 @@ const RegisterNGO = () => {
     state: "",
     address: "",
     location_coordinates: [],
+    category: [],
     description: "",
   });
 
@@ -55,6 +56,7 @@ const RegisterNGO = () => {
       !formData.city ||
       !formData.state ||
       !formData.address ||
+      !formData.category ||
       !formData.description
     ) {
       setMessage("❌ Please fill in all required fields.");
