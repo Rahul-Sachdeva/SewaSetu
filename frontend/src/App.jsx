@@ -17,6 +17,7 @@ import Request from "./pages/Request";
 import PendingNGOsPage from "./pages/PendingNGOsPage";
 import MyCampaignsPage from "./pages/MyCampaignsPage";
 import CampaignRegistrationsPage from "./pages/CampaignRegistrationsPage";
+import SelectNGO from "./pages/SelectNGO";
 
 function App() {
   return (
@@ -49,6 +50,7 @@ function App() {
           <Route path=":id" element={<ChatLayout />} />         {/* shows list + chat */}
         </Route>
         <Route path="/request" element={<Request />} />
+        <Route path="/select-ngo" element={<SelectNGO />} />
         <Route path="/pending-ngo" element={<PendingNGOsPage/>}/>
         <Route path="/ngo/my-campaigns" element={<MyCampaignsPage/>}/>
         <Route path="/campaign/:id/registrations" element={<CampaignRegistrationsPage/>}/>

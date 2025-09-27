@@ -16,6 +16,7 @@ export const registerNGO = async (req, res) => {
       city,
       state,
       location_coordinates,
+      category,
       description,
       userId,
     } = req.body;
@@ -28,6 +29,7 @@ export const registerNGO = async (req, res) => {
       !city ||
       !state ||
       !address ||
+      !category ||
       !location_coordinates
     ) {
       return res
@@ -99,6 +101,11 @@ export const registerNGO = async (req, res) => {
       galleryUrls = galleryRes.map((img) => img.secure_url);
     }
 
+    let categories = category;
+    if (typeof categories === "string") {
+      categories = categories.split(",").map(c => c.trim());
+    }
+
     // Create NGO
     const ngo = await NGO.create({
       name,
@@ -111,6 +118,7 @@ export const registerNGO = async (req, res) => {
       location_coordinates: coords,
       documents: documentUrls,
       logo: logoUrl,
+      category: categories,
       description,
       gallery: galleryUrls,
       account: userId,
@@ -146,100 +154,107 @@ export const registerNGO = async (req, res) => {
 };
 
 export const updateNGO = async (req, res) => {
-    try {
-        const ngo = await NGO.findById(req.params.id);
-        if (!ngo) return res.status(404).json({ message: "NGO not found" });
+  try {
+    const ngo = await NGO.findById(req.params.id);
+    if (!ngo) return res.status(404).json({ message: "NGO not found" });
 
-        // Authorization check (only NGO account user or admin can update)
-        if (ngo._id.toString() !== req.user.ngo.toString() && req.user.user_type !== "admin") {
-            return res.status(403).json({ message: "Unauthorized" });
-        }
-
-        const updates = req.body;
-
-        // --- Handle location coordinates ---
-        if (updates.location_coordinates) {
-            let coords = updates.location_coordinates;
-            if (typeof coords === "string") {
-                coords = coords.split(",").map(Number);
-            }
-            if (!Array.isArray(coords) || coords.length !== 2) {
-                return res.status(400).json({ message: "location_coordinates must be [longitude, latitude]" });
-            }
-            updates.location_coordinates = coords;
-        }
-
-        // --- Handle file uploads ---
-        if (req.files?.profile_image?.[0]) {
-            const logoRes = await uploadCloudinary(req.files.profile_image[0].buffer, "sewasetu/ngos/logo");
-            updates.logo = logoRes.secure_url;
-        }
-
-        if (req.files?.documents?.length) {
-            const docsRes = await Promise.all(
-                req.files.documents.map(file => uploadCloudinary(file.buffer, "sewasetu/ngos/documents"))
-            );
-            updates.documents = docsRes.map(doc => doc.secure_url);
-        }
-
-        if (req.files?.gallery?.length) {
-            const galleryRes = await Promise.all(
-                req.files.gallery.map(file => uploadCloudinary(file.buffer, "sewasetu/ngos/gallery"))
-            );
-            updates.gallery = galleryRes.map(img => img.secure_url);
-        }
-
-        // --- Update NGO ---
-        const updatedNGO = await NGO.findByIdAndUpdate(req.params.id, updates, { new: true });
-
-        // --- Update linked User (req.user._id) ---
-        const userUpdates = {};
-        if (updates.name) userUpdates.name = updates.name;
-        if (updates.city) userUpdates.city = updates.city;
-        if (updates.state) userUpdates.state = updates.state;
-        if (updates.address) userUpdates.address = updates.address;
-        if (updates.logo) userUpdates.profile_image = updates.logo; // sync NGO logo to user profile
-        if (updates.location_coordinates) userUpdates.location_coordinates = updates.location_coordinates;
-
-        let updatedUser = null;
-        if (Object.keys(userUpdates).length > 0) {
-            updatedUser = await User.findByIdAndUpdate(req.user._id, userUpdates, { new: true }).select("-password");
-        }
-
-        return res.status(200).json({
-            message: "NGO and linked User updated successfully",
-            ngo: updatedNGO,
-            user: updatedUser
-        });
-
-    } catch (err) {
-        console.error("NGO update error:", err);
-        return res.status(500).json({ message: "Error updating NGO", error: err.message });
+    // Authorization check (only NGO account user or admin can update)
+    if (ngo._id.toString() !== req.user.ngo.toString() && req.user.user_type !== "admin") {
+      return res.status(403).json({ message: "Unauthorized" });
     }
+
+    const updates = req.body;
+
+    // --- Handle location coordinates ---
+    if (updates.location_coordinates) {
+      let coords = updates.location_coordinates;
+      if (typeof coords === "string") {
+        coords = coords.split(",").map(Number);
+      }
+      if (!Array.isArray(coords) || coords.length !== 2) {
+        return res.status(400).json({ message: "location_coordinates must be [longitude, latitude]" });
+      }
+      updates.location_coordinates = coords;
+    }
+
+    // --- Handle file uploads ---
+    if (req.files?.profile_image?.[0]) {
+      const logoRes = await uploadCloudinary(req.files.profile_image[0].buffer, "sewasetu/ngos/logo");
+      updates.logo = logoRes.secure_url;
+    }
+
+    if (req.files?.documents?.length) {
+      const docsRes = await Promise.all(
+        req.files.documents.map(file => uploadCloudinary(file.buffer, "sewasetu/ngos/documents"))
+      );
+      updates.documents = docsRes.map(doc => doc.secure_url);
+    }
+
+    if (req.files?.gallery?.length) {
+      const galleryRes = await Promise.all(
+        req.files.gallery.map(file => uploadCloudinary(file.buffer, "sewasetu/ngos/gallery"))
+      );
+      updates.gallery = galleryRes.map(img => img.secure_url);
+    }
+    
+    if (updates.category) {
+      if (typeof updates.category === "string") {
+        updates.category = updates.category.split(",").map(c => c.trim());
+      }
+    }
+
+
+    // --- Update NGO ---
+    const updatedNGO = await NGO.findByIdAndUpdate(req.params.id, updates, { new: true });
+
+    // --- Update linked User (req.user._id) ---
+    const userUpdates = {};
+    if (updates.name) userUpdates.name = updates.name;
+    if (updates.city) userUpdates.city = updates.city;
+    if (updates.state) userUpdates.state = updates.state;
+    if (updates.address) userUpdates.address = updates.address;
+    if (updates.logo) userUpdates.profile_image = updates.logo; // sync NGO logo to user profile
+    if (updates.location_coordinates) userUpdates.location_coordinates = updates.location_coordinates;
+
+    let updatedUser = null;
+    if (Object.keys(userUpdates).length > 0) {
+      updatedUser = await User.findByIdAndUpdate(req.user._id, userUpdates, { new: true }).select("-password");
+    }
+
+    return res.status(200).json({
+      message: "NGO and linked User updated successfully",
+      ngo: updatedNGO,
+      user: updatedUser
+    });
+
+  } catch (err) {
+    console.error("NGO update error:", err);
+    return res.status(500).json({ message: "Error updating NGO", error: err.message });
+  }
 };
 
-export const getNGOById = async(req, res) => {
-    try {
-        const ngo = await NGO.findById(req.params.id).populate("members","name email user_type");
-        if(!ngo) return res.status(404).json({message: "NGO not found"});
-        return res.status(200).json(ngo);
-    } catch (err) {
-        return res.status(500).json({message: "Error fetching NGO", error: err.message});
-    }
+export const getNGOById = async (req, res) => {
+  try {
+    const ngo = await NGO.findById(req.params.id).populate("members", "name email user_type");
+    if (!ngo) return res.status(404).json({ message: "NGO not found" });
+    return res.status(200).json(ngo);
+  } catch (err) {
+    return res.status(500).json({ message: "Error fetching NGO", error: err.message });
+  }
 };
 
-export const listNGOs = async(req, res) => {
-    try {
-        const {city, status} = req.query;
-        const filter = {};
-        if(city) filter.city = city;
-        if(status) filter.status = status;
+export const listNGOs = async (req, res) => {
+  try {
+    const { city, status } = req.query;
+    const filter = {};
+    if (city) filter.city = city;
+    if (status) filter.status = status;
 
-        const ngos = await NGO.find(filter);
-        return res.status(200).json(ngos);
-    } catch (err) {
-        return res.status(500).json({message: "Error listing NGOs", error: err.message});
-    }
+    const ngos = await NGO.find(filter);
+    return res.status(200).json(ngos);
+  } catch (err) {
+    return res.status(500).json({ message: "Error listing NGOs", error: err.message });
+  }
 };
 
 export const updateNGOStatus = async (req, res) => {

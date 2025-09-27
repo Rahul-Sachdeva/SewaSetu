@@ -1,43 +1,64 @@
 import mongoose from "mongoose";
+import shortid from "shortid"; // For generating unique short IDs
 
-const assistanceRequestSchema = new mongoose.Schema(
-    {
-        title: {
-            type: String,
-            required: true,
-        },
-        description: {
-            type: String,
-            required: true,
-        },
-        category: {
-            type: String,
-            enum: ["food", "clothes", "medicine", "shelter", "rescue", "funds", "others"],
-            required: true
-        },
-        urgencyLevel: {
-            type: String,
-            enum: ["within_a_month","within_a_week", "within_2_days", "within_a_day","immediate"],
-            default: "within_a_week"
-        },
-        requestedBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            required: true
-        },
-        location_coordinates: {
-            type: [Number], 
-            required: true, // [lng, lat]
-        },
-        address: String,
-        status: {
-            type: String,
-            enum: ["open", "in_progress", "fulfilled", "cancelled"],
-            default: "open"
-        },
-        fulfilledAt: { type: Date }
+const AssistanceRequestSchema = new mongoose.Schema(
+  {
+    request_id: {
+      type: String,
+      unique: true,
+      default: () => `REQ-${shortid.generate()}`, // Auto-generate ID like REQ-Jk3lP9
     },
-    {timestamps: true}
+    full_name: {
+      type: String,
+      required: true,
+    },
+    phone: {
+      type: String, // optional
+    },
+    address: {
+      type: String,
+      required: true,
+    },
+    location_coordinates: {
+      type: [Number], // [longitude, latitude], optional
+      default: undefined,
+    },
+    category: {
+      type: String, // Assistance Category
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    priority: {
+      type: String,
+      enum: ["Normal", "Urgent", "Emergency"],
+      default: "Normal",
+    },
+    status: {
+      type: String,
+      enum: ["open", "in_progress", "completed", "cancelled"],
+      default: "open", // All requests start as open
+    },
+    requestedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    selectedNGOs: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "NGO",
+      },
+    ],
+  },
+  {
+    timestamps: true, // createdAt & updatedAt
+  }
 );
 
-export const AssistanceRequest = mongoose.model("AssistanceRequest", assistanceRequestSchema);
+export const AssistanceRequest = mongoose.model(
+  "AssistanceRequest",
+  AssistanceRequestSchema
+);

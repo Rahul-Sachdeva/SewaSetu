@@ -14,7 +14,6 @@ dist-ssr
 
 # Editor directories and files
 .vscode/*
-Utils/serviceAccountKey.json
 !.vscode/extensions.json
 .idea
 .DS_Store
@@ -23,5 +22,3 @@ Utils/serviceAccountKey.json
 *.njsproj
 *.sln
 *.sw?
-
-*.env

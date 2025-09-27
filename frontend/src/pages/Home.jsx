@@ -168,13 +168,14 @@ const Home = () => (
               boxShadow: "0 2px 8px #0002",
               padding: "2rem",
               width: 250,
+              alignContent: "center",
               textAlign: "center",
             }}
           >
             <img
               src={feat.img}
               alt={feat.title}
-              style={{ width: 125, height: 120 }}
+              style={{ width: 125, height: 120, marginBottom: 20, marginLeft: 30 }}
             />
             <h3
               style={{
