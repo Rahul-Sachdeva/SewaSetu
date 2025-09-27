@@ -94,21 +94,23 @@ const Home = () => (
           place.
         </p>
         <div>
-          <button
-            style={{
-              marginRight: 16,
-              padding: "1rem 2rem",
-              background: "#FFD600",
-              color: "#111",
-              border: "2px solid #f1ca56ff",
-              borderRadius: "8px",
-              fontWeight: "bold",
-              fontSize: "1.05rem",
-              cursor: "pointer",
-            }}
-          >
-            Donate Now
-          </button>
+          <Link to="/donate">
+            <button
+              style={{
+                marginRight: 16,
+                padding: "1rem 2rem",
+                background: "#FFD600",
+                color: "#111",
+                border: "2px solid #f1ca56ff",
+                borderRadius: "8px",
+                fontWeight: "bold",
+                fontSize: "1.05rem",
+                cursor: "pointer",
+              }}
+            >
+              Donate Now
+            </button>
+          </Link>
           <Link to="/request">
             <button
               style={{

@@ -18,6 +18,7 @@ import PendingNGOsPage from "./pages/PendingNGOsPage";
 import MyCampaignsPage from "./pages/MyCampaignsPage";
 import CampaignRegistrationsPage from "./pages/CampaignRegistrationsPage";
 import SelectNGO from "./pages/SelectNGO";
+import DonationPage from "./pages/DonationPage";
 
 function App() {
   return (
@@ -55,6 +56,7 @@ function App() {
         <Route path="/ngo/my-campaigns" element={<MyCampaignsPage/>}/>
         <Route path="/campaign/:id/registrations" element={<CampaignRegistrationsPage/>}/>
         {/* Add routes for other pages here */}
+        <Route path="/donate" element={<DonationPage />} />
       </Routes>
     </BrowserRouter>
   );
