@@ -15,6 +15,7 @@ const EditNGOProfileDialog = ({ isOpen, setIsOpen, ngoData, onSuccess }) => {
     address: "",
     description: "",
     location_coordinates: "",
+    category: []
   });
   const [profileImage, setProfileImage] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -41,6 +42,7 @@ const EditNGOProfileDialog = ({ isOpen, setIsOpen, ngoData, onSuccess }) => {
         address: ngoData.address || "",
         description: ngoData.description || "",
         location_coordinates: coords || "",
+        category: ngoData.category || [],
       });
     }
   }, [ngoData]); // ✅ only re-run if ngoData changes
