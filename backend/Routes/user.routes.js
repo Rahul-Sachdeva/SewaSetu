@@ -8,6 +8,7 @@ const upload = multer({ storage });
 
 const userRouter = express.Router();
 
+
 userRouter.post("/register", upload.single("profile_image"), registerUser);
 userRouter.post("/login", loginUser);
 userRouter.get("/profile", authMiddleware, getProfile);

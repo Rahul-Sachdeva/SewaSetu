@@ -11,21 +11,25 @@ const ngoSchema = new mongoose.Schema(
         city: { type: String, required: true },
         state: { type: String, required: true },
         location_coordinates: {
-            type: [Number], 
+            type: [Number],
             required: true,
         },
 
         documents: [{ type: String }], // cloudinary URLs
         logo: { type: String },        // NGO logo
         description: { type: String },
-        gallery: [{type: String}],
+        gallery: [{ type: String }],
 
         verification_status: {
             type: String,
             enum: ["pending", "verified", "rejected"],
             default: "pending",
         },
-
+        pushTokens: {
+            type: [String],
+            default: []
+        },
+        
         account: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
         members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
         campaigns: [{ type: mongoose.Schema.Types.ObjectId, ref: "Campaign" }],

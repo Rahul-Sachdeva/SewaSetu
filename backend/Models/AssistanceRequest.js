@@ -43,4 +43,4 @@ const AssistanceRequestSchema = new mongoose.Schema(
 
 AssistanceRequestSchema.index({ location: "2dsphere" }); // for geo queries
 
-export default mongoose.model("AssistanceRequest", AssistanceRequestSchema);
+export const AssistanceRequest = mongoose.model("AssistanceRequest", AssistanceRequestSchema);
