@@ -15,6 +15,7 @@ import ChatLayout from "./pages/ChatLayout";
 import NGOListPage from "./pages/NGOListPage";
 import Request from "./pages/Request";
 import PendingNGOsPage from "./pages/PendingNGOsPage";
+import DonationPage from "./pages/DonationPage";
 
 function App() {
   return (
@@ -48,6 +49,7 @@ function App() {
         <Route path="/request" element={<Request />} />
         <Route path="/pending-ngo" element={<PendingNGOsPage/>}/>
         {/* Add routes for other pages here */}
+        <Route path="/donate" element={<DonationPage />} />
       </Routes>
     </BrowserRouter>
   );
