@@ -3,12 +3,13 @@ import express from "express";              // To create express server
 import cookieParser from "cookie-parser";   // For Parsing User Cookies
 import cors from "cors";                    // To allow requests from only allowed URLs to backend
 // import routers
-import requestRoutes from "./Routes/requestRoutes.js";
+import requestRoutes from "./Routes/request.routes.js";
 import userRouter from "./Routes/user.routes.js";
 import ngoRouter from "./Routes/ngo.routes.js";
 import campaignRouter from "./Routes/campaign.routes.js";
 import conversationRouter from "./Routes/conversation.routes.js";
 import messageRouter from "./Routes/message.routes.js";
+import notificationRouter from "./Routes/notification.routes.js";
 
 // initialize server
 const app = express();
@@ -31,5 +32,6 @@ app.use("/api/v1/ngo", ngoRouter);
 app.use("/api/v1/campaign", campaignRouter);
 app.use("/api/v1/conversation", conversationRouter);
 app.use("/api/v1/message", messageRouter);
+app.use("/api/notifications", notificationRouter);
 
 export {app} 

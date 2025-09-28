@@ -1,0 +1,62 @@
+import { User } from "../Models/user.model.js";
+import { NGO } from "../Models/ngo.model.js";
+import { Notification } from "../Models/notification.model.js";
+import { sendFirebaseNotification } from "./firebase.js"; // corrected import
+
+export const sendNotification = async (recipientId, recipientModel, payload, push = true) => {
+  try {
+    const { title, message, type, referenceId, referenceModel } = payload;
+
+    // Save Notification in DB
+    await Notification.create({
+      user: recipientId,
+      userModel: recipientModel,
+      type,
+      title,
+      message,
+      reference: referenceId || null,
+      referenceModel: referenceModel || null
+    });
+
+    if (push) {
+      // Fetch recipient device token
+      let recipientDoc;
+      if (recipientModel === "User") recipientDoc = await User.findById(recipientId);
+      else if (recipientModel === "NGO") recipientDoc = await NGO.findById(recipientId);
+
+      console.log("Sending notification to", recipientId, "model", recipientModel);
+      if (!recipientDoc) console.warn("Recipient document not found");
+      if (!recipientDoc?.deviceToken) console.warn("Recipient device token not found");
+
+      if (!recipientDoc || !recipientDoc.deviceToken) {
+        console.warn("Recipient device token not found");
+        return true; // notification saved, just no push sent
+      }
+
+      const token = recipientDoc.deviceToken;
+
+      // Prepare Firebase payload with deep link for PWA
+      const fbPayload = {
+        notification: {
+          title,
+          body: message,
+          // Set click_action deep link depending on recipient type
+          click_action: recipientModel === "NGO" ? "/ngo-requests" : "/user-requests",
+        },
+        data: {
+          type,
+          referenceId: referenceId?.toString() || "",
+          referenceModel: referenceModel || "",
+        }
+      };
+
+
+      await sendFirebaseNotification(token, fbPayload);
+    }
+
+    return true;
+  } catch (err) {
+    console.error("Notification Error:", err);
+    return false;
+  }
+};

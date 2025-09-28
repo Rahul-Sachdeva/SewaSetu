@@ -18,6 +18,11 @@ import CampaignRegistrationsPage from "./pages/CampaignRegistrationsPage";
 import SelectNGO from "./pages/SelectNGO";
 import DonationPage from "./pages/DonationPage";
 import NGOdashboardPage from "./pages/NGOdashboardPage";
+import NgoDashboard from "./pages/NgoDashboard";
+import UserDashboard from "./pages/UserDashboard";
+import NotAuthorised from "./pages/NotAuthorised";
+import Notification from "./pages/Notification";
+
 
 function App() {
   return (
@@ -54,6 +59,10 @@ function App() {
         <Route path="/pending-ngo" element={<PendingNGOsPage/>}/>
         <Route path="/ngo/my-campaigns" element={<MyCampaignsPage/>}/>
         <Route path="/campaign/:id/registrations" element={<CampaignRegistrationsPage/>}/>
+        <Route path="/ngo-requests" element={<NgoDashboard />} />
+        <Route path="/notifications" element={<Notification />} />
+        <Route path="/user-requests" element={<UserDashboard />} />
+        <Route path="/not-authorized" element={<NotAuthorised />} />
         {/* Add routes for other pages here */}
         <Route path="/donate" element={<DonationPage />} />
         <Route path="/dashboard" element={<NGOdashboardPage />} />

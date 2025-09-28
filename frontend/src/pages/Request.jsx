@@ -6,6 +6,7 @@ import Navbar from "../components/Navbar";
 const Request = () => {
   const navigate = useNavigate();
 
+<<<<<<< HEAD
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -17,6 +18,19 @@ const Request = () => {
     priority: "Regular",
     file: null,
   });
+=======
+const [formData, setFormData] = useState({
+  name: "",
+  phone: "",
+  email: "",
+  address: "",
+  coordinates: "",
+  category: "",
+  description: "",
+  priority: "Normal",
+  file: null,
+});
+>>>>>>> 8794c1d (Implementing Request Assistance Workflow, NGO Dashboard, User Dashboard, Notification setup)
 
 
   const handleChange = (e) => {
@@ -28,6 +42,7 @@ const Request = () => {
     setFormData({ ...formData, file: e.target.files[0] });
   };
 
+<<<<<<< HEAD
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formDataObj = new FormData();
@@ -61,6 +76,13 @@ const Request = () => {
       alert("Server error");
     }
   };
+=======
+  const handleSubmit = (e) => {
+  e.preventDefault();
+
+  navigate("/select-ngo", { state: { formData } });
+};
+>>>>>>> 8794c1d (Implementing Request Assistance Workflow, NGO Dashboard, User Dashboard, Notification setup)
 
   return (
     <div style={{ fontFamily: "'Inter', Arial, sans-serif", background: "#f4f6f8", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -210,13 +232,13 @@ const Request = () => {
                 style={{ width: "100%", padding: "1rem 1.2rem", border: "1px solid #d1d5db", borderRadius: 12, fontSize: "1rem", outline: "none", transition: "all 0.2s" }}
               >
                 <option value="">Select Category</option>
-                <option value="Food&Shelter">Food & Shelter</option>
+                <option value="Food & Shelter">Food & Shelter</option>
                 <option value="Clothes">Clothes</option>
                 <option value="Medical">Medical Help</option>
-                <option value="Education">Education Support</option>
-                <option value="Financial">Financial Help</option>
-                <option value="Legal">Legal Assistance</option>
-                <option value="Disaster">Emergency/Disaster Relief</option>
+                <option value="Education Support">Education Support</option>
+                <option value="Financial Help">Financial Help</option>
+                <option value="Legal Assistance">Legal Assistance</option>
+                <option value="Emergency/Disaster Relief">Emergency/Disaster Relief</option>
                 <option value="Other">Other</option>
               </select>
             </div>
@@ -237,7 +259,7 @@ const Request = () => {
                 Priority
               </label>
               <div style={{ display: "flex", gap: "1rem", marginTop: 6 }}>
-                {["Regular", "Emergency"].map((type) => (
+                {["Normal", "Emergency"].map((type) => (
                   <button
                     key={type}
                     type="button"

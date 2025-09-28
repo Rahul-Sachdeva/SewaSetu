@@ -1,5 +1,5 @@
 import admin from "firebase-admin";
-import serviceAccount from "./serviceAccountKey.json" with { type: "json" };
+import serviceAccount from "./serviceAccountKey.json" assert { type: "json" };
 
 // Initialize Firebase Admin
 if (!admin.apps.length) {
@@ -8,8 +8,8 @@ if (!admin.apps.length) {
   });
 }
 
-// Named export for sending notification
-export const sendNotification = async (token, payload) => {
+// Export function with consistent name:
+export const sendFirebaseNotification = async (token, payload) => {
   try {
     const response = await admin.messaging().sendToDevice(token, payload);
     return response;
