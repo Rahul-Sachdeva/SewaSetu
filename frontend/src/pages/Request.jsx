@@ -6,19 +6,6 @@ import Navbar from "../components/Navbar";
 const Request = () => {
   const navigate = useNavigate();
 
-<<<<<<< HEAD
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    address: "",
-    coordinates: "",
-    category: "",
-    description: "",
-    priority: "Regular",
-    file: null,
-  });
-=======
 const [formData, setFormData] = useState({
   name: "",
   phone: "",
@@ -30,7 +17,6 @@ const [formData, setFormData] = useState({
   priority: "Normal",
   file: null,
 });
->>>>>>> 8794c1d (Implementing Request Assistance Workflow, NGO Dashboard, User Dashboard, Notification setup)
 
 
   const handleChange = (e) => {
@@ -42,47 +28,12 @@ const [formData, setFormData] = useState({
     setFormData({ ...formData, file: e.target.files[0] });
   };
 
-<<<<<<< HEAD
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const formDataObj = new FormData();
 
-    Object.keys(formData).forEach((key) => {
-      let value = formData[key];
-      // Convert coordinates string to array if present
-      if (key === "coordinates" && value) {
-        value = JSON.stringify(value.split(",").map(Number));
-      }
-      if (value) formDataObj.append(key, value);
-    });
-
-    try {
-      const res = await fetch("http://localhost:3000/api/requests", {
-        method: "POST",
-        body: formDataObj,
-      });
-
-      if (res.ok) {
-        const result = await res.json();
-        alert("✅ Request submitted successfully!");
-        navigate(`/select-ngo/${result.requestId}`);
-      } else {
-        const err = await res.json();
-        console.error(err);
-        alert("Something went wrong: " + (err.message || res.statusText));
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Server error");
-    }
-  };
-=======
   const handleSubmit = (e) => {
   e.preventDefault();
 
   navigate("/select-ngo", { state: { formData } });
 };
->>>>>>> 8794c1d (Implementing Request Assistance Workflow, NGO Dashboard, User Dashboard, Notification setup)
 
   return (
     <div style={{ fontFamily: "'Inter', Arial, sans-serif", background: "#f4f6f8", minHeight: "100vh", display: "flex", flexDirection: "column" }}>

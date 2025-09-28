@@ -31,20 +31,6 @@ const SelectNGOs = () => {
     // Build query parameters including verification_status, city from logged-in user, and category from form
     const fetchNgos = async () => {
       try {
-<<<<<<< HEAD
-        const res = await fetch("http://localhost:3000/api/v1/ngo");
-        if (res.ok) {
-          const data = await res.json();
-          setNgos(data);
-        } else {
-          alert("Failed to fetch NGOs");
-        }
-      } catch (error) {
-        console.error(error);
-        alert("Server error");
-      } finally {
-        setLoading(false);
-=======
         const params = new URLSearchParams({
           verification_status: "pending",
           city: user?.city || "",
@@ -59,7 +45,6 @@ const SelectNGOs = () => {
       } catch (err) {
         console.error("Error fetching NGOs:", err);
         setError("Failed to load NGOs. Please try again.");
->>>>>>> 8794c1d (Implementing Request Assistance Workflow, NGO Dashboard, User Dashboard, Notification setup)
       }
     };
 
@@ -146,22 +131,8 @@ useEffect(() => {
 
         {error && <p style={{ color: "red", marginBottom: 10 }}>{error}</p>}
 
-<<<<<<< HEAD
-                {/* NGO Details */}
-                <h3 style={{ fontSize: "1.25rem", fontWeight: 600, marginBottom: "0.5rem", color: "#0f2a66" }}>{ngo.name}</h3>
-                <p style={{ marginBottom: "0.25rem" }}>
-                  <strong>City:</strong> {ngo.city}, {ngo.state}
-                </p>
-                <p style={{ marginBottom: "0.5rem" }}>
-                  <strong>Contact:</strong> {ngo.phone} {ngo.email ? ` / ${ngo.email}` : ""}
-                </p>
-                <p style={{ fontSize: "0.9rem", color: "#555", marginBottom: "1rem" }}>
-                  {ngo.description && ngo.description?.length > 100 ? ngo.description.slice(0, 100) + "..." : ngo.description}
-                </p>
-=======
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: 16 }}>
           {ngos.length === 0 && <p>No NGOs found for this category and city.</p>}
->>>>>>> 8794c1d (Implementing Request Assistance Workflow, NGO Dashboard, User Dashboard, Notification setup)
 
           {ngos.map((ngo) => (
             <div
