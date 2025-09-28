@@ -12,7 +12,7 @@ const SelectNGO = () => {
   useEffect(() => {
     const fetchNGOs = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/ngo");
+        const res = await fetch("http://localhost:3000/api/v1/ngo");
         if (res.ok) {
           const data = await res.json();
           setNgos(data);
@@ -80,7 +80,7 @@ const SelectNGO = () => {
                   <strong>Contact:</strong> {ngo.phone} {ngo.email ? ` / ${ngo.email}` : ""}
                 </p>
                 <p style={{ fontSize: "0.9rem", color: "#555", marginBottom: "1rem" }}>
-                  {ngo.description.length > 100 ? ngo.description.slice(0, 100) + "..." : ngo.description}
+                  {ngo.description && ngo.description?.length > 100 ? ngo.description.slice(0, 100) + "..." : ngo.description}
                 </p>
 
                 <button

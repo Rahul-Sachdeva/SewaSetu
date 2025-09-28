@@ -3,6 +3,7 @@ import axios from "axios";
 import { BaseURL } from "@/BaseURL";
 import NGOCard from "@/components/NGOCard";
 import { Input } from "@/components/ui/input";
+import Navbar from "@/components/Navbar";
 
 const NGOListPage = () => {
   const [ngos, setNgos] = useState([]);
@@ -35,6 +36,8 @@ const NGOListPage = () => {
   }, [search, ngos]);
 
   return (
+    <>
+    <Navbar/>
     <div className="max-w-7xl mx-auto p-4 space-y-4">
       <Input
         placeholder="Search NGOs..."
@@ -51,6 +54,7 @@ const NGOListPage = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

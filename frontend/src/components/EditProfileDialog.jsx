@@ -36,7 +36,7 @@ const EditProfileDialog = ({ isEditOpen, setIsEditOpen, onProfileUpdated }) => {
         if (value) data.append(key, value);
       });
       if (profileImage) {
-        data.append("profileImage", profileImage);
+        data.append("profile_image", profileImage);
       }
 
       const res = await axios.put(`${BaseURL}/api/v1/user/profile`, data, {

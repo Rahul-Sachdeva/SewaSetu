@@ -9,8 +9,6 @@ import UserProfile from "./pages/UserProfile";
 import NGOProfile from "./pages/NgoProfile";
 import CampaignCreatePage from "./pages/CampaignCreatePage";
 import Campaigns from "./pages/Campaigns";
-import ConversationList from "./components/ConversationList";
-import ConversationPage from "./components/ConversationPage";
 import ChatLayout from "./pages/ChatLayout";
 import NGOListPage from "./pages/NGOListPage";
 import Request from "./pages/Request";
