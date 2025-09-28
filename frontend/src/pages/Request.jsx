@@ -6,17 +6,17 @@ import Navbar from "../components/Navbar";
 const Request = () => {
   const navigate = useNavigate();
 
-const [formData, setFormData] = useState({
-  name: "",
-  phone: "",
-  email: "",
-  address: "",
-  coordinates: "",
-  category: "",
-  description: "",
-  priority: "Regular",
-  file: null,
-});
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    address: "",
+    coordinates: "",
+    category: "",
+    description: "",
+    priority: "Regular",
+    file: null,
+  });
 
 
   const handleChange = (e) => {
@@ -29,38 +29,38 @@ const [formData, setFormData] = useState({
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  const formDataObj = new FormData();
+    e.preventDefault();
+    const formDataObj = new FormData();
 
-  Object.keys(formData).forEach((key) => {
-    let value = formData[key];
-    // Convert coordinates string to array if present
-    if (key === "coordinates" && value) {
-      value = JSON.stringify(value.split(",").map(Number));
-    }
-    if (value) formDataObj.append(key, value);
-  });
-
-  try {
-    const res = await fetch("http://localhost:3000/api/requests", {
-      method: "POST",
-      body: formDataObj,
+    Object.keys(formData).forEach((key) => {
+      let value = formData[key];
+      // Convert coordinates string to array if present
+      if (key === "coordinates" && value) {
+        value = JSON.stringify(value.split(",").map(Number));
+      }
+      if (value) formDataObj.append(key, value);
     });
 
-    if (res.ok) {
-      const result = await res.json();
-      alert("✅ Request submitted successfully!");
-      navigate(`/select-ngo/${result.requestId}`);
-    } else {
-      const err = await res.json();
-      console.error(err);
-      alert("Something went wrong: " + (err.message || res.statusText));
+    try {
+      const res = await fetch("http://localhost:3000/api/requests", {
+        method: "POST",
+        body: formDataObj,
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        alert("✅ Request submitted successfully!");
+        navigate(`/select-ngo/${result.requestId}`);
+      } else {
+        const err = await res.json();
+        console.error(err);
+        alert("Something went wrong: " + (err.message || res.statusText));
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Server error");
     }
-  } catch (error) {
-    console.error(error);
-    alert("Server error");
-  }
-};
+  };
 
   return (
     <div style={{ fontFamily: "'Inter', Arial, sans-serif", background: "#f4f6f8", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -82,55 +82,55 @@ const [formData, setFormData] = useState({
               />
             </div>
 
-{/* Contact Information */}
-<div style={{ display: "flex", gap: "1.5rem" }}>
-  {/* Phone */}
-  <div style={{ flex: 1 }}>
-    <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>Phone</label>
-    <input
-      type="tel"
-      name="phone"
-      value={formData.phone || ""}
-      onChange={handleChange}
-      placeholder="1234567890"
-      required
-      style={{
-        width: "100%",
-        padding: "1rem 1.2rem",
-        border: "1px solid #d1d5db",
-        borderRadius: 12,
-        fontSize: "1rem",
-        outline: "none",
-        transition: "all 0.2s",
-      }}
-      onFocus={(e) => (e.target.style.borderColor = "#0f2a66")}
-      onBlur={(e) => (e.target.style.borderColor = "#d1d5db")}
-    />
-  </div>
+            {/* Contact Information */}
+            <div style={{ display: "flex", gap: "1.5rem" }}>
+              {/* Phone */}
+              <div style={{ flex: 1 }}>
+                <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>Phone</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone || ""}
+                  onChange={handleChange}
+                  placeholder="1234567890"
+                  required
+                  style={{
+                    width: "100%",
+                    padding: "1rem 1.2rem",
+                    border: "1px solid #d1d5db",
+                    borderRadius: 12,
+                    fontSize: "1rem",
+                    outline: "none",
+                    transition: "all 0.2s",
+                  }}
+                  onFocus={(e) => (e.target.style.borderColor = "#0f2a66")}
+                  onBlur={(e) => (e.target.style.borderColor = "#d1d5db")}
+                />
+              </div>
 
-  {/* Email */}
-  <div style={{ flex: 1 }}>
-    <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>Email (optional)</label>
-    <input
-      type="email"
-      name="email"
-      value={formData.email || ""}
-      onChange={handleChange}
-      placeholder="email@example.com"
-      style={{
-        width: "100%",
-        padding: "1rem 1.2rem",
-        border: "1px solid #d1d5db",
-        borderRadius: 12,
-        fontSize: "1rem",
-        outline: "none",
-        transition: "all 0.2s",
-      }}
-      onFocus={(e) => (e.target.style.borderColor = "#0f2a66")}
-      onBlur={(e) => (e.target.style.borderColor = "#d1d5db")}
-    />
-  </div>
-</div>
+              {/* Email */}
+              <div style={{ flex: 1 }}>
+                <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>Email (optional)</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email || ""}
+                  onChange={handleChange}
+                  placeholder="email@example.com"
+                  style={{
+                    width: "100%",
+                    padding: "1rem 1.2rem",
+                    border: "1px solid #d1d5db",
+                    borderRadius: 12,
+                    fontSize: "1rem",
+                    outline: "none",
+                    transition: "all 0.2s",
+                  }}
+                  onFocus={(e) => (e.target.style.borderColor = "#0f2a66")}
+                  onBlur={(e) => (e.target.style.borderColor = "#d1d5db")}
+                />
+              </div>
+            </div>
 
 
             {/* Address */}
@@ -145,62 +145,62 @@ const [formData, setFormData] = useState({
 
             {/* Coordinates */}
             {/* Coordinates */}
-<div>
-  <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>Current Location Coordinates (optional)</label>
-  <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-    <input
-      type="text"
-      name="coordinates"
-      value={formData.coordinates}
-      onChange={handleChange}
-      placeholder="e.g., 30.7333, 76.7794"
-      style={{
-        flex: 1,
-        padding: "1rem 1.2rem",
-        border: "1px solid #d1d5db",
-        borderRadius: 12,
-        fontSize: "1rem",
-        outline: "none",
-        transition: "all 0.2s",
-      }}
-      onFocus={(e) => (e.target.style.borderColor = "#0f2a66")}
-      onBlur={(e) => (e.target.style.borderColor = "#d1d5db")}
-    />
-    <button
-      type="button"
-      onClick={() => {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              const coords = `${position.coords.latitude}, ${position.coords.longitude}`;
-              setFormData((prev) => ({ ...prev, coordinates: coords }));
-            },
-            (error) => {
-              console.error("Error fetching location:", error);
-              alert("Unable to fetch location. Please allow location access or enter manually.");
-            }
-          );
-        } else {
-          alert("Geolocation is not supported by your browser.");
-        }
-      }}
-      style={{
-        padding: "0.8rem 1rem",
-        borderRadius: 8,
-        border: "1px solid #0f2a66",
-        background: "#0f2a66",
-        color: "#fff",
-        cursor: "pointer",
-        fontWeight: 600,
-        transition: "all 0.3s",
-      }}
-      onMouseEnter={(e) => (e.target.style.background = "#0c1f52")}
-      onMouseLeave={(e) => (e.target.style.background = "#0f2a66")}
-    >
-      Use my location
-    </button>
-  </div>
-</div>
+            <div>
+              <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>Current Location Coordinates (optional)</label>
+              <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+                <input
+                  type="text"
+                  name="coordinates"
+                  value={formData.coordinates}
+                  onChange={handleChange}
+                  placeholder="e.g., 30.7333, 76.7794"
+                  style={{
+                    flex: 1,
+                    padding: "1rem 1.2rem",
+                    border: "1px solid #d1d5db",
+                    borderRadius: 12,
+                    fontSize: "1rem",
+                    outline: "none",
+                    transition: "all 0.2s",
+                  }}
+                  onFocus={(e) => (e.target.style.borderColor = "#0f2a66")}
+                  onBlur={(e) => (e.target.style.borderColor = "#d1d5db")}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (navigator.geolocation) {
+                      navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                          const coords = `${position.coords.latitude}, ${position.coords.longitude}`;
+                          setFormData((prev) => ({ ...prev, coordinates: coords }));
+                        },
+                        (error) => {
+                          console.error("Error fetching location:", error);
+                          alert("Unable to fetch location. Please allow location access or enter manually.");
+                        }
+                      );
+                    } else {
+                      alert("Geolocation is not supported by your browser.");
+                    }
+                  }}
+                  style={{
+                    padding: "0.8rem 1rem",
+                    borderRadius: 8,
+                    border: "1px solid #0f2a66",
+                    background: "#0f2a66",
+                    color: "#fff",
+                    cursor: "pointer",
+                    fontWeight: 600,
+                    transition: "all 0.3s",
+                  }}
+                  onMouseEnter={(e) => (e.target.style.background = "#0c1f52")}
+                  onMouseLeave={(e) => (e.target.style.background = "#0f2a66")}
+                >
+                  Use my location
+                </button>
+              </div>
+            </div>
 
 
             {/* Category */}

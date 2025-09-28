@@ -5,11 +5,12 @@ import api from "../services/api";
 export default function DonationForm() {
   const [form, setForm] = useState({
     name: "",
-    contact: "",
+    phone: "",
+    email: "",
     location: "",
     type: "",
     description: "",
-    quantity: 1,
+    quantity: "",
     image: null,
     pickupDate: "",
     pickupTime: "",
@@ -49,17 +50,18 @@ export default function DonationForm() {
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        padding: "2rem",
+        padding: "0rem",
       }}
     >
       <section
         style={{
           width: "100%",
-          maxWidth: 800,
+          maxWidth: '1600px',
           background: "#fff",
           borderRadius: 20,
           boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
           padding: "3rem 2.5rem",
+          margin: "0 auto"
         }}
       >
         <h2
@@ -71,7 +73,7 @@ export default function DonationForm() {
             textAlign: "center",
           }}
         >
-          Donate Items & Schedule Pickup
+          One Click to Donate, One Visit to Collect
         </h2>
 
         <form
@@ -105,26 +107,48 @@ export default function DonationForm() {
           </div>
 
           {/* Contact */}
-          <div>
-            <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
-              Phone / Email
-            </label>
-            <input
-              type="text"
-              name="contact"
-              value={form.contact}
-              onChange={handleChange}
-              placeholder="1234567890 / email@example.com"
-              required
-              style={{
-                width: "100%",
-                padding: "1rem 1.2rem",
-                border: "1px solid #d1d5db",
-                borderRadius: 12,
-                fontSize: "1rem",
-              }}
-            />
+          <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
+                Phone
+              </label>
+              <input
+                type="tel"
+                name="phone"
+                value={form.phone}
+                onChange={handleChange}
+                placeholder="1234567890"
+                required
+                style={{
+                  width: "100%",
+                  padding: "1rem 1.2rem",
+                  border: "1px solid #d1d5db",
+                  borderRadius: 12,
+                  fontSize: "1rem",
+                }}
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
+                Email (optional)
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="email@example.com"
+                style={{
+                  width: "100%",
+                  padding: "1rem 1.2rem",
+                  border: "1px solid #d1d5db",
+                  borderRadius: 12,
+                  fontSize: "1rem",
+                }}
+              />
+            </div>
           </div>
+
 
           {/* Location */}
           <div>
@@ -206,6 +230,7 @@ export default function DonationForm() {
                 value={form.quantity}
                 onChange={handleChange}
                 required
+                placeholder="Enter quantity"
                 style={{
                   width: "100%",
                   padding: "1rem",
@@ -247,6 +272,7 @@ export default function DonationForm() {
                 value={form.pickupDate}
                 onChange={handleChange}
                 required
+                min={new Date(Date.now() + 86400000).toISOString().split("T")[0]} 
                 style={{
                   width: "100%",
                   padding: "1rem",
