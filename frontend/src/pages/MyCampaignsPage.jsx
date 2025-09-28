@@ -4,6 +4,8 @@ import axios from "axios";
 import { BaseURL } from "@/BaseURL";
 import CampaignCard from "@/components/CampaignCard";
 import CampaignDialog from "@/components/CampaignsDialog";
+import Navbar from "../components/Navbar";
+
 
 const MyCampaignsPage = () => {
   const { user } = useAuth();
@@ -40,34 +42,37 @@ const MyCampaignsPage = () => {
   if (loading) return <div className="text-center py-10">Loading...</div>;
 
   return (
-    <div className="px-4 md:px-12 pt-0.7 pb-6">
+    <div style={{ fontFamily: "'Inter', Arial, sans-serif", background: "#f4f6f8", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <Navbar />
+      <div className="px-4 md:px-12 pt-0.7 pb-6">
 
-      <h1 className="text-2xl font-bold mb-6">My Campaigns</h1>
-      {campaigns.length === 0 ? (
-        <p className="text-gray-600">You haven’t created any campaigns yet.</p>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
-          {campaigns.map((campaign) => (
-            <CampaignCard
-              key={campaign._id}
-              campaign={campaign}
-              isOwner={true}
-              onClick={setSelectedCampaign} // ✅ open dialog
-              onDelete={handleDelete}
-            />
-          ))}
-        </div>
-      )}
+        <h1 className="text-2xl font-bold mb-6">My Campaigns</h1>
+        {campaigns.length === 0 ? (
+          <p className="text-gray-600">You haven’t created any campaigns yet.</p>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
+            {campaigns.map((campaign) => (
+              <CampaignCard
+                key={campaign._id}
+                campaign={campaign}
+                isOwner={true}
+                onClick={setSelectedCampaign} // ✅ open dialog
+                onDelete={handleDelete}
+              />
+            ))}
+          </div>
+        )}
 
-      {/* ✅ Campaign Dialog */}
-      {selectedCampaign && (
-        <CampaignDialog
-          campaign={selectedCampaign}
-          isOwner={true} // so NGO sees edit/delete options inside dialog
-          onDelete={handleDelete}
-          onClose={() => setSelectedCampaign(null)}
-        />
-      )}
+        {/* ✅ Campaign Dialog */}
+        {selectedCampaign && (
+          <CampaignDialog
+            campaign={selectedCampaign}
+            isOwner={true} // so NGO sees edit/delete options inside dialog
+            onDelete={handleDelete}
+            onClose={() => setSelectedCampaign(null)}
+          />
+        )}
+      </div>
     </div>
   );
 };

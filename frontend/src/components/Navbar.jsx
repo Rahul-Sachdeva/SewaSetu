@@ -1,10 +1,25 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";  // import your useAuth hook
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { user } = useAuth(); // get logged-in user
+
+  // Style function for active links
+const activeStyle = {
+  borderBottom: "2px solid #123180ff",
+  color: "#123180ff",
+  fontWeight: "600",
+  paddingBottom: 4,
+};
+
+
+  // Default link style
+  const defaultStyle = {
+    textDecoration: "none",
+    color: "black",
+  };
 
   return (
     <nav
@@ -40,15 +55,45 @@ const Navbar = () => {
 
       {/* Desktop Nav */}
       <div className="nav-links desktop">
-
         {user ? (
           user.role === "ngo" ? (
             <>
-              <Link to="/">Home</Link>
-              <Link to="/ngo-requests">NGO Dashboard</Link>
-              <Link to="/campaigns">Campaigns</Link>
-              <Link to="/ngo-profile">My Profile</Link>
-              <Link to="/notifications">Notifications</Link>
+              <NavLink
+                to="/"
+                style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
+              >
+                Home
+              </NavLink>
+              <NavLink
+                to="/ngo-requests"
+                style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
+              >
+                NGO Dashboard
+              </NavLink>
+              <NavLink
+                to="/campaigns"
+                style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
+              >
+                Campaigns
+              </NavLink>
+              <NavLink
+                to="/create-campaign"
+                style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
+              >
+                Create Campaign
+              </NavLink>
+              <NavLink
+                to="/ngo-profile"
+                style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
+              >
+                My Profile
+              </NavLink>
+              <NavLink
+                to="/notifications"
+                style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
+              >
+                Notifications
+              </NavLink>
               <a
                 className="logout-btn"
                 href="#logout"
@@ -62,15 +107,49 @@ const Navbar = () => {
               </a>
             </>
           ) : (
-            // Links for regular users
             <>
-              <Link to="/">Home</Link>
-              <Link to="/donate">Donate</Link>
-              <Link to="/request">Request Assistance</Link>
-              <Link to="/user-requests">User Dashboard</Link>
-              <Link to="/campaigns">Campaigns</Link>
-              <Link to="/profile">My Profile</Link>
-              <Link to="/notifications">Notifications</Link>
+              <NavLink
+                to="/"
+                style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
+              >
+                Home
+              </NavLink>
+              <NavLink
+                to="/donate"
+                style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
+              >
+                Donate
+              </NavLink>
+              <NavLink
+                to="/request"
+                style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
+              >
+                Request Assistance
+              </NavLink>
+              <NavLink
+                to="/user-requests"
+                style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
+              >
+                User Dashboard
+              </NavLink>
+              <NavLink
+                to="/campaigns"
+                style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
+              >
+                Campaigns
+              </NavLink>
+              <NavLink
+                to="/profile"
+                style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
+              >
+                My Profile
+              </NavLink>
+              <NavLink
+                to="/notifications"
+                style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
+              >
+                Notifications
+              </NavLink>
               <a
                 className="logout-btn"
                 href="#logout"
@@ -85,12 +164,14 @@ const Navbar = () => {
             </>
           )
         ) : (
-          // Not logged in links
           <>
-            <Link className="signup-btn" to="/login" style={{ color: "white" }}>
+            <NavLink
+              className="signup-btn"
+              to="/login"
+              style={{ color: "white" }}
+            >
               Login
-            </Link>
-
+            </NavLink>
           </>
         )}
       </div>
@@ -115,18 +196,65 @@ const Navbar = () => {
       {/* Mobile Dropdown */}
       {menuOpen && (
         <div className="nav-links mobile">
-
-
           {user ? (
             user.role === "ngo" ? (
               <>
-                <Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
-                <Link to="/ngo-requests" onClick={() => setMenuOpen(false)}>NGO Dashboard</Link>
-                <Link to="/campaigns" onClick={() => setMenuOpen(false)}>Campaigns</Link>
-                <Link to="/ngo-profile" onClick={() => setMenuOpen(false)}>My Profile</Link>
-                <Link to="/notifications" onClick={() => setMenuOpen(false)}>Notifications</Link>
+                <NavLink
+                  to="/"
+                  onClick={() => setMenuOpen(false)}
+                  style={({ isActive }) =>
+                    isActive ? activeStyle : defaultStyle
+                  }
+                >
+                  Home
+                </NavLink>
+                <NavLink
+                  to="/ngo-requests"
+                  onClick={() => setMenuOpen(false)}
+                  style={({ isActive }) =>
+                    isActive ? activeStyle : defaultStyle
+                  }
+                >
+                  NGO Dashboard
+                </NavLink>
+                <NavLink
+                  to="/campaigns"
+                  onClick={() => setMenuOpen(false)}
+                  style={({ isActive }) =>
+                    isActive ? activeStyle : defaultStyle
+                  }
+                >
+                  Campaigns
+                </NavLink>
+                <NavLink
+                  to="/ngo-profile"
+                  onClick={() => setMenuOpen(false)}
+                  style={({ isActive }) =>
+                    isActive ? activeStyle : defaultStyle
+                  }
+                >
+                  My Profile
+                </NavLink>
+                <NavLink
+                  to="/create-campaign"
+                  onClick={() => setMenuOpen(false)}
+                  style={({ isActive }) =>
+                    isActive ? activeStyle : defaultStyle
+                  }
+                >
+                  Create Campaign
+                </NavLink>
+                <NavLink
+                  to="/notifications"
+                  onClick={() => setMenuOpen(false)}
+                  style={({ isActive }) =>
+                    isActive ? activeStyle : defaultStyle
+                  }
+                >
+                  Notifications
+                </NavLink>
                 <a
-                className="logout-btn"
+                  className="logout-btn"
                   href="#logout"
                   onClick={() => {
                     localStorage.clear();
@@ -139,14 +267,69 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                <Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
-
-                <Link to="/donate" onClick={() => setMenuOpen(false)}>Donate</Link>
-                <Link to="/request" onClick={() => setMenuOpen(false)}>Request Assistance</Link>
-                <Link to="/user-requests" onClick={() => setMenuOpen(false)}>User Dashboard</Link>
-                <Link to="/campaigns" onClick={() => setMenuOpen(false)}>Campaigns</Link>
-                <Link to="/profile" onClick={() => setMenuOpen(false)}>My Profile</Link>
-                <Link to="/notifications" onClick={() => setMenuOpen(false)}>Notifications</Link>
+                <NavLink
+                  to="/"
+                  onClick={() => setMenuOpen(false)}
+                  style={({ isActive }) =>
+                    isActive ? activeStyle : defaultStyle
+                  }
+                >
+                  Home
+                </NavLink>
+                <NavLink
+                  to="/donate"
+                  onClick={() => setMenuOpen(false)}
+                  style={({ isActive }) =>
+                    isActive ? activeStyle : defaultStyle
+                  }
+                >
+                  Donate
+                </NavLink>
+                <NavLink
+                  to="/request"
+                  onClick={() => setMenuOpen(false)}
+                  style={({ isActive }) =>
+                    isActive ? activeStyle : defaultStyle
+                  }
+                >
+                  Request Assistance
+                </NavLink>
+                <NavLink
+                  to="/user-requests"
+                  onClick={() => setMenuOpen(false)}
+                  style={({ isActive }) =>
+                    isActive ? activeStyle : defaultStyle
+                  }
+                >
+                  User Dashboard
+                </NavLink>
+                <NavLink
+                  to="/campaigns"
+                  onClick={() => setMenuOpen(false)}
+                  style={({ isActive }) =>
+                    isActive ? activeStyle : defaultStyle
+                  }
+                >
+                  Campaigns
+                </NavLink>
+                <NavLink
+                  to="/profile"
+                  onClick={() => setMenuOpen(false)}
+                  style={({ isActive }) =>
+                    isActive ? activeStyle : defaultStyle
+                  }
+                >
+                  My Profile
+                </NavLink>
+                <NavLink
+                  to="/notifications"
+                  onClick={() => setMenuOpen(false)}
+                  style={({ isActive }) =>
+                    isActive ? activeStyle : defaultStyle
+                  }
+                >
+                  Notifications
+                </NavLink>
                 <a
                   className="logout-btn"
                   href="#logout"
@@ -162,15 +345,14 @@ const Navbar = () => {
             )
           ) : (
             <>
-              <Link
+              <NavLink
                 className="signup-btn"
                 to="/login"
                 style={{ color: "white" }}
                 onClick={() => setMenuOpen(false)}
               >
                 Login
-              </Link>
-
+              </NavLink>
             </>
           )}
         </div>
@@ -183,9 +365,9 @@ const Navbar = () => {
             color: black;
             text-decoration: none;
           }
-          
+
           .logout-btn {
-          padding: 0.6rem 1.4rem;
+            padding: 0.6rem 1.4rem;
             background: #be6147ff;
             color: #fff;
             border: none;

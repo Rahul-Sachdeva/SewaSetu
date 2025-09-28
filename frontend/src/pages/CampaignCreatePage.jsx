@@ -13,6 +13,7 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
+import Navbar from "../components/Navbar";
 
 // Leaflet
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
@@ -45,7 +46,7 @@ function LocationMarker({ setFormData, selectedCoords, setSelectedCoords }) {
   ) : null;
 }
 
-const CampaignCreatePage = ({mode="create"}) => {
+const CampaignCreatePage = ({ mode = "create" }) => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -67,55 +68,55 @@ const CampaignCreatePage = ({mode="create"}) => {
   const mapRef = useRef();
 
   // 🟢 Fetch existing campaign when editing
-useEffect(() => {
-  if (mode === "edit" && id) {
-    const fetchCampaign = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get(`${BaseURL}/api/v1/campaign/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+  useEffect(() => {
+    if (mode === "edit" && id) {
+      const fetchCampaign = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          const res = await axios.get(`${BaseURL}/api/v1/campaign/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
 
-        const data = res.data;
+          const data = res.data;
 
-        setFormData({
-          title: data.title,
-          description: data.description,
-          category: data.category,
-          startDate: data.startDate?.slice(0, 10),
-          endDate: data.endDate?.slice(0, 10),
-          address: data.address,
-          location_coordinates: data.location_coordinates, // store as-is
-          targetFunds: data.targetFunds,
-          targetVolunteers: data.targetVolunteers,
-        });
+          setFormData({
+            title: data.title,
+            description: data.description,
+            category: data.category,
+            startDate: data.startDate?.slice(0, 10),
+            endDate: data.endDate?.slice(0, 10),
+            address: data.address,
+            location_coordinates: data.location_coordinates, // store as-is
+            targetFunds: data.targetFunds,
+            targetVolunteers: data.targetVolunteers,
+          });
 
-        if (data.bannerImage) {
-          setPreviewUrl(data.bannerImage);
-        }
-
-        if (data.location_coordinates) {
-          let lat, lng;
-
-          // If array → [lng, lat]
-          if (Array.isArray(data.location_coordinates)) {
-            [lng, lat] = data.location_coordinates;
-          } 
-          // If string → "lng,lat"
-          else if (typeof data.location_coordinates === "string") {
-            [lng, lat] = data.location_coordinates.split(",").map(Number);
+          if (data.bannerImage) {
+            setPreviewUrl(data.bannerImage);
           }
 
-          setSelectedCoords([lat, lng]);
+          if (data.location_coordinates) {
+            let lat, lng;
+
+            // If array → [lng, lat]
+            if (Array.isArray(data.location_coordinates)) {
+              [lng, lat] = data.location_coordinates;
+            }
+            // If string → "lng,lat"
+            else if (typeof data.location_coordinates === "string") {
+              [lng, lat] = data.location_coordinates.split(",").map(Number);
+            }
+
+            setSelectedCoords([lat, lng]);
+          }
+        } catch (err) {
+          console.error(err);
+          alert("Failed to load campaign details");
         }
-      } catch (err) {
-        console.error(err);
-        alert("Failed to load campaign details");
-      }
-    };
-    fetchCampaign();
-  }
-}, [mode, id]);
+      };
+      fetchCampaign();
+    }
+  }, [mode, id]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -192,250 +193,255 @@ useEffect(() => {
 
   return (
     <>
-    <div className="flex justify-center items-center min-h-screen bg-slate-50 p-4">
-      <Card className="w-full max-w-4xl shadow-lg border border-gray-200 rounded-2xl">
-        <CardContent className="p-6 md:p-10">
-          {/* Header */}
-          <h1 className="text-2xl md:text-3xl font-bold text-[#19398a] mb-2">
-            {mode === "create" ? "Create a New Campaign" : "Edit Campaign"}
-          </h1>
-          <p className="text-gray-600 mb-6">
-            Fill in the details below to start a new campaign for your NGO.
-          </p>
+      <div style={{ fontFamily: "'Inter', Arial, sans-serif", background: "#f4f6f8", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <Navbar />
 
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Section: Basic Info */}
-            <div>
-              <h2 className="text-lg font-semibold text-[#19398a] mb-2">
-                Basic Information
-              </h2>
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Title</Label>
-                  <Input
-                    id="title"
-                    type="text"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
-                  <Select
-                    onValueChange={(val) =>
-                      setFormData((prev) => ({ ...prev, category: val }))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent className="z-50 bg-white">
-                      <SelectItem value="fundraising" className="hover:bg-[#19398a1d]">Fundraising</SelectItem>
-                      <SelectItem value="food_drive" className="hover:bg-[#19398a1d]">Food Drive</SelectItem>
-                      <SelectItem value="blood_donation" className="hover:bg-[#19398a1d]">
-                        Blood Donation
-                      </SelectItem>
-                      <SelectItem value="medical_camp" className="hover:bg-[#19398a1d]">Medical Camp</SelectItem>
-                      <SelectItem value="awareness" className="hover:bg-[#19398a1d]">Awareness</SelectItem>
-                      <SelectItem value="others" className="hover:bg-[#19398a1d]">Others</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-
-            {/* Section: Dates & Address */}
-            <div>
-              <h2 className="text-lg font-semibold text-[#19398a] mb-2">
-                Dates & Address
-              </h2>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="startDate">Start Date</Label>
-                  <Input
-                    id="startDate"
-                    type="date"
-                    name="startDate"
-                    value={formData.startDate}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="endDate">End Date</Label>
-                  <Input
-                    id="endDate"
-                    type="date"
-                    name="endDate"
-                    value={formData.endDate}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2 mt-6">
-                <Label htmlFor="address">Address</Label>
-                <Input
-                  id="address"
-                  type="text"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            {/* Section: Location Selection (Map) */}
-            <div>
-              <h2 className="text-lg font-semibold text-[#19398a] mb-2">
-                Location Coordinates
-              </h2>
-              <button
-                type="button"
-                onClick={handleUseCurrentLocation}
-                className="mb-2 px-3 py-1 bg-[#ffd600] text-black text-sm rounded hover:bg-yellow-500 transition"
-              >
-                Use My Current Location
-              </button>
-
-              <div className="rounded-lg overflow-hidden shadow border border-gray-200">
-                <MapContainer
-                  center={selectedCoords}
-                  zoom={5}
-                  style={{ height: "300px", width: "100%" }}
-                  ref={mapRef}
-                >
-                  <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/">OSM</a>'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  />
-                  <LocationMarker
-                    setFormData={setFormData}
-                    selectedCoords={selectedCoords}
-                    setSelectedCoords={setSelectedCoords}
-                  />
-                </MapContainer>
-              </div>
-              <p className="text-sm text-gray-500 mt-2">
-                Click on the map to select a location.
+        <div className="flex justify-center items-center min-h-screen bg-slate-50 p-4">
+          <Card className="w-full max-w-4xl shadow-lg border border-gray-200 rounded-2xl">
+            <CardContent className="p-6 md:p-10">
+              {/* Header */}
+              <h1 className="text-2xl md:text-3xl font-bold text-[#19398a] mb-2">
+                {mode === "create" ? "Create a New Campaign" : "Edit Campaign"}
+              </h1>
+              <p className="text-gray-600 mb-6">
+                Fill in the details below to start a new campaign for your NGO.
               </p>
-            </div>
 
-            {/* Section: Goals */}
-            <div>
-              <h2 className="text-lg font-semibold text-[#19398a] mb-2">
-                Campaign Goals
-              </h2>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="targetFunds">Target Funds (₹)</Label>
-                  <Input
-                    id="targetFunds"
-                    type="number"
-                    name="targetFunds"
-                    value={formData.targetFunds}
-                    onChange={handleChange}
-                  />
+              <form onSubmit={handleSubmit} className="space-y-8">
+                {/* Section: Basic Info */}
+                <div>
+                  <h2 className="text-lg font-semibold text-[#19398a] mb-2">
+                    Basic Information
+                  </h2>
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="title">Title</Label>
+                      <Input
+                        id="title"
+                        type="text"
+                        name="title"
+                        value={formData.title}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="description">Description</Label>
+                      <Textarea
+                        id="description"
+                        name="description"
+                        value={formData.description}
+                        onChange={handleChange}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="category">Category</Label>
+                      <Select
+                        onValueChange={(val) =>
+                          setFormData((prev) => ({ ...prev, category: val }))
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent className="z-50 bg-white">
+                          <SelectItem value="fundraising" className="hover:bg-[#19398a1d]">Fundraising</SelectItem>
+                          <SelectItem value="food_drive" className="hover:bg-[#19398a1d]">Food Drive</SelectItem>
+                          <SelectItem value="blood_donation" className="hover:bg-[#19398a1d]">
+                            Blood Donation
+                          </SelectItem>
+                          <SelectItem value="medical_camp" className="hover:bg-[#19398a1d]">Medical Camp</SelectItem>
+                          <SelectItem value="awareness" className="hover:bg-[#19398a1d]">Awareness</SelectItem>
+                          <SelectItem value="others" className="hover:bg-[#19398a1d]">Others</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="targetVolunteers">Target Volunteers</Label>
-                  <Input
-                    id="targetVolunteers"
-                    type="number"
-                    name="targetVolunteers"
-                    value={formData.targetVolunteers}
-                    onChange={handleChange}
-                  />
+
+                {/* Section: Dates & Address */}
+                <div>
+                  <h2 className="text-lg font-semibold text-[#19398a] mb-2">
+                    Dates & Address
+                  </h2>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="startDate">Start Date</Label>
+                      <Input
+                        id="startDate"
+                        type="date"
+                        name="startDate"
+                        value={formData.startDate}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="endDate">End Date</Label>
+                      <Input
+                        id="endDate"
+                        type="date"
+                        name="endDate"
+                        value={formData.endDate}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 mt-6">
+                    <Label htmlFor="address">Address</Label>
+                    <Input
+                      id="address"
+                      type="text"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleChange}
+                    />
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Section: Banner */}
-            <div>
-              <h2 className="text-lg font-semibold text-[#19398a] mb-2">
-                Banner Image
-              </h2>
-              <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-4 cursor-pointer hover:border-[#19398a] transition">
-                <label className="block text-sm font-medium text-gray-600 mb-2">
-                  Upload Campaign Poster
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                  id="banner"
-                />
-                <label
-                  htmlFor="banner"
-                  className="px-4 py-2 bg-[#19398a] text-white text-sm rounded-lg cursor-pointer hover:bg-[#2e58c2] transition"
-                >
-                  Choose File
-                </label>
-                {previewUrl && (
-                  <img
-                    src={previewUrl}
-                    alt="Preview"
-                    className="mt-3 w-50 h-30 object-cover rounded-md border"
-                  />
-                )}
-              </div>
-            </div>
+                {/* Section: Location Selection (Map) */}
+                <div>
+                  <h2 className="text-lg font-semibold text-[#19398a] mb-2">
+                    Location Coordinates
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={handleUseCurrentLocation}
+                    className="mb-2 px-3 py-1 bg-[#ffd600] text-black text-sm rounded hover:bg-yellow-500 transition"
+                  >
+                    Use My Current Location
+                  </button>
 
-            {/* Buttons */}
-            <div className="flex gap-4 justify-end">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() =>
-                  setFormData({
-                    title: "",
-                    description: "",
-                    category: "",
-                    startDate: "",
-                    endDate: "",
-                    address: "",
-                    location_coordinates: "",
-                    targetFunds: "",
-                    targetVolunteers: "",
-                  })
-                }
-                className="bg-red-500 text-white hover:bg-red-600"
-              >
-                Clear Form
-              </Button>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="bg-[#19398a] hover:bg-[#142a66] text-white"
-              >
-                {loading
-                  ? mode === "create"
-                    ? "Creating..."
-                    : "Updating..."
-                  : mode === "create"
-                  ? "Create Campaign"
-                  : "Update Campaign"}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+                  <div className="rounded-lg overflow-hidden shadow border border-gray-200">
+                    <MapContainer
+                      center={selectedCoords}
+                      zoom={5}
+                      style={{ height: "300px", width: "100%" }}
+                      ref={mapRef}
+                    >
+                      <TileLayer
+                        attribution='&copy; <a href="https://www.openstreetmap.org/">OSM</a>'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      />
+                      <LocationMarker
+                        setFormData={setFormData}
+                        selectedCoords={selectedCoords}
+                        setSelectedCoords={setSelectedCoords}
+                      />
+                    </MapContainer>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Click on the map to select a location.
+                  </p>
+                </div>
+
+                {/* Section: Goals */}
+                <div>
+                  <h2 className="text-lg font-semibold text-[#19398a] mb-2">
+                    Campaign Goals
+                  </h2>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="targetFunds">Target Funds (₹)</Label>
+                      <Input
+                        id="targetFunds"
+                        type="number"
+                        name="targetFunds"
+                        value={formData.targetFunds}
+                        onChange={handleChange}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="targetVolunteers">Target Volunteers</Label>
+                      <Input
+                        id="targetVolunteers"
+                        type="number"
+                        name="targetVolunteers"
+                        value={formData.targetVolunteers}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section: Banner */}
+                <div>
+                  <h2 className="text-lg font-semibold text-[#19398a] mb-2">
+                    Banner Image
+                  </h2>
+                  <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-4 cursor-pointer hover:border-[#19398a] transition">
+                    <label className="block text-sm font-medium text-gray-600 mb-2">
+                      Upload Campaign Poster
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="hidden"
+                      id="banner"
+                    />
+                    <label
+                      htmlFor="banner"
+                      className="px-4 py-2 bg-[#19398a] text-white text-sm rounded-lg cursor-pointer hover:bg-[#2e58c2] transition"
+                    >
+                      Choose File
+                    </label>
+                    {previewUrl && (
+                      <img
+                        src={previewUrl}
+                        alt="Preview"
+                        className="mt-3 w-50 h-30 object-cover rounded-md border"
+                      />
+                    )}
+                  </div>
+                </div>
+
+                {/* Buttons */}
+                <div className="flex gap-4 justify-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() =>
+                      setFormData({
+                        title: "",
+                        description: "",
+                        category: "",
+                        startDate: "",
+                        endDate: "",
+                        address: "",
+                        location_coordinates: "",
+                        targetFunds: "",
+                        targetVolunteers: "",
+                      })
+                    }
+                    className="bg-red-500 text-white hover:bg-red-600"
+                  >
+                    Clear Form
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="bg-[#19398a] hover:bg-[#142a66] text-white"
+                  >
+                    {loading
+                      ? mode === "create"
+                        ? "Creating..."
+                        : "Updating..."
+                      : mode === "create"
+                        ? "Create Campaign"
+                        : "Update Campaign"}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+
+      </div>
     </>
   );
 };
