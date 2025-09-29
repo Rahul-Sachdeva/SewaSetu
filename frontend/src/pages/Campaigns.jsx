@@ -42,7 +42,8 @@ const Campaigns = () => {
   
   useEffect(() => {
     fetchCampaigns();
-  }, [campaigns]);
+  }, []); // Only run once
+
 
   // In Campaigns.jsx
   const handleRegister = (campaignId, updatedCampaign) => {
@@ -51,6 +52,7 @@ const Campaigns = () => {
         c._id === campaignId ? { ...c, ...updatedCampaign } : c
       )
     );
+    fetchCampaigns();
   };
 
 

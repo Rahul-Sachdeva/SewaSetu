@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaRegCalendarAlt, FaMapMarkerAlt, FaUser } from "react-icons/fa";
+import { FaRegCalendarAlt, FaMapMarkerAlt, FaUser, FaMoneyBillWave } from "react-icons/fa";
 import dayjs from "dayjs";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
@@ -40,12 +40,12 @@ const CampaignCard = ({ campaign, onClick, isOwner = false }) => {
     }
   }, [campaign, user, isOwner]);
 
+  // ------------------- Handle registration -------------------
   const handleRegister = async () => {
     if (!user) {
       alert("Please login to register.");
       return;
     }
-
     setLoading(true);
     try {
       const res = await axios.post(
@@ -55,11 +55,63 @@ const CampaignCard = ({ campaign, onClick, isOwner = false }) => {
       );
       if (res.status === 200) {
         setIsRegistered(true);
-        alert("Registered successfully!");
+        alert("✅ Registered successfully!");
       }
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.message || "Error registering for campaign");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ------------------- Handle fundraising donation -------------------
+  const handleDonate = async () => {
+    const amount = prompt("Enter donation amount (INR):", "500");
+    if (!amount || isNaN(amount) || parseFloat(amount) <= 0) return;
+
+    setLoading(true);
+    try {
+      const res = await axios.post(
+        `${BaseURL}/api/v1/fund/create-order`,
+        { campaignId: campaign._id, amount: parseFloat(amount) * 100 }, // Razorpay expects paise
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+     
+      const order = res.data;
+      
+      
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "KEY NOT AVAILABLE",
+        amount: order.amount,
+        currency: order.currency,
+        name: campaign.title,
+        description: "Donation",
+        order_id: order.orderId,
+        prefill: { name: user?.name, email: user?.email },
+        handler: async (response) => {
+          try {
+            console.log("response: ", response)
+            await axios.post(
+              `${BaseURL}/api/v1/fund/verify-payment`,
+              { ...response, campaignId: campaign._id,  },
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            alert("✅ Donation successful!");
+            window.location.reload(); // Refresh to update collectedFunds
+          } catch (err) {
+            console.error(err);
+            alert("❌ Payment verification failed.");
+          }
+        },
+        theme: { color: "#19398a" },
+      };
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error(err);
+      alert("❌ Failed to initiate donation.");
     } finally {
       setLoading(false);
     }
@@ -72,7 +124,7 @@ const CampaignCard = ({ campaign, onClick, isOwner = false }) => {
         headers: { Authorization: `Bearer ${token}` },
       });
       alert("Campaign deleted successfully");
-      window.location.reload(); // or notify parent
+      window.location.reload();
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.message || "Error deleting campaign");
@@ -106,25 +158,19 @@ const CampaignCard = ({ campaign, onClick, isOwner = false }) => {
       {/* Content */}
       <div className="p-4 flex flex-col flex-1 justify-between bg-[#19398a0d]">
         <div>
-          <h3 className="text-xl font-semibold text-gray-800 line-clamp-2">
-            {campaign.title}
-          </h3>
-
+          <h3 className="text-xl font-semibold text-gray-800 line-clamp-2">{campaign.title}</h3>
           <div className="flex items-center text-gray-600 mt-1 text-sm md:text-base">
             <FaUser className="mr-2 text-[#19398a]" />
             <span>{campaign.ngo?.name}</span>
           </div>
-
           <div className="flex items-center text-gray-600 mt-1 text-sm md:text-base">
             <FaRegCalendarAlt className="mr-2 text-[#19398a]" />
             <span>{`${start} - ${end}`}</span>
           </div>
-
           <div className="flex items-center text-gray-600 mt-1 text-sm md:text-base">
             <FaMapMarkerAlt className="mr-2 text-[#19398a]" />
             <span>{campaign.address}</span>
           </div>
-
           <p className="text-gray-600 mt-2 mb-2 text-sm">{campaign.description}</p>
         </div>
 
@@ -165,20 +211,46 @@ const CampaignCard = ({ campaign, onClick, isOwner = false }) => {
               </button>
             </>
           ) : (
-            <button
-              onClick={handleRegister}
-              disabled={loading || isRegistered}
-              className={`flex-1 px-3 py-2 rounded-md text-white text-xs sm:text-sm ${
-                isRegistered
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-[#19398a] hover:bg-[#142a66]"
-              }`}
-            >
-              {isRegistered ? "Registered" : loading ? "Registering..." : "Register"}
-            </button>
+            <>
+              <button
+                onClick={handleRegister}
+                disabled={loading || isRegistered}
+                className={`flex-1 px-3 py-2 rounded-md text-white text-xs sm:text-sm ${
+                  isRegistered
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-[#19398a] hover:bg-[#142a66]"
+                }`}
+              >
+                {isRegistered ? "Registered" : loading ? "Registering..." : "Register"}
+              </button>
+
+              {/* Fundraising Donate Button */}
+              {campaign.category === "fundraising" && (
+                <button
+                  onClick={handleDonate}
+                  disabled={loading}
+                  className="flex-1 px-3 py-2 rounded-md text-white text-xs sm:text-sm bg-green-600 hover:bg-green-700 transition"
+                >
+                  <FaMoneyBillWave className="inline mr-1" /> Donate
+                </button>
+              )}
+            </>
           )}
         </div>
 
+        {/* Fundraising Progress Bar */}
+        {campaign.category === "fundraising" && (
+          <div className="mt-3 w-full bg-gray-200 rounded-full h-3">
+            <div
+              className="bg-green-600 h-3 rounded-full"
+              style={{
+                width: `${
+                  ((campaign.collectedFunds || 0) / (campaign.targetFunds || 1)) * 100
+                }%`,
+              }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

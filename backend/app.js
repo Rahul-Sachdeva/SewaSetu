@@ -9,6 +9,7 @@ import ngoRouter from "./Routes/ngo.routes.js";
 import campaignRouter from "./Routes/campaign.routes.js";
 import conversationRouter from "./Routes/conversation.routes.js";
 import messageRouter from "./Routes/message.routes.js";
+import fundRouter from "./Routes/fund.routes.js";
 
 // initialize server
 const app = express();
@@ -31,5 +32,6 @@ app.use("/api/v1/ngo", ngoRouter);
 app.use("/api/v1/campaign", campaignRouter);
 app.use("/api/v1/conversation", conversationRouter);
 app.use("/api/v1/message", messageRouter);
+app.use("/api/v1/fund", fundRouter);
 
 export {app} 

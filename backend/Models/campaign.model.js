@@ -77,7 +77,21 @@ const campaignSchema = new mongoose.Schema(
             type: String,
             enum: ["upcoming", "ongoing", "completed", "cancelled"],
             default: "upcoming"
-        }
+        },
+        // ✅ Fundraising-related
+        collectedFunds: {
+            type: Number,
+            default: 0,
+        },
+        razorpayQR: {
+            type: String, // optional QR code URL for UPI/scan payments
+        },
+        donations: [
+            {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Fund",
+            },
+        ],
     },
     {timestamps: true}
 );

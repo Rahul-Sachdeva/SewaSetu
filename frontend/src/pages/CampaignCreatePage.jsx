@@ -56,7 +56,9 @@ const CampaignCreatePage = ({mode="create"}) => {
     location_coordinates: "",
     targetFunds: "",
     targetVolunteers: "",
+    razorpayQR: "", // new
   });
+
   const { id } = useParams(); // campaignId when editing
   const navigate = useNavigate();
 
@@ -85,9 +87,10 @@ useEffect(() => {
           startDate: data.startDate?.slice(0, 10),
           endDate: data.endDate?.slice(0, 10),
           address: data.address,
-          location_coordinates: data.location_coordinates, // store as-is
+          location_coordinates: data.location_coordinates,
           targetFunds: data.targetFunds,
           targetVolunteers: data.targetVolunteers,
+          razorpayQR: data.razorpayQR || "",
         });
 
         if (data.bannerImage) {
@@ -395,6 +398,20 @@ useEffect(() => {
                 )}
               </div>
             </div>
+            {formData.category === "fundraising" && (
+              <div className="space-y-2">
+                <Label htmlFor="razorpayQR">Razorpay QR (optional)</Label>
+                <Input
+                  id="razorpayQR"
+                  type="text"
+                  name="razorpayQR"
+                  value={formData.razorpayQR}
+                  onChange={handleChange}
+                  placeholder="Paste Razorpay QR URL here"
+                />
+              </div>
+            )}
+
 
             {/* Buttons */}
             <div className="flex gap-4 justify-end">
