@@ -11,6 +11,8 @@ import MyCampaignsPage from "./MyCampaignsPage";
 import NGOListPage from "./NGOListPage";
 import CampaignCreatePage from "./CampaignCreatePage";
 import NGOProfile from "./NGOProfile";
+import DonationsManagement from "./DonationsManagement";
+
 
 
 function Navbar({ setActive }) {
@@ -242,11 +244,15 @@ export default function NGODashboard() {
           {/* NGO List */}
           {active === "ngo-list" && <NGOListPage />}
 
+          {/* Donations Management */}
+          {active === "donations" && <DonationsManagement />}
+
+
           {/* Placeholders */}
           {active !== "overview" &&
             active !== "campaigns" &&
             active !== "ngo-list" &&
-            active !== "campaign-new" && active !== "profile" &&(
+            active !== "campaign-new" && active !== "profile" && active !== "donations" &&  (
               <div className="p-10 bg-white rounded-xl shadow-md text-center text-gray-500">
                 {menuItems.find((item) => item.id === active)?.label} page coming soon...
               </div>

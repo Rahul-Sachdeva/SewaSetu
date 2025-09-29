@@ -22,6 +22,7 @@ import NgoDashboard from "./pages/NgoDashboard";
 import UserDashboard from "./pages/UserDashboard";
 import NotAuthorised from "./pages/NotAuthorised";
 import Notification from "./pages/Notification";
+import DonationsManagement from "./pages/DonationsManagement";
 
 
 function App() {
@@ -66,6 +67,7 @@ function App() {
         {/* Add routes for other pages here */}
         <Route path="/donate" element={<DonationPage />} />
         <Route path="/dashboard" element={<NGOdashboardPage />} />
+        <Route path="/donations-management" element={<DonationsManagement />} />
       </Routes>
     </BrowserRouter>
   );

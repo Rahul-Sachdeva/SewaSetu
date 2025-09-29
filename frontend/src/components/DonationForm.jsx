@@ -1,4 +1,3 @@
-// src/components/DonationForm.jsx
 import { useState } from "react";
 import api from "../services/api";
 
@@ -9,34 +8,67 @@ export default function DonationForm() {
     email: "",
     location: "",
     type: "",
+    title: "",
     description: "",
     quantity: "",
-    image: null,
+    images: [],
     pickupDate: "",
     pickupTime: "",
   });
 
+  // ✅ handleChange - fixed for file inputs
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    setForm({
-      ...form,
-      [name]: files ? files[0] : value,
-    });
+    if (name === "images") {
+      setForm({ ...form, images: files }); // store FileList
+    } else {
+      setForm({ ...form, [name]: value });
+    }
   };
 
+  // ✅ handleSubmit - improved FormData + debug
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const formData = new FormData();
     Object.keys(form).forEach((key) => {
-      formData.append(key, form[key]);
+      if (key === "images") {
+        if (form.images && form.images.length > 0) {
+          Array.from(form.images).forEach((file) => {
+            formData.append("images", file); // must match backend key
+          });
+        }
+      } else {
+        formData.append(key, form[key] || "");
+      }
     });
 
+    // 🧪 Debug: log everything being sent
+    for (let pair of formData.entries()) {
+      console.log(`${pair[0]}:`, pair[1]);
+    }
+
     try {
-      await api.post("/donations", formData);
+      await api.post("/donations", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       alert("✅ Donation submitted successfully!");
+      setForm({
+        name: "",
+        phone: "",
+        email: "",
+        location: "",
+        type: "",
+        title: "",
+        description: "",
+        quantity: "",
+        images: [],
+        pickupDate: "",
+        pickupTime: "",
+      });
     } catch (err) {
-      console.error(err);
-      alert("❌ Error submitting donation.");
+      console.error("❌ Submission failed:", err.response?.data || err.message);
+      alert("❌ Error submitting donation. Check console for details.");
     }
   };
 
@@ -56,12 +88,12 @@ export default function DonationForm() {
       <section
         style={{
           width: "100%",
-          maxWidth: '1600px',
+          maxWidth: "1600px",
           background: "#fff",
           borderRadius: 20,
           boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
           padding: "3rem 2.5rem",
-          margin: "0 auto"
+          margin: "0 auto",
         }}
       >
         <h2
@@ -76,13 +108,7 @@ export default function DonationForm() {
           One Click to Donate, One Visit to Collect
         </h2>
 
-        <form
-          onSubmit={handleSubmit}
-          style={{
-            display: "grid",
-            gap: "2rem",
-          }}
-        >
+        <form onSubmit={handleSubmit} style={{ display: "grid", gap: "2rem" }}>
           {/* Name */}
           <div>
             <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
@@ -101,7 +127,6 @@ export default function DonationForm() {
                 border: "1px solid #d1d5db",
                 borderRadius: 12,
                 fontSize: "1rem",
-                outline: "none",
               }}
             />
           </div>
@@ -149,7 +174,6 @@ export default function DonationForm() {
             </div>
           </div>
 
-
           {/* Location */}
           <div>
             <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
@@ -196,6 +220,28 @@ export default function DonationForm() {
               <option value="Books">Books</option>
               <option value="Other">Other</option>
             </select>
+          </div>
+
+          {/* Title */}
+          <div>
+            <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
+              Title
+            </label>
+            <input
+              type="text"
+              name="title"
+              value={form.title}
+              onChange={handleChange}
+              placeholder="ex: Rice Bag or Winter Jackets"
+              required
+              style={{
+                width: "100%",
+                padding: "1rem 1.2rem",
+                border: "1px solid #d1d5db",
+                borderRadius: 12,
+                fontSize: "1rem",
+              }}
+            />
           </div>
 
           {/* Description + Quantity */}
@@ -248,8 +294,9 @@ export default function DonationForm() {
             </label>
             <input
               type="file"
-              name="image"
+              name="images"
               accept="image/*"
+              multiple
               onChange={handleChange}
               style={{
                 width: "100%",
@@ -272,7 +319,7 @@ export default function DonationForm() {
                 value={form.pickupDate}
                 onChange={handleChange}
                 required
-                min={new Date(Date.now() + 86400000).toISOString().split("T")[0]} 
+                min={new Date(Date.now() + 86400000).toISOString().split("T")[0]}
                 style={{
                   width: "100%",
                   padding: "1rem",

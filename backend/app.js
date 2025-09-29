@@ -10,6 +10,7 @@ import campaignRouter from "./Routes/campaign.routes.js";
 import conversationRouter from "./Routes/conversation.routes.js";
 import messageRouter from "./Routes/message.routes.js";
 import notificationRouter from "./Routes/notification.routes.js";
+import donationRouter from "./Routes/donation.routes.js"; 
 
 // initialize server
 const app = express();
@@ -33,5 +34,6 @@ app.use("/api/v1/campaign", campaignRouter);
 app.use("/api/v1/conversation", conversationRouter);
 app.use("/api/v1/message", messageRouter);
 app.use("/api/notifications", notificationRouter);
+app.use("/api/v1/donations", donationRouter);
 
 export {app} 
