@@ -4,6 +4,9 @@ import uploadCloudinary from "../Utils/cloudinary.js";
 import { User } from "../Models/user.model.js";
 import { Conversation } from "../Models/conversation.model.js";
 import { sendEmail } from "../Utils/sendEmail.js";
+import { Notification } from "../Models/notification.model.js";
+import { sendNotification } from "../Utils/notification.utils.js";
+
 
 export const registerNGO = async (req, res) => {
   try {
@@ -196,7 +199,7 @@ export const updateNGO = async (req, res) => {
       );
       updates.gallery = galleryRes.map(img => img.secure_url);
     }
-    
+
     if (updates.category) {
       if (typeof updates.category === "string") {
         updates.category = updates.category.split(",").map(c => c.trim());
@@ -233,15 +236,6 @@ export const updateNGO = async (req, res) => {
   }
 };
 
-export const getNGOById = async (req, res) => {
-  try {
-    const ngo = await NGO.findById(req.params.id).populate("members", "name email user_type");
-    if (!ngo) return res.status(404).json({ message: "NGO not found" });
-    return res.status(200).json(ngo);
-  } catch (err) {
-    return res.status(500).json({ message: "Error fetching NGO", error: err.message });
-  }
-};
 
 export const listNGOs = async (req, res) => {
   try {
@@ -256,6 +250,32 @@ export const listNGOs = async (req, res) => {
     return res.status(500).json({ message: "Error listing NGOs", error: err.message });
   }
 };
+
+export const listFilteredNGOs = async (req, res) => {
+  try {
+    const { city, category, verification_status } = req.query;
+
+    const filter = {
+      verification_status: verification_status,
+    };
+
+    if (city) {
+      filter.city = { $regex: new RegExp(`^${city}$`, "i") };
+    }
+
+    if (category) {
+      filter.category = { $regex: new RegExp(`^${category}$`, "i") };
+    }
+
+    const ngos = await NGO.find(filter);
+
+    return res.status(200).json(ngos);
+  } catch (err) {
+    return res.status(500).json({ message: "Error listing NGOs", error: err.message });
+  }
+};
+
+
 
 export const updateNGOStatus = async (req, res) => {
   try {
@@ -283,9 +303,42 @@ export const updateNGOStatus = async (req, res) => {
 
     await sendEmail(ngo.email, subject, body);
 
+    // await Notification.create({
+    //   user: ngo._id,
+    //   userModel: "admin",
+    //   type: "general",
+    //   title: `Your NGO profile was ${status}`,
+    //   message: status === "approved" ? "Your NGO has been approved." : "Your NGO has been rejected.",
+    // });
+
+    // // Push notification (optional)
+    // await sendNotification(ngo._id, "NGO", {
+    //   title: `NGO profile ${status}`,
+    //   message: status === "approved" ? "Your NGO has been approved." : "Your NGO has been rejected.",
+    //   type: "general",
+    // });
+
     return res.status(200).json({ message: `NGO updated to status: ${status}`, ngo });
   } catch (err) {
     return res.status(500).json({ message: "Error updating status", error: err.message });
+  }
+};
+
+export const getNGOById = async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid NGO ID" });
+  }
+
+  try {
+    const ngo = await NGO.findById(id);
+    if (!ngo) {
+      return res.status(404).json({ message: "NGO not found" });
+    }
+    return res.status(200).json(ngo);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Error fetching NGO", error: err.message });
   }
 };
 

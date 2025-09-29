@@ -1,12 +1,13 @@
 import express from "express";
-import { registerUser, loginUser, getProfile, updateProfile, verifyEmail, getUser, unfollowNGO, followNGO, checkFollowing } from "../Controllers/user.controller.js";
+import { registerUser, loginUser, getProfile, updateProfile, verifyEmail, getUser, unfollowNGO, followNGO, checkFollowing, saveDeviceToken } from "../Controllers/user.controller.js";
 import { authMiddleware } from "../Middlewares/auth.middleware.js";
 import multer from "multer";
 
-const storage = multer.memoryStorage(); // no files saved to disk
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 const userRouter = express.Router();
+userRouter.post("/device-token", authMiddleware, saveDeviceToken);
 
 
 userRouter.post("/register", upload.single("profile_image"), registerUser);

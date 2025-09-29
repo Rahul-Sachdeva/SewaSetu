@@ -117,7 +117,8 @@ const NGOProfile = ({ mode = "profile" }) => {
 
   return (
     <>
-      
+      <div style={{ fontFamily: "'Inter', Arial, sans-serif", background: "#f4f6f8", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <Navbar />
 
       {/* Header Section */}
       <div className="relative bg-gradient-to-r from-[#19398a] via-[#345ec9] to-[#19398a] text-white py-7 px-6 lg:px-20 rounded-b-3xl shadow-lg">
@@ -133,13 +134,12 @@ const NGOProfile = ({ mode = "profile" }) => {
               {ngo.tagline || `"Empowering lives, changing futures."`}
             </p>
             <span
-              className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold ${
-                ngo.verification_status === "verified"
+              className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold ${ngo.verification_status === "verified"
                   ? "bg-green-500"
                   : ngo.verification_status === "pending"
-                  ? "bg-yellow-500"
-                  : "bg-red-500"
-              } text-white`}
+                    ? "bg-yellow-500"
+                    : "bg-red-500"
+                } text-white`}
             >
               {ngo.verification_status.toUpperCase()}
             </span>
@@ -176,6 +176,25 @@ const NGOProfile = ({ mode = "profile" }) => {
             <p><span className="font-semibold">City:</span> {ngo.city}</p>
             <p><span className="font-semibold">State:</span> {ngo.state}</p>
             <p><span className="font-semibold">Address:</span> {ngo.address}</p>
+
+            {/* Category Section */}
+            <div className="mt-3">
+              <span className="font-semibold">Categories:</span>
+              <div className="flex flex-wrap gap-2 mt-1">
+                {ngo.category && ngo.category.length > 0 ? (
+                  ngo.category.map((cat, idx) => (
+                    <span
+                      key={idx}
+                      className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800"
+                    >
+                      {cat}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-gray-500 text-sm">No categories specified</span>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Map Embed */}
@@ -188,6 +207,7 @@ const NGOProfile = ({ mode = "profile" }) => {
           </div>
         </div>
 
+
         {/* Right Column */}
         <div className="lg:col-span-2 flex flex-col gap-6">
           {/* Tabs Section */}
@@ -197,10 +217,9 @@ const NGOProfile = ({ mode = "profile" }) => {
                 <Tab
                   key={tab}
                   className={({ selected }) =>
-                    `px-4 py-2 text-sm font-semibold border-b-2 ${
-                      selected
-                        ? "border-[#19398a] text-[#19398a]"
-                        : "border-transparent text-gray-500 hover:text-[#19398a]"
+                    `px-4 py-2 text-sm font-semibold border-b-2 ${selected
+                      ? "border-[#19398a] text-[#19398a]"
+                      : "border-transparent text-gray-500 hover:text-[#19398a]"
                     }`
                   }
                 >
@@ -348,6 +367,7 @@ const NGOProfile = ({ mode = "profile" }) => {
           onSuccess={fetchNGO}
         />
       )}
+      </div>
     </>
   );
 };

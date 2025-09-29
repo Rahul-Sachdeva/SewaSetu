@@ -1,7 +1,28 @@
 import React, { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { NavLink, useLocation } from "react-router-dom";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const { user } = useAuth();
+  const location = useLocation();
+
+  const activeStyle = {
+    borderBottom: "2px solid #123180ff",
+    color: "#123180ff",
+    fontWeight: "600",
+    paddingBottom: 4,
+  };
+
+  const defaultStyle = {
+    textDecoration: "none",
+    color: "black",
+  };
+
+  const isUserDashboardActive =
+    location.pathname.startsWith("/user-requests") ||
+    location.pathname.startsWith("/user-donation");
 
   return (
     <nav
@@ -17,7 +38,7 @@ const Navbar = () => {
         zIndex: 3000,
       }}
     >
-      {/* Logo + Brand */}
+      {/* Logo */}
       <div style={{ display: "flex", alignItems: "center" }}>
         <img
           src="/src/assets/logo.png"
@@ -34,45 +55,229 @@ const Navbar = () => {
           SewaSetu
         </span>
       </div>
-<tab>    </tab>
+
       {/* Desktop Nav */}
       <div className="nav-links desktop">
-        <a href="/">Home</a>
-        <a href="/donate">Donate</a>
-        <a href="/request">Request Assistance</a>
-        <a href="/dashboard">NGO Dashboard</a>
-        <a href="/campaigns">Campaigns</a>
-        <a href="/about">About Us</a>
-        <button className="signup-btn">Sign Up</button>
+        {user ? (
+          user.role === "ngo" ? (
+            <>
+              <NavLink to="/" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                Home
+              </NavLink>
+              <NavLink to="/dashboard" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                NGO Dashboard
+              </NavLink>
+              <NavLink to="/campaigns" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                Campaigns
+              </NavLink>
+              <NavLink to="/chat" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                Chat
+              </NavLink>
+              <NavLink to="/notifications" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                Notifications
+              </NavLink>
+              <NavLink to="/ngo-profile" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                My Profile
+              </NavLink>
+              <a
+                className="logout-btn"
+                href="#logout"
+                onClick={() => {
+                  localStorage.clear();
+                  window.location.reload();
+                }}
+                style={{ color: "white", fontWeight: "bold" }}
+              >
+                Logout
+              </a>
+            </>
+          ) : (
+            <>
+              <NavLink to="/" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                Home
+              </NavLink>
+              <NavLink to="/donate" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                Donate
+              </NavLink>
+              <NavLink to="/request" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                Request Assistance
+              </NavLink>
+              <NavLink to="/campaigns" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                Campaigns
+              </NavLink>
+              <NavLink to="/ngo-list" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                View NGOs
+              </NavLink>
+
+
+              {/* User Dashboard Dropdown */}
+              <div className="dropdown" style={{ paddingLeft: 15 }}>
+                <span style={isUserDashboardActive ? activeStyle : defaultStyle}>
+                  User Dashboard ▾
+                </span>
+                <div className="dropdown-content">
+                  <NavLink to="/user-requests" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    My Requests
+                  </NavLink>
+                  <NavLink to="/user-donation" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    My Donations
+                  </NavLink>
+                  <NavLink to="/profile" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    My Profile
+                  </NavLink>
+                  <NavLink to="/chat" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    Chat
+                  </NavLink>
+                  <NavLink to="/notifications" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    Notifications
+                  </NavLink>
+                </div>
+              </div>
+
+
+              <a
+                className="logout-btn"
+                href="#logout"
+                onClick={() => {
+                  localStorage.clear();
+                  window.location.reload();
+                }}
+                style={{ color: "white", fontWeight: "bold" }}
+              >
+                Logout
+              </a>
+            </>
+          )
+        ) : (
+          <NavLink className="signup-btn" to="/login" style={{ color: "white" }}>
+            Login
+          </NavLink>
+        )}
       </div>
 
-      {/* Hamburger Button (Mobile Only Visible) */}
-      <button
-        className="hamburger"
-        onClick={() => setMenuOpen(!menuOpen)}
-        aria-label="Toggle menu"
-      >
-        <img
-          src={
-            menuOpen
-              ? "/src/assets/dropdown.png" // close icon
-              : "/src/assets/dropdown.png" // hamburger icon
-          }
-          alt="menu toggle"
-          style={{ width: 28, height: 28 }}
-        />
+      {/* Hamburger Button */}
+      <button className="hamburger" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">
+        <img src="/src/assets/dropdown.png" alt="menu toggle" style={{ width: 28, height: 28 }} />
       </button>
 
-      {/* Mobile Dropdown */}
+      {/* Mobile Nav */}
       {menuOpen && (
         <div className="nav-links mobile">
-          <a href="/">Home</a>
-          <a href="/donate">Donate</a>
-          <a href="/request">Request Assistance</a>
-          <a href="/dashboard">NGO Dashboard</a>
-          <a href="/campaigns">Campaigns</a>
-          <a href="/about">About Us</a>
-          <button className="signup-btn">Sign Up</button>
+          {user ? (
+            user.role === "ngo" ? (
+              <>
+                <NavLink to="/" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                  Home
+                </NavLink>
+                <NavLink to="/ngo-requests" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                  NGO Dashboard
+                </NavLink>
+                <NavLink to="/campaigns" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                  Campaigns
+                </NavLink>
+                <NavLink to="/ngo-profile" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                  My Profile
+                </NavLink>
+                <NavLink to="/create-campaign" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                  Create Campaign
+                </NavLink>
+                <NavLink to="/notifications" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                  Notifications
+                </NavLink>
+                <a
+                  className="logout-btn"
+                  href="#logout"
+                  onClick={() => {
+                    localStorage.clear();
+                    window.location.reload();
+                  }}
+                  style={{ color: "white", fontWeight: "bold" }}
+                >
+                  Logout
+                </a>
+              </>
+            ) : (
+              <>
+                <NavLink to="/" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                  Home
+                </NavLink>
+                <NavLink to="/donate" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                  Donate
+                </NavLink>
+                <NavLink to="/request" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                  Request Assistance
+                </NavLink>
+
+                <NavLink to="/campaigns" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                  Campaigns
+                </NavLink>
+                <NavLink to="/ngo-list" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                  View NGOs
+                </NavLink>
+
+
+                {/* Mobile User Dashboard Dropdown */}
+                <div className="dropdown-mobile">
+                  <span
+                    className={`dropdown-toggle ${isUserDashboardActive ? "active" : ""}`}
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                  >
+                    User Dashboard ▾
+                  </span>
+                  {dropdownOpen && (
+                    <div className="dropdown-menu-mobile">
+                      <NavLink
+                        to="/user-requests"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          setDropdownOpen(false);
+                        }}
+                        style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
+                      >
+                        My Requests
+                      </NavLink>
+                      <NavLink
+                        to="/user-donation"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          setDropdownOpen(false);
+                        }}
+                        style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
+                      >
+                        My Donations
+                      </NavLink>
+                      <NavLink to="/profile" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                        My Profile
+                      </NavLink>
+                      <NavLink to="/chat" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                        Chat
+                      </NavLink>
+                      <NavLink to="/notifications" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                        Notifications
+                      </NavLink>
+                    </div>
+                  )}
+                </div>
+
+
+                <a
+                  className="logout-btn"
+                  href="#logout"
+                  onClick={() => {
+                    localStorage.clear();
+                    window.location.reload();
+                  }}
+                  style={{ color: "white", fontWeight: "bold" }}
+                >
+                  Logout
+                </a>
+              </>
+            )
+          ) : (
+            <NavLink className="signup-btn" to="/login" style={{ color: "white" }} onClick={() => setMenuOpen(false)}>
+              Login
+            </NavLink>
+          )}
         </div>
       )}
 
@@ -83,7 +288,15 @@ const Navbar = () => {
             color: black;
             text-decoration: none;
           }
-          
+          .logout-btn {
+            padding: 0.6rem 1.4rem;
+            background: #be6147ff;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+          }
           .signup-btn {
             padding: 0.6rem 1.4rem;
             background: #19398aff;
@@ -93,28 +306,33 @@ const Navbar = () => {
             cursor: pointer;
             font-weight: bold;
           }
-
-          /* Desktop Layout */
-          .desktop {
+          .dropdown {
+            position: relative;
+            display: inline-block;
+          }
+          .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #fff;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+            padding: 0.5rem;
+            z-index: 10;
+            border-radius: 6px;
+          }
+          .dropdown:hover .dropdown-content {
             display: flex;
-            align-items: center;
+            flex-direction: column;
           }
-
-          .hamburger {
-            background: none;
-            border: none;
-            cursor: pointer;
-            display: none; /* hidden by default (desktop) */
+          .dropdown-content a {
+            margin: 0.4rem 0;
           }
+          .desktop { display: flex; align-items: center; }
+          .hamburger { background: none; border: none; cursor: pointer; display: none; }
 
-          /* Mobile Layout */
           @media (max-width: 768px) {
-            .desktop {
-              display: none;
-            }
-            .hamburger {
-              display: block; /* visible only on mobile */
-            }
+            .desktop { display: none; }
+            .hamburger { display: block; }
             .mobile {
               position: absolute;
               top: 60px;
@@ -127,11 +345,28 @@ const Navbar = () => {
               flex-direction: column;
               align-items: flex-start;
             }
-            .mobile a {
+            .mobile a { margin: 0.5rem 0; }
+            .mobile .signup-btn { margin-top: 0.5rem; }
+            .dropdown-mobile {
+              display: flex;
+              flex-direction: column;
               margin: 0.5rem 0;
             }
-            .mobile .signup-btn {
-              margin-top: 0.5rem;
+            .dropdown-toggle {
+              cursor: pointer;
+              font-weight: 500;
+              margin-bottom: 0.3rem;
+            }
+            .dropdown-toggle.active {
+              border-bottom: 2px solid #123180ff;
+              color: #123180ff;
+              font-weight: 600;
+              padding-bottom: 4px;
+            }
+            .dropdown-menu-mobile a {
+              margin: 0.3rem 0 0.3rem 1rem;
+              text-decoration: none;
+              color: black;
             }
           }
         `}

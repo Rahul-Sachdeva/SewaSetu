@@ -1,13 +1,21 @@
 import mongoose from "mongoose";
-import shortid from "shortid"; // For generating unique short IDs
+// import shortid from "shortid"; // For generating unique short IDs
+import { customAlphabet } from 'nanoid';
+const nanoid = customAlphabet('1234567890abcdef', 8); // 8-char hex
+
 
 const AssistanceRequestSchema = new mongoose.Schema(
   {
     request_id: {
       type: String,
       unique: true,
-      default: () => `REQ-${shortid.generate()}`, // Auto-generate ID like REQ-Jk3lP9
+      default: () => `REQ-${nanoid()}`,
     },
+    // request_id: {
+    //   type: String,
+    //   unique: true,
+    //   default: () => `REQ-${shortid.generate()}`, // Auto-generate ID like REQ-Jk3lP9
+    // },
     full_name: {
       type: String,
       required: true,

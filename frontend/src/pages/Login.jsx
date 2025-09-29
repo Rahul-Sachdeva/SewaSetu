@@ -1,60 +1,71 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";  // ✅ import Link
+import { Link, useNavigate } from "react-router-dom";  // import Link
 import './css/Login.css';
 import { useAuth } from "../context/AuthContext.jsx";
 import AuthWrapper from "../components/AuthWrapper.jsx";
+// also import your notification hook or utilities
+import useNotificationPermission from "../hooks/useNotificationPermission"; // example
 
 const Login = () => {
-    const {login} = useAuth();
-    const navigate = useNavigate();
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-    const [formData, setFormData] = useState({email: "", password: ""});
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState(null);
+  // local state
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState(null);
 
-    const handleChange = (e) => {
-        setFormData((prev) => ({
-            ...prev,
-            [e.target.name]: e.target.value,
-        }));
-    };
+  // State to track when permission prompt needed
+  const [notifyPromptNeeded, setNotifyPromptNeeded] = useState(false);
 
-    const handleSubmit = async(e) => {
-        e.preventDefault();
-        setLoading(true);
-        setMessage(null);
-        
-        // --- Validation ---
-        if (!formData.email || !formData.password) {
-            setMessage("❌ Please fill in all fields.");
-            setLoading(false);
-            return;
-        }
+  // Call your custom hook that requests notification permission & registers token
+  useNotificationPermission(notifyPromptNeeded);
 
-        // simple regex for email format
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(formData.email)) {
-            setMessage("❌ Please enter a valid email address.");
-            setLoading(false);
-            return;
-        }
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
 
-        if (formData.password.length < 6) {
-            setMessage("❌ Password must be at least 6 characters.");
-            setLoading(false);
-            return;
-        }
-        
-        const res = await login(formData.email, formData.password);
-        
-        if(res.success){
-            setMessage("✅ Login Successful!");
-            setTimeout(()=>navigate("/"),1000);
-        } else {
-            setMessage(`❌ ${res.message}`);
-        }
-        setLoading(false);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage(null);
+
+    if (!formData.email || !formData.password) {
+      setMessage("❌ Please fill in all fields.");
+      setLoading(false);
+      return;
     }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setMessage("❌ Please enter a valid email address.");
+      setLoading(false);
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setMessage("❌ Password must be at least 6 characters.");
+      setLoading(false);
+      return;
+    }
+
+    const res = await login(formData.email, formData.password);
+
+    if (res.success) {
+      setMessage("✅ Login Successful!");
+      // If backend says notification permission is needed, trigger prompt
+      if (res.user.notificationPermissionNeeded) {
+        setNotifyPromptNeeded(true);
+      }
+      setTimeout(() => navigate("/"), 1000);
+    } else {
+      setMessage(`❌ ${res.message}`);
+    }
+    setLoading(false);
+  };
 
     return (
         <AuthWrapper>

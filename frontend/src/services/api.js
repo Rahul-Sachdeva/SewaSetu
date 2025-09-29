@@ -1,8 +1,18 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:5173/api", // change if your backend runs on a different port
+  baseURL: "http://localhost:3000/api/v1", 
   withCredentials: true,
 });
 
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token"); // or get from cookies
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export default api;
+
+

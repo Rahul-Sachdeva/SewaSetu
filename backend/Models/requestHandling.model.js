@@ -31,9 +31,33 @@ const RequestHandlingSchema = new mongoose.Schema(
       schedule_date: { type: Date },
       schedule_time: { type: String }, // e.g., "14:30"
     },
+
+    // New Feedback fields
+    feedbackGiven: {
+      type: Boolean,
+      default: false,
+    },
+    feedbackRating: {
+      type: Number,
+      min: 1,
+      max: 5,
+    },
+    feedbackComments: {
+      type: String,
+      default: "",
+    },
+    feedbackDate: {
+      type: Date,
+    },
+
+    // To track user pickup confirmation
+    userConfirmed: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
-    timestamps: true, // createdAt & updatedAt
+    timestamps: true, // createdAt & updatedAt managed automatically
   }
 );
 

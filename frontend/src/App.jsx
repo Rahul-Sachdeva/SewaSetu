@@ -18,6 +18,14 @@ import CampaignRegistrationsPage from "./pages/CampaignRegistrationsPage";
 import SelectNGO from "./pages/SelectNGO";
 import DonationPage from "./pages/DonationPage";
 import NGOdashboardPage from "./pages/NGOdashboardPage";
+import NgoDashboard from "./pages/NgoDashboard";
+import UserDashboard from "./pages/UserDashboard";
+import NotAuthorised from "./pages/NotAuthorised";
+import Notification from "./pages/Notification";
+import DonationsManagement from "./pages/DonationsManagement";
+import UserDonation from "./components/UserDonation";
+
+
 
 function App() {
   return (
@@ -47,16 +55,23 @@ function App() {
         <Route path="/campaigns" element={<Campaigns/>} />
         <Route path="/chat">
           <Route index element={<ChatLayout />} />              {/* shows list + "empty" */}
-          <Route path=":id" element={<ChatLayout />} />         {/* shows list + chat */}
+          <Route path=":id" element={<ChatLayout />} />   
+                {/* shows list + chat */}
         </Route>
         <Route path="/request" element={<Request />} />
         <Route path="/select-ngo" element={<SelectNGO />} />
         <Route path="/pending-ngo" element={<PendingNGOsPage/>}/>
         <Route path="/ngo/my-campaigns" element={<MyCampaignsPage/>}/>
         <Route path="/campaign/:id/registrations" element={<CampaignRegistrationsPage/>}/>
+        <Route path="/ngo-requests" element={<NgoDashboard />} />
+        <Route path="/notifications" element={<Notification />} />
+        <Route path="/user-requests" element={<UserDashboard />} />
+        <Route path="/not-authorized" element={<NotAuthorised />} />
         {/* Add routes for other pages here */}
         <Route path="/donate" element={<DonationPage />} />
         <Route path="/dashboard" element={<NGOdashboardPage />} />
+        <Route path="/donations-management" element={<DonationsManagement />} />
+        <Route path="/user-donation" element={<UserDonation />} />
       </Routes>
     </BrowserRouter>
   );
