@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
-import "./css/Home.css";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { BaseURL } from "../BaseURL";
-import CampaignCard from "../components/CampaignCard"; // Assuming this exists
+import CampaignCard from "../components/CampaignCard";
+import CampaignDialog from "../components/CampaignsDialog";
 
-// Feature data with icons
 const features = [
   {
     img: "/src/assets/donate.png",
@@ -30,7 +29,6 @@ const features = [
   },
 ];
 
-// Impact stats
 const stats = [
   { label: "Meals Donated", value: "50K+" },
   { label: "NGOs Registered", value: "1K+" },
@@ -42,8 +40,8 @@ const Home = () => {
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedCampaign, setSelectedCampaign] = useState(null);
 
-  // Fetch actual campaigns data
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
@@ -60,7 +58,23 @@ const Home = () => {
     fetchCampaigns();
   }, []);
 
-  // Show first 3 campaigns only on home page
+  // Open dialog with selected campaign details
+  const handleCampaignClick = (campaign) => {
+    setSelectedCampaign(campaign);
+  };
+
+  // Update campaigns list after registration
+  const handleRegister = (campaignId, updatedData) => {
+    setCampaigns((prev) =>
+      prev.map((c) => (c._id === campaignId ? { ...c, ...updatedData } : c))
+    );
+  };
+
+  // Close dialog
+  const closeDialog = () => {
+    setSelectedCampaign(null);
+  };
+
   const previewCampaigns = campaigns.slice(0, 3);
 
   return (
@@ -147,7 +161,7 @@ const Home = () => {
         />
       </section>
 
-      {/* Features */}
+      {/* Features Section */}
       <section style={{ maxWidth: 1000, margin: "0 auto", padding: "2rem 1rem" }}>
         <h2
           style={{
@@ -203,7 +217,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Live Campaigns - replaced dummy with actual preview */}
+      {/* Live Campaigns Section */}
       <section style={{ maxWidth: 1200, margin: "0 auto", padding: "2rem 1rem" }}>
         <h2
           style={{
@@ -224,21 +238,17 @@ const Home = () => {
           <>
             <div
               className="campaigns-container"
-              style={{
-                display: "flex",
-                gap: 24,
-                justifyContent: "center",
-                flexWrap: "wrap",
-              }}
+              style={{ display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap" }}
             >
               {previewCampaigns.length > 0 ? (
                 previewCampaigns.map((c) => (
-                  <CampaignCard key={c._id} campaign={c} />
+                  <CampaignCard key={c._id} campaign={c} onClick={handleCampaignClick} />
                 ))
               ) : (
                 <p>No live campaigns available.</p>
               )}
             </div>
+
             <div style={{ textAlign: "center", marginTop: 24 }}>
               <Link to="/campaigns">
                 <button
@@ -263,9 +273,18 @@ const Home = () => {
             </div>
           </>
         )}
+
+        {/* Campaign Dialog for details and registration */}
+        {selectedCampaign && (
+          <CampaignDialog
+            campaign={selectedCampaign}
+            onClose={closeDialog}
+            onRegister={handleRegister}
+          />
+        )}
       </section>
 
-      {/* Impact Stats */}
+      {/* Impact Stats Section */}
       <section
         style={{
           background: "#f5f8ff",

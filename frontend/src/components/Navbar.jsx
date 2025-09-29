@@ -102,6 +102,13 @@ const Navbar = () => {
               <NavLink to="/request" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                 Request Assistance
               </NavLink>
+              <NavLink to="/campaigns" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                Campaigns
+              </NavLink>
+              <NavLink to="/chat" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                Chat
+              </NavLink>
+              
 
               {/* User Dashboard Dropdown */}
               <div className="dropdown">
@@ -115,18 +122,16 @@ const Navbar = () => {
                   <NavLink to="/user-donation" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                     My Donations
                   </NavLink>
+                  <NavLink to="/profile" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    My Profile
+                  </NavLink>
+                  <NavLink to="/notifications" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                Notifications
+              </NavLink>
                 </div>
               </div>
 
-              <NavLink to="/campaigns" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
-                Campaigns
-              </NavLink>
-              <NavLink to="/profile" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
-                My Profile
-              </NavLink>
-              <NavLink to="/notifications" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
-                Notifications
-              </NavLink>
+
               <a
                 className="logout-btn"
                 href="#logout"
@@ -200,6 +205,14 @@ const Navbar = () => {
                   Request Assistance
                 </NavLink>
 
+                <NavLink to="/campaigns" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                  Campaigns
+                </NavLink>
+                <NavLink to="/chat" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                  Chat
+                </NavLink>
+                
+
                 {/* Mobile User Dashboard Dropdown */}
                 <div className="dropdown-mobile">
                   <span
@@ -230,19 +243,17 @@ const Navbar = () => {
                       >
                         My Donations
                       </NavLink>
+                      <NavLink to="/profile" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                        My Profile
+                      </NavLink>
+                      <NavLink to="/notifications" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                  Notifications
+                </NavLink>
                     </div>
                   )}
                 </div>
 
-                <NavLink to="/campaigns" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
-                  Campaigns
-                </NavLink>
-                <NavLink to="/profile" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
-                  My Profile
-                </NavLink>
-                <NavLink to="/notifications" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
-                  Notifications
-                </NavLink>
+
                 <a
                   className="logout-btn"
                   href="#logout"
