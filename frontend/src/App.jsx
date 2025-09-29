@@ -23,6 +23,8 @@ import UserDashboard from "./pages/UserDashboard";
 import NotAuthorised from "./pages/NotAuthorised";
 import Notification from "./pages/Notification";
 import DonationsManagement from "./pages/DonationsManagement";
+import UserDonation from "./components/UserDonation";
+
 
 
 function App() {
@@ -53,7 +55,8 @@ function App() {
         <Route path="/campaigns" element={<Campaigns/>} />
         <Route path="/chat">
           <Route index element={<ChatLayout />} />              {/* shows list + "empty" */}
-          <Route path=":id" element={<ChatLayout />} />         {/* shows list + chat */}
+          <Route path=":id" element={<ChatLayout />} />   
+                {/* shows list + chat */}
         </Route>
         <Route path="/request" element={<Request />} />
         <Route path="/select-ngo" element={<SelectNGO />} />
@@ -68,6 +71,7 @@ function App() {
         <Route path="/donate" element={<DonationPage />} />
         <Route path="/dashboard" element={<NGOdashboardPage />} />
         <Route path="/donations-management" element={<DonationsManagement />} />
+        <Route path="/user-donation" element={<UserDonation />} />
       </Routes>
     </BrowserRouter>
   );
