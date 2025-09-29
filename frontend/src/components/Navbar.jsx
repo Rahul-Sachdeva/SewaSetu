@@ -105,15 +105,15 @@ const Navbar = () => {
               <NavLink to="/campaigns" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                 Campaigns
               </NavLink>
-              <NavLink to="/chat" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
-                Chat  
+              <NavLink to="/ngo-list" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                View NGOs
               </NavLink>
-              
+
 
               {/* User Dashboard Dropdown */}
               <div className="dropdown" style={{ paddingLeft: 15 }}>
                 <span style={isUserDashboardActive ? activeStyle : defaultStyle}>
-                    User Dashboard ▾  
+                  User Dashboard ▾
                 </span>
                 <div className="dropdown-content">
                   <NavLink to="/user-requests" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
@@ -125,9 +125,12 @@ const Navbar = () => {
                   <NavLink to="/profile" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                     My Profile
                   </NavLink>
+                  <NavLink to="/chat" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    Chat
+                  </NavLink>
                   <NavLink to="/notifications" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
-                Notifications
-              </NavLink>
+                    Notifications
+                  </NavLink>
                 </div>
               </div>
 
@@ -208,10 +211,10 @@ const Navbar = () => {
                 <NavLink to="/campaigns" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                   Campaigns
                 </NavLink>
-                <NavLink to="/chat" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
-                  Chat
+                <NavLink to="/ngo-list" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                  View NGOs
                 </NavLink>
-                
+
 
                 {/* Mobile User Dashboard Dropdown */}
                 <div className="dropdown-mobile">
@@ -246,9 +249,12 @@ const Navbar = () => {
                       <NavLink to="/profile" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                         My Profile
                       </NavLink>
+                      <NavLink to="/chat" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                        Chat
+                      </NavLink>
                       <NavLink to="/notifications" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
-                  Notifications
-                </NavLink>
+                        Notifications
+                      </NavLink>
                     </div>
                   )}
                 </div>

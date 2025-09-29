@@ -68,29 +68,25 @@ export default function NGODashboard() {
         <main className="flex-1 p-8">
           {/* Overview Cards */}
           {active === "overview" && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="p-6 bg-white rounded-xl shadow-md">
-                <h3 className="text-gray-600">Donations Received</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" style={{ textAlign: "center"}}>
+              <div className="p-5 bg-white rounded-xl shadow-md">
+                <h3 className="text-gray-2xl">Donations Received</h3>
                 <p className="text-3xl font-bold">350</p>
-                <p className="text-sm text-gray-500">Lorem ipsum dolor sit amet</p>
               </div>
 
-              <div className="p-6 bg-white rounded-xl shadow-md">
-                <h3 className="text-gray-600">Requests Fulfilled</h3>
+              <div className="p-6 bg-white rounded-xl shadow-md" style={{ textAlign: "center"}}>
+                <h3 className="text-gray-2xl" >Requests Fulfilled</h3>
                 <p className="text-3xl font-bold">125</p>
-                <p className="text-sm text-gray-500">Lorem ipsum dolor sit amet</p>
               </div>
 
-              <div className="p-6 bg-white rounded-xl shadow-md">
-                <h3 className="text-gray-600">Pending Pickups</h3>
+              <div className="p-6 bg-white rounded-xl shadow-md" style={{ textAlign: "center"}}>
+                <h3 className="text-gray-2xl">Pending Pickups</h3>
                 <p className="text-3xl font-bold">48</p>
-                <p className="text-sm text-gray-500">Lorem ipsum dolor sit amet</p>
               </div>
 
-              <div className="p-6 bg-white rounded-xl shadow-md">
-                <h3 className="text-gray-600">Pending Donations</h3>
+              <div className="p-6 bg-white rounded-xl shadow-md" style={{ textAlign: "center"}}>
+                <h3 className="text-gray-2xl">Pending Donations</h3>
                 <p className="text-3xl font-bold">21</p>
-                <p className="text-sm text-gray-500">Lorem ipsum dolor sit amet</p>
               </div>
             </div>
           )}

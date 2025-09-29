@@ -104,7 +104,6 @@ const Request = () => {
                   value={formData.email || ""}
                   onChange={handleChange}
                   placeholder="email@gmail.com"
-                  pattern="^[a-zA-Z0-9._%+-]+@gmail\.com$"
                   title="Please enter a valid Gmail address"
                   style={{
                     width: "100%",
