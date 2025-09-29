@@ -2,11 +2,14 @@ import React from "react";
 import { Outlet, useParams } from "react-router-dom";
 import ConversationList from "@/components/ConversationList";
 import ConversationPage from "@/components/ConversationPage";
+import Navbar from "../components/Navbar";
 
 const ChatLayout = () => {
   const { id } = useParams();
 
   return (
+    <div style={{ fontFamily: "'Inter', Arial, sans-serif", background: "#f4f6f8", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <Navbar />
     <div className="flex h-screen w-full bg-gray-100">
       {/* Left sidebar: Conversations */}
       <div className="hidden md:flex md:w-1/3 lg:w-2/7 border-r">
@@ -28,6 +31,7 @@ const ChatLayout = () => {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 };

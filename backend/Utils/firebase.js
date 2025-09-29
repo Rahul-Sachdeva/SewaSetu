@@ -1,20 +1,34 @@
 import admin from "firebase-admin";
 import serviceAccount from "./serviceAccountKey.json" with { type: "json" };
 
+
 // Initialize Firebase Admin
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
   });
 }
-
-// Named export for sending notification
-export const sendNotification = async (token, payload) => {
+export const sendFirebaseNotification = async (tokens, payload) => {
   try {
-    const response = await admin.messaging().sendToDevice(token, payload);
+    console.log("tokens: ", tokens);
+    console.log("payload: ", payload);
+
+    const response = await admin.messaging().sendEachForMulticast({ 
+      tokens: tokens, 
+      notification: payload.notification, 
+      data: payload.data || {}, 
+    });
+
+    response.responses.forEach((resp, idx) => {
+      if (!resp.success) {
+        console.error(`Failed for token ${tokens[idx]}:`, resp.error.code, resp.error.message);
+      }
+    });
+
+    console.log("FCM response: ", response);
     return response;
   } catch (error) {
-    console.error("Error sending notification:", error);
+    console.error("Error sending FCM notification:", error);
     throw error;
   }
 };

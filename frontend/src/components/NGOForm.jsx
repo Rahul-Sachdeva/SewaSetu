@@ -51,7 +51,8 @@ const CategorySelector = ({ formData, setFormData }) => {
 
   return (
     <div className="border border-gray-300 rounded p-2 flex flex-wrap gap-2">
-      {formData.category.map((cat, idx) => (
+      {(formData.category || []).map((cat, idx) => (
+
         <div
           key={idx}
           className="flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm"

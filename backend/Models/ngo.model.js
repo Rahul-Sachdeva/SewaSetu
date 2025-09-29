@@ -37,6 +37,7 @@ const ngoSchema = new mongoose.Schema(
         followers: [
             { type: mongoose.Schema.Types.ObjectId, ref: "User" }
         ],
+        deviceTokens: [String],
     },
     { timestamps: true }
 );

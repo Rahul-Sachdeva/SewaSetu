@@ -1,10 +1,11 @@
-// src/pages/Request.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { useAuth } from "../context/AuthContext"; // Import useAuth to get user info
 
 const Request = () => {
   const navigate = useNavigate();
+  const { user } = useAuth(); // Get user from context
 
   const [formData, setFormData] = useState({
     name: "",
@@ -14,10 +15,22 @@ const Request = () => {
     coordinates: "",
     category: "",
     description: "",
-    priority: "Regular",
+    priority: "Normal",
     file: null,
   });
 
+  // Use useEffect to set initial formData if user details exist
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        name: user.name || "",
+        phone: user.phone || "",
+        email: user.email || "",
+        address: user.address || "",
+      }));
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -28,38 +41,10 @@ const Request = () => {
     setFormData({ ...formData, file: e.target.files[0] });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    const formDataObj = new FormData();
 
-    Object.keys(formData).forEach((key) => {
-      let value = formData[key];
-      // Convert coordinates string to array if present
-      if (key === "coordinates" && value) {
-        value = JSON.stringify(value.split(",").map(Number));
-      }
-      if (value) formDataObj.append(key, value);
-    });
-
-    try {
-      const res = await fetch("http://localhost:3000/api/requests", {
-        method: "POST",
-        body: formDataObj,
-      });
-
-      if (res.ok) {
-        const result = await res.json();
-        alert("✅ Request submitted successfully!");
-        navigate(`/select-ngo/${result.requestId}`);
-      } else {
-        const err = await res.json();
-        console.error(err);
-        alert("Something went wrong: " + (err.message || res.statusText));
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Server error");
-    }
+    navigate("/select-ngo", { state: { formData } });
   };
 
   return (
@@ -94,6 +79,8 @@ const Request = () => {
                   onChange={handleChange}
                   placeholder="1234567890"
                   required
+                  pattern="^\d{10}$"
+                  title="Please enter a valid 10-digit phone number"
                   style={{
                     width: "100%",
                     padding: "1rem 1.2rem",
@@ -116,7 +103,8 @@ const Request = () => {
                   name="email"
                   value={formData.email || ""}
                   onChange={handleChange}
-                  placeholder="email@example.com"
+                  placeholder="email@gmail.com"
+                  title="Please enter a valid Gmail address"
                   style={{
                     width: "100%",
                     padding: "1rem 1.2rem",
@@ -130,8 +118,10 @@ const Request = () => {
                   onBlur={(e) => (e.target.style.borderColor = "#d1d5db")}
                 />
               </div>
-            </div>
 
+
+
+            </div>
 
             {/* Address */}
             <div>
@@ -143,7 +133,7 @@ const Request = () => {
               />
             </div>
 
-            {/* Coordinates */}
+
             {/* Coordinates */}
             <div>
               <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>Current Location Coordinates (optional)</label>
@@ -210,13 +200,13 @@ const Request = () => {
                 style={{ width: "100%", padding: "1rem 1.2rem", border: "1px solid #d1d5db", borderRadius: 12, fontSize: "1rem", outline: "none", transition: "all 0.2s" }}
               >
                 <option value="">Select Category</option>
-                <option value="Food&Shelter">Food & Shelter</option>
+                <option value="Food & Shelter">Food & Shelter</option>
                 <option value="Clothes">Clothes</option>
                 <option value="Medical">Medical Help</option>
-                <option value="Education">Education Support</option>
-                <option value="Financial">Financial Help</option>
-                <option value="Legal">Legal Assistance</option>
-                <option value="Disaster">Emergency/Disaster Relief</option>
+                <option value="Education Support">Education Support</option>
+                <option value="Financial Help">Financial Help</option>
+                <option value="Legal Assistance">Legal Assistance</option>
+                <option value="Emergency/Disaster Relief">Emergency/Disaster Relief</option>
                 <option value="Other">Other</option>
               </select>
             </div>
@@ -237,7 +227,7 @@ const Request = () => {
                 Priority
               </label>
               <div style={{ display: "flex", gap: "1rem", marginTop: 6 }}>
-                {["Regular", "Emergency"].map((type) => (
+                {["Normal", "Emergency"].map((type) => (
                   <button
                     key={type}
                     type="button"
