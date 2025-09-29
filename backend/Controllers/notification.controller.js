@@ -2,10 +2,11 @@ import { Notification } from "../Models/notification.model.js";
 
 export const getNotifications = async (req, res) => {
   try {
-    const userId = req.user._id.toString(); // ensure string form
-    const userModel = req.user.role === "ngo" ? "NGO" : "User"; // or check user_type if used
-
-
+    let userId = req.user._id.toString(); // ensure string form
+    const userModel = req.user.user_type === "ngo" ? "NGO" : "User"; // or check user_type if used
+    if(userModel=="NGO"){
+      userId = req.user.ngo.toString();
+    }
     const notifications = await Notification.find({ user: userId, userModel })
       .sort({ createdAt: -1 });
 

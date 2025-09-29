@@ -1,7 +1,7 @@
 import { AssistanceRequest } from "../Models/assistance.model.js";
 import { RequestHandling } from "../Models/requestHandling.model.js";
 import { NGO } from "../Models/ngo.model.js";
-import { Notification } from "../Models/notification.model.js"; // New Notification model
+import { Notification } from "../Models/notification.model.js";
 import { sendNotification } from "../Utils/notification.utils.js";
 
 // ------------------------
@@ -66,7 +66,6 @@ export const createRequest = async (req, res) => {
 
         // Push notification (optional)
         await sendNotification(ngoId, "NGO", {
-          userModel: "NGO",
           title: "New Assistance Request",
           message: `A new assistance request has been submitted by ${full_name}.`,
           type: "request_received",
@@ -156,11 +155,11 @@ export const updateRequestStatus = async (req, res) => {
       reference: handling._id
     });
 
-    await sendNotification(handling.request_id.requestedBy, {
-      userModel,
-      title: `Assistance Request ${status.charAt(0).toUpperCase() + status.slice(1)}`,
-      message: `Your request "${handling.request_id.category}" has been ${status} by NGO.`,
-      requestId: handling.request_id._id
+    await sendNotification(handling.request_id.requestedBy, userModel, {
+      title: `Assistance Request ID ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+      message: `Your request for assistance for "${handling.request_id.category}" has been ${status} by NGO.`,
+      type:"request_status_update",
+      referenceId: handling.request_id._id,
     });
 
     if (status === "scheduled") {

@@ -8,7 +8,7 @@ import { sendNotification } from "../Utils/notification.utils.js";
 // ------------------------
 export const respondToRequest = async (req, res) => {
   try {
-    const { requestHandlingId, action } = req.body; 
+    const { requestHandlingId, action } = req.body;
     // action = 'accept' or 'reject'
 
 
@@ -127,7 +127,7 @@ export const completeRequest = async (req, res) => {
     await sendNotification(handling.request_id.requestedBy, "User", {
       type: "request_status_update",
       title: "Assistance Request Completed",
-      message: `Your assistance request "${handling.request_id.category || handling.request_id.assistance_category}" has been completed. Please provide feedback for the NGO.`,
+      message: `Your assistance request for "${handling.request_id.category || handling.request_id.assistance_category}" has been completed. Please provide feedback for the NGO.`,
       referenceId: handling.request_id._id,
       referenceModel: "AssistanceRequest"
     });
@@ -162,11 +162,12 @@ export const confirmPickup = async (req, res) => {
     // Notify NGO about user confirmation
     await sendNotification(handling.handledBy, "NGO", {
       type: "request_status_update",
-      title: "Pickup Confirmed by User",
-      message: `User has confirmed the pickup for request "${handling.request_id.category || handling.request_id.assistance_category}".`,
+      title: `Pickup Confirmed by User - Request ID: ${handling.request_id._id}`,
+      message: `User has confirmed the pickup for request "${handling.request_id.category || handling.request_id.assistance_category}" (Request ID: ${handling.request_id._id}).`,
       referenceId: handling.request_id._id,
       referenceModel: "AssistanceRequest"
     });
+
 
 
     res.status(200).json({ message: "Pick up confirmed by user", handling });
@@ -186,7 +187,7 @@ export const submitFeedback = async (req, res) => {
     if (!requestHandlingId || !rating) {
       return res.status(400).json({ message: "RequestHandling ID and rating are required" });
     }
-    
+
     const handling = await RequestHandling.findById(requestHandlingId).populate('request_id');
     if (!handling) return res.status(404).json({ message: "RequestHandling not found" });
 
@@ -202,7 +203,7 @@ export const submitFeedback = async (req, res) => {
     await sendNotification(handling.handledBy, "NGO", {
       type: "request_status_update",
       title: "Feedback Received",
-      message: `User has submitted feedback (${rating} stars) for request "${handling.request_id.category || handling.request_id.assistance_category}".`,
+      message: `User has submitted feedback: (${rating} stars) for request "${handling.request_id.category || handling.request_id.assistance_category}" (Request ID: ${handling.request_id._id}).`,
       referenceId: handling.request_id._id,
       referenceModel: "AssistanceRequest"
     });
