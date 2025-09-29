@@ -50,7 +50,10 @@ export default function DonationForm() {
 
     try {
       await api.post("/donations", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: { 
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
       alert("✅ Donation submitted successfully!");
       setForm({

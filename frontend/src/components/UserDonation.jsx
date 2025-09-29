@@ -1,159 +1,184 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import Navbar from "../components/Navbar"; // ✅ adjust path if needed
+import Navbar from "../components/Navbar";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import axios from "axios"; // ✅ add this
+import { BaseURL } from "../BaseURL";
+
 
 const UserDonation = () => {
-  const [donations, setDonations] = useState([]);
+    const { user } = useAuth();
+    const navigate = useNavigate();
+    const [donations, setDonations] = useState([]);
 
-  // Simulate fetching donations — replace with API call later
-  useEffect(() => {
-    const mockDonations = [
-      {
-        _id: "1",
-        title: "Winter Clothes for Kids",
-        type: "Clothes",
-        quantity: 50,
-        status: "Pending",
-        createdAt: "2025-09-10",
-      },
-      {
-        _id: "2",
-        title: "Books for Community Library",
-        type: "Books",
-        quantity: 120,
-        status: "Accepted",
-        createdAt: "2025-08-18",
-      },
-    ];
-    setDonations(mockDonations);
-  }, []);
+    // Redirect non-users
+    useEffect(() => {
+        if (!user) navigate("/login");
+        else if (user.role !== "user") navigate("/not-authorized");
+    }, [user, navigate]);
 
-  return (
-    <>
-      {/* ✅ Navbar added here */}
-      <Navbar />
+    // ✅ Fetch donations from backend
+    useEffect(() => {
+        const fetchMyDonations = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                const res = await axios.get(`${BaseURL}/api/v1/donations/my`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
 
-      <div style={styles.container}>
-        <header style={styles.header}>
-          <h1 style={styles.title}>📦 My Donations</h1>
-          <Link to="/donate" style={styles.addBtn}>
-            + Make a New Donation
-          </Link>
-        </header>
 
-        {donations.length === 0 ? (
-          <div style={styles.emptyState}>
-            <p>You haven’t made any donations yet.</p>
-            <Link to="/donate" style={styles.primaryBtn}>
-              Make your first donation
-            </Link>
-          </div>
-        ) : (
-          <div style={styles.tableContainer}>
-            <table style={styles.table}>
-              <thead>
-                <tr>
-                  <th style={styles.th}>Title</th>
-                  <th style={styles.th}>Type</th>
-                  <th style={styles.th}>Quantity</th>
-                  <th style={styles.th}>Status</th>
-                  <th style={styles.th}>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {donations.map((d) => (
-                  <tr key={d._id}>
-                    <td style={styles.td}>{d.title}</td>
-                    <td style={styles.td}>{d.type}</td>
-                    <td style={styles.td}>{d.quantity}</td>
-                    <td
-                      style={{
-                        ...styles.td,
-                        color:
-                          d.status === "Accepted"
-                            ? "green"
-                            : d.status === "Rejected"
-                            ? "red"
-                            : "#123180ff",
-                        fontWeight: "600",
-                      }}
+                // Filter donations for this user (if backend doesn't already)
+                const myDonations = res.data.filter(
+                    (d) => d.donor?._id === user?._id
+                );
+
+                setDonations(myDonations);
+            } catch (err) {
+                console.error("Error fetching donations:", err);
+            }
+        };
+
+        if (user) fetchMyDonations();
+    }, [user]);
+
+    if (!user) return null;
+
+    return (
+        <div
+            style={{
+                fontFamily: "'Inter', Arial, sans-serif",
+                background: "#f4f6f8",
+                minHeight: "100vh",
+            }}
+        >
+            <Navbar />
+            <main style={{ maxWidth: 900, margin: "2rem auto", padding: "0 1rem" }}>
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: 24,
+                    }}
+                >
+                    <h1 style={{ fontSize: 28, fontWeight: 700, color: "#0f2a66" }}>
+                        📦 My Donations
+                    </h1>
+                    <Link
+                        to="/donate"
+                        style={{
+                            backgroundColor: "#19398a",
+                            color: "#fff",
+                            padding: "12px 20px",
+                            borderRadius: 8,
+                            textDecoration: "none",
+                            fontWeight: 600,
+                            fontSize: 16,
+                            boxShadow: "0 4px 8px rgba(25, 57, 138, 0.3)",
+                        }}
                     >
-                      {d.status}
-                    </td>
-                    <td style={styles.td}>
-                      {new Date(d.createdAt).toLocaleDateString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </>
-  );
-};
+                        + Make a New Donation
+                    </Link>
+                </div>
 
-// ✅ Inline styles (optional: move to CSS)
-const styles = {
-  container: {
-    padding: "2rem",
-    maxWidth: "900px",
-    margin: "0 auto",
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "1.5rem",
-  },
-  title: {
-    fontSize: "2rem",
-    fontWeight: "700",
-    color: "#123180ff",
-  },
-  addBtn: {
-    background: "#123180ff",
-    color: "#fff",
-    padding: "0.6rem 1.2rem",
-    borderRadius: "6px",
-    textDecoration: "none",
-    fontWeight: "600",
-  },
-  emptyState: {
-    textAlign: "center",
-    marginTop: "3rem",
-    fontSize: "1.2rem",
-  },
-  primaryBtn: {
-    display: "inline-block",
-    marginTop: "1rem",
-    background: "#123180ff",
-    color: "#fff",
-    padding: "0.7rem 1.4rem",
-    borderRadius: "6px",
-    textDecoration: "none",
-    fontWeight: "600",
-  },
-  tableContainer: {
-    overflowX: "auto",
-  },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-    borderRadius: "8px",
-  },
-  th: {
-    background: "#f4f6fb",
-    color: "#333",
-    padding: "1rem",
-    textAlign: "left",
-  },
-  td: {
-    padding: "0.9rem 1rem",
-    borderBottom: "1px solid #eee",
-  },
+                {donations.length === 0 ? (
+                    <p style={{ textAlign: "center", marginTop: 20 }}>
+                        You haven’t made any donations yet. Click “Make a New Donation” to
+                        start helping others!
+                    </p>
+                ) : (
+                    donations.map((donation) => (
+                        <div
+                            key={donation._id}
+                            style={{
+                                background: "#fff",
+                                borderRadius: 16,
+                                boxShadow: "0 10px 20px rgba(0,0,0,0.05)",
+                                marginBottom: 20,
+                                padding: 20,
+                            }}
+                        >
+                            <h2 style={{ fontSize: 20, fontWeight: 600, color: "#123180" }}>
+                                {donation.title}
+                            </h2>
+                            <p>
+                                <strong>Donation ID:</strong> {donation.donation_id}
+                            </p>
+                            <p>
+                                <strong>Type:</strong> {donation.type}
+                            </p>
+                            <p>
+                                <strong>Quantity:</strong> {donation.quantity}
+                            </p>
+                            <p>
+                                <strong>Status:</strong>{" "}
+                                <span
+                                    style={{
+                                        color:
+                                            donation.status === "pending"
+                                                ? "#d97706"
+                                                : donation.status === "accepted"
+                                                    ? "#16a34a"
+                                                    : donation.status === "rejected"
+                                                        ? "#dc2626"
+                                                        : "#2563eb",
+                                        fontWeight: 600,
+                                    }}
+                                >
+                                    {donation.status}
+                                </span>
+                            </p>
+                            <p>
+                                <strong>Pickup Date:</strong>{" "}
+                                {donation.pickupDate || "Not Scheduled"}
+                            </p>
+                            <p>
+                                <strong>Pickup Time:</strong>{" "}
+                                {donation.pickupTime || "Not Scheduled"}
+                            </p>
+                            <p>
+                                <strong>Location:</strong> {donation.location}
+                            </p>
+                            <p>
+                                <strong>Description:</strong> {donation.description}
+                            </p>
+
+                            {donation.images && donation.images.length > 0 && (
+                                <div style={{ marginTop: 12 }}>
+                                    <strong>Images:</strong>
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            gap: 10,
+                                            marginTop: 6,
+                                            flexWrap: "wrap",
+                                        }}
+                                    >
+                                        {donation.images.map((img, idx) => (
+                                            <img
+                                                key={idx}
+                                                src={img}
+                                                alt={`donation-${idx}`}
+                                                style={{
+                                                    width: 120,
+                                                    height: 100,
+                                                    objectFit: "cover",
+                                                    borderRadius: 8,
+                                                    border: "1px solid #ddd",
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ))
+                )}
+            </main>
+        </div>
+    );
 };
 
 export default UserDonation;
