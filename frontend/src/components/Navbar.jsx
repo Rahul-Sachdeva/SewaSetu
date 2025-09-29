@@ -106,14 +106,14 @@ const Navbar = () => {
                 Campaigns
               </NavLink>
               <NavLink to="/chat" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
-                Chat
+                Chat  
               </NavLink>
               
 
               {/* User Dashboard Dropdown */}
-              <div className="dropdown">
+              <div className="dropdown" style={{ paddingLeft: 15 }}>
                 <span style={isUserDashboardActive ? activeStyle : defaultStyle}>
-                  User Dashboard ▾
+                    User Dashboard ▾  
                 </span>
                 <div className="dropdown-content">
                   <NavLink to="/user-requests" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>

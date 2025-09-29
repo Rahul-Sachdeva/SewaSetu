@@ -23,6 +23,11 @@ const features = [
     desc: "Support ongoing campaigns and fundraising projects transparently.",
   },
   {
+    img: "/src/assets/volunteer.png",
+    title: "Volunteer Opportunities",
+    desc: "Participate in local volunteer programs and community events organized by NGOs.",
+  },
+  {
     img: "/src/assets/impact.png",
     title: "Impact Reporting",
     desc: "Track donations and contributions with full transparency.",
@@ -162,7 +167,7 @@ const Home = () => {
       </section>
 
       {/* Features Section */}
-      <section style={{ maxWidth: 1000, margin: "0 auto", padding: "2rem 1rem" }}>
+      <section style={{ maxWidth: 1200, margin: "0 auto", padding: "2rem 2.5rem" }}>
         <h2
           style={{
             fontSize: "2rem",
@@ -218,7 +223,7 @@ const Home = () => {
       </section>
 
       {/* Live Campaigns Section */}
-      <section style={{ maxWidth: 1200, margin: "0 auto", padding: "2rem 1rem" }}>
+      <section style={{ maxWidth: 1000, margin: "0 auto", padding: "1rem 0rem" }}>
         <h2
           style={{
             fontSize: "2rem",
@@ -238,7 +243,13 @@ const Home = () => {
           <>
             <div
               className="campaigns-container"
-              style={{ display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap" }}
+              style={{
+                display: "flex",
+                gap: 20,
+                justifyContent: "center",
+                flexWrap: "nowrap",  // Change from "wrap" to "nowrap"
+                overflowX: "auto",   // Optional: horizontal scroll if needed
+              }}
             >
               {previewCampaigns.length > 0 ? (
                 previewCampaigns.map((c) => (

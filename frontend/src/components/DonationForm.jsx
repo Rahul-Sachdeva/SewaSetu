@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 export default function DonationForm() {
+  const { user } = useAuth();
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -16,17 +18,27 @@ export default function DonationForm() {
     pickupTime: "",
   });
 
-  // ✅ handleChange - fixed for file inputs
+  useEffect(() => {
+    if (user) {
+      setForm((prev) => ({
+        ...prev,
+        name: user.name || "",
+        phone: user.phone || "",
+        email: user.email || "",
+        location: user.address || "",
+      }));
+    }
+  }, [user]);
+
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (name === "images") {
-      setForm({ ...form, images: files }); // store FileList
+      setForm({ ...form, images: files });
     } else {
       setForm({ ...form, [name]: value });
     }
   };
 
-  // ✅ handleSubmit - improved FormData + debug
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -35,7 +47,7 @@ export default function DonationForm() {
       if (key === "images") {
         if (form.images && form.images.length > 0) {
           Array.from(form.images).forEach((file) => {
-            formData.append("images", file); // must match backend key
+            formData.append("images", file);
           });
         }
       } else {
@@ -43,14 +55,13 @@ export default function DonationForm() {
       }
     });
 
-    // 🧪 Debug: log everything being sent
     for (let pair of formData.entries()) {
       console.log(`${pair[0]}:`, pair[1]);
     }
 
     try {
       await api.post("/donations", formData, {
-        headers: { 
+        headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -112,7 +123,6 @@ export default function DonationForm() {
         </h2>
 
         <form onSubmit={handleSubmit} style={{ display: "grid", gap: "2rem" }}>
-          {/* Name */}
           <div>
             <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
               Full Name
@@ -134,7 +144,6 @@ export default function DonationForm() {
             />
           </div>
 
-          {/* Contact */}
           <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
             <div style={{ flex: 1 }}>
               <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
@@ -177,7 +186,6 @@ export default function DonationForm() {
             </div>
           </div>
 
-          {/* Location */}
           <div>
             <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
               Pickup Location
@@ -199,7 +207,6 @@ export default function DonationForm() {
             />
           </div>
 
-          {/* Item Type */}
           <div>
             <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
               Item Type
@@ -225,7 +232,6 @@ export default function DonationForm() {
             </select>
           </div>
 
-          {/* Title */}
           <div>
             <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
               Title
@@ -247,7 +253,6 @@ export default function DonationForm() {
             />
           </div>
 
-          {/* Description + Quantity */}
           <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
             <div style={{ flex: 2 }}>
               <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
@@ -290,7 +295,6 @@ export default function DonationForm() {
             </div>
           </div>
 
-          {/* File Upload */}
           <div>
             <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
               Upload Image
@@ -310,7 +314,6 @@ export default function DonationForm() {
             />
           </div>
 
-          {/* Pickup Date & Time */}
           <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
             <div style={{ flex: 1 }}>
               <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
@@ -351,7 +354,6 @@ export default function DonationForm() {
             </div>
           </div>
 
-          {/* Submit */}
           <button
             type="submit"
             style={{

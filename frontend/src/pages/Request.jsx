@@ -1,23 +1,36 @@
-// src/pages/Request.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { useAuth } from "../context/AuthContext"; // Import useAuth to get user info
 
 const Request = () => {
   const navigate = useNavigate();
+  const { user } = useAuth(); // Get user from context
 
-const [formData, setFormData] = useState({
-  name: "",
-  phone: "",
-  email: "",
-  address: "",
-  coordinates: "",
-  category: "",
-  description: "",
-  priority: "Normal",
-  file: null,
-});
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    address: "",
+    coordinates: "",
+    category: "",
+    description: "",
+    priority: "Normal",
+    file: null,
+  });
 
+  // Use useEffect to set initial formData if user details exist
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        name: user.name || "",
+        phone: user.phone || "",
+        email: user.email || "",
+        address: user.address || "",
+      }));
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -28,12 +41,11 @@ const [formData, setFormData] = useState({
     setFormData({ ...formData, file: e.target.files[0] });
   };
 
-
   const handleSubmit = (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  navigate("/select-ngo", { state: { formData } });
-};
+    navigate("/select-ngo", { state: { formData } });
+  };
 
   return (
     <div style={{ fontFamily: "'Inter', Arial, sans-serif", background: "#f4f6f8", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -67,6 +79,8 @@ const [formData, setFormData] = useState({
                   onChange={handleChange}
                   placeholder="1234567890"
                   required
+                  pattern="^\d{10}$"
+                  title="Please enter a valid 10-digit phone number"
                   style={{
                     width: "100%",
                     padding: "1rem 1.2rem",
@@ -89,7 +103,9 @@ const [formData, setFormData] = useState({
                   name="email"
                   value={formData.email || ""}
                   onChange={handleChange}
-                  placeholder="email@example.com"
+                  placeholder="email@gmail.com"
+                  pattern="^[a-zA-Z0-9._%+-]+@gmail\.com$"
+                  title="Please enter a valid Gmail address"
                   style={{
                     width: "100%",
                     padding: "1rem 1.2rem",
@@ -103,8 +119,10 @@ const [formData, setFormData] = useState({
                   onBlur={(e) => (e.target.style.borderColor = "#d1d5db")}
                 />
               </div>
-            </div>
 
+
+
+            </div>
 
             {/* Address */}
             <div>
@@ -116,7 +134,7 @@ const [formData, setFormData] = useState({
               />
             </div>
 
-            {/* Coordinates */}
+
             {/* Coordinates */}
             <div>
               <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>Current Location Coordinates (optional)</label>

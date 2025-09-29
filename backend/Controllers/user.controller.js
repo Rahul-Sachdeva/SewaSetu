@@ -107,7 +107,9 @@ export const loginUser = async (req, res) => {
       user: {
         id: user._id,
         name: user.name,
+        phone: user.phone,
         email: user.email,
+        address: user.address,
         role: user.user_type,
         ngo: user.ngo,
         city: user.city,
