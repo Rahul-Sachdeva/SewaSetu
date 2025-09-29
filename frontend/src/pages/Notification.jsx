@@ -57,7 +57,12 @@ const Notification = () => {
     } else if (notification.referenceModel === "AssistanceRequest") {
       navigate("/ngo-requests");
     } else {
-      navigate("/");
+      if (notification.userModel === "NGO"){
+        navigate("/ngo-requests");
+      }
+      else{
+        navigate("/user-requests");
+      }
     }
   };
 
@@ -66,7 +71,7 @@ const Notification = () => {
       <Navbar />
       <div
         style={{
-          maxWidth: 600,
+          maxWidth: 800,
           margin: "40px auto",
           fontFamily: "'Inter', Arial, sans-serif",
           backgroundColor: "#fff",

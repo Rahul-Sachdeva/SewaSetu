@@ -49,7 +49,7 @@ const MyCampaignsPage = () => {
         {campaigns.length === 0 ? (
           <p className="text-gray-600">You haven’t created any campaigns yet.</p>
         ) : (
-          <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4" style={{ width: "1200px"}}>
             {campaigns.map((campaign) => (
               <CampaignCard
                 key={campaign._id}
@@ -62,7 +62,7 @@ const MyCampaignsPage = () => {
           </div>
         )}
 
-        {/* ✅ Campaign Dialog */}
+        {/* Campaign Dialog */}
         {selectedCampaign && (
           <CampaignDialog
             campaign={selectedCampaign}

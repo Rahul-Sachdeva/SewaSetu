@@ -45,43 +45,43 @@ const NgoDashboard = () => {
   }, [user]);
 
   const updateStatus = async (handlingId, status, scheduledDetails) => {
-  try {
-    setActionLoading(true);
-    const token = localStorage.getItem("token");
-    const payload = { requestHandlingId: handlingId, status };
+    try {
+      setActionLoading(true);
+      const token = localStorage.getItem("token");
+      const payload = { requestHandlingId: handlingId, status };
 
-    if (scheduledDetails) payload.scheduled_details = scheduledDetails;
+      if (scheduledDetails) payload.scheduled_details = scheduledDetails;
 
-    console.log("Sending update-status payload:", payload);
+      console.log("Sending update-status payload:", payload);
 
-    const res = await fetch(`${BaseURL}/api/requests/update-status`, {
-      method: "PUT",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+      const res = await fetch(`${BaseURL}/api/requests/update-status`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    if (!res.ok) {
-      const errorData = await res.json();
-      console.error("Failed to update status:", errorData);
-      alert(`Failed to update status: ${errorData.message || "Unknown error"}`);
-      return;
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error("Failed to update status:", errorData);
+        alert(`Failed to update status: ${errorData.message || "Unknown error"}`);
+        return;
+      }
+
+      // On success, update UI state
+      setRequests((prev) =>
+        prev.map((req) =>
+          req._id === handlingId ? { ...req, status, scheduled_details: scheduledDetails } : req
+        )
+      );
+
+      if (status === "scheduled") closeScheduleModal();
+    } catch (err) {
+      console.error("Error in updateStatus:", err);
+      alert("Unexpected error updating status. Try again.");
+    } finally {
+      setActionLoading(false);
     }
-
-    // On success, update UI state
-    setRequests((prev) =>
-      prev.map((req) =>
-        req._id === handlingId ? { ...req, status, scheduled_details: scheduledDetails } : req
-      )
-    );
-
-    if (status === "scheduled") closeScheduleModal();
-  } catch (err) {
-    console.error("Error in updateStatus:", err);
-    alert("Unexpected error updating status. Try again.");
-  } finally {
-    setActionLoading(false);
-  }
-};
+  };
 
   const openScheduleModal = (handlingId) => {
     setScheduleModal(handlingId);
@@ -135,7 +135,7 @@ const NgoDashboard = () => {
 
   return (
     <div style={{ fontFamily: "'Inter', Arial, sans-serif", background: "#f4f6f8", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <div style={{ flex: 1, padding: "2rem", maxWidth: 1000, margin: "0 auto" }}>
+      <div style={{ flex: 1, padding: "0rem", maxWidth: 1000, margin: "0 auto" }}>
         <h2 style={{ fontSize: "2rem", fontWeight: 700, marginBottom: "1.5rem", color: "#0f2a66", textAlign: "center" }}>
           Incoming Assistance Requests
         </h2>
@@ -158,7 +158,48 @@ const NgoDashboard = () => {
 
                 {renderStatusBar(req.status)}
 
+                {/* Show schedule details if status is scheduled or later and scheduled_details exist */}
+                {(req.status === "scheduled" || req.status === "completed") && req.scheduled_details && (
+                  <div
+                    style={{
+                      marginTop: "1rem",
+                      backgroundColor: "#f0f6ff",
+                      borderRadius: 12,
+                      padding: "1rem",
+                      boxShadow: "inset 0 0 8px rgba(49, 130, 206, 0.3)",
+                      color: "#0f2a66",
+                      fontWeight: "500",
+                    }}
+                  >
+                    <p><strong>Volunteer Name:</strong> {req.scheduled_details.volunteer_name}</p>
+                    <p><strong>Volunteer Contact:</strong> {req.scheduled_details.volunteer_contact}</p>
+                    <p><strong>Scheduled Date:</strong> {req.scheduled_details.schedule_date}</p>
+                    <p><strong>Scheduled Time:</strong> {req.scheduled_details.schedule_time}</p>
+                  </div>
+                )}
+                {req.feedbackGiven && (
+                  <div
+                    style={{
+                      marginTop: "1rem",
+                      backgroundColor: "#e9f7ef",
+                      borderRadius: 12,
+                      padding: "1rem",
+                      boxShadow: "inset 0 0 8px rgba(72, 180, 97, 0.3)",
+                      color: "#276749",
+                      fontWeight: "500",
+                      whiteSpace: "pre-wrap",
+                    }}
+                  >
+                    <p><strong>User Feedback</strong></p>
+                    <p>Rating: {"⭐".repeat(req.feedbackRating || 0)}</p>
+                    <p>Comments: {req.feedbackComments || "No comments provided."}</p>
+                    <small>Given on: {req.feedbackDate ? new Date(req.feedbackDate).toLocaleDateString() : "N/A"}</small>
+                  </div>
+                )}
+
+
                 <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
+                  {/* Buttons logic unchanged */}
                   {req.status === "pending" && (
                     <>
                       <button disabled={actionLoading} onClick={() => updateStatus(req._id, "accepted")}
@@ -194,6 +235,7 @@ const NgoDashboard = () => {
                 </div>
               </div>
             ))}
+
           </div>
         )}
       </div>
@@ -201,7 +243,7 @@ const NgoDashboard = () => {
       {/* Scheduling Modal */}
       {scheduleModal && (
         <div style={{
-          position: "fixed", top: 0, left: 0, right:0, bottom: 0,
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
           backgroundColor: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center",
           zIndex: 1000
         }}>

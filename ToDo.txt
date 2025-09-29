@@ -9,6 +9,3 @@ Make campaign Registration List Showing Page
 
 
 // For now Future: Integrate Payment gateway for fund raisers
-
-notification design improve
-ngo request scheduler details

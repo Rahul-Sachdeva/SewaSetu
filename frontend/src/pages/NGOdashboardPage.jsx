@@ -15,13 +15,19 @@ import DonationsManagement from "./DonationsManagement";
 import Navbar from "../components/Navbar";
 import NgoDashboard from "./NgoDashboard";
 
-
-
-
-
+import { useEffect } from "react";
 
 export default function NGODashboard() {
-  const [active, setActive] = useState("overview");
+  // Initialize active tab state with localStorage value or default to "overview"
+  const [active, setActive] = useState(() => {
+    return localStorage.getItem("ngoDashboardActiveTab") || "overview";
+  });
+
+  // Update localStorage when active changes
+  useEffect(() => {
+    localStorage.setItem("ngoDashboardActiveTab", active);
+  }, [active]);
+
 
   const menuItems = [
     { id: "overview", label: "Overview / Summary", icon: <LayoutDashboard size={18} /> },
