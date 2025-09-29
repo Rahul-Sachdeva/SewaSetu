@@ -17,7 +17,7 @@ const UserDonation = () => {
         else if (user.role !== "user") navigate("/not-authorized");
     }, [user, navigate]);
 
-    // ✅ Fetch donations from backend
+    //  Fetch donations from backend
     useEffect(() => {
         const fetchMyDonations = async () => {
             try {
