@@ -7,16 +7,16 @@ export const sendNotification = async (recipientId, recipientModel, payload, pus
   try {
     const { title, message, type, referenceId, referenceModel } = payload;
 
-    // Save Notification in DB
-    await Notification.create({
-      user: recipientId,
-      userModel: recipientModel,
-      type,
-      title,
-      message,
-      reference: referenceId || null,
-      referenceModel: referenceModel || null
-    });
+    // // Save Notification in DB
+    // await Notification.create({
+    //   user: recipientId,
+    //   userModel: recipientModel,
+    //   type,
+    //   title,
+    //   message,
+    //   reference: referenceId || null,
+    //   referenceModel: referenceModel || null
+    // });
 
     if (push) {
       // Fetch recipient device token
@@ -26,27 +26,26 @@ export const sendNotification = async (recipientId, recipientModel, payload, pus
 
       console.log("Sending notification to", recipientId, "model", recipientModel);
       if (!recipientDoc) console.warn("Recipient document not found");
-      if (!recipientDoc?.deviceToken) console.warn("Recipient device token not found");
+      if (!recipientDoc?.deviceTokens) console.warn("Recipient device token not found");
 
-      if (!recipientDoc || !recipientDoc.deviceToken) {
+      if (!recipientDoc || !recipientDoc.deviceTokens) {
         console.warn("Recipient device token not found");
         return true; // notification saved, just no push sent
       }
 
-      const token = recipientDoc.deviceToken;
+      const token = recipientDoc.deviceTokens;
 
       // Prepare Firebase payload with deep link for PWA
       const fbPayload = {
         notification: {
           title,
           body: message,
-          // Set click_action deep link depending on recipient type
-          click_action: recipientModel === "NGO" ? "/ngo-requests" : "/user-requests",
         },
         data: {
           type,
           referenceId: referenceId?.toString() || "",
           referenceModel: referenceModel || "",
+          click_action: "/notifications",
         }
       };
 

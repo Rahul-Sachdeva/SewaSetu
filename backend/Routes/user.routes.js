@@ -3,7 +3,7 @@ import { registerUser, loginUser, getProfile, updateProfile, verifyEmail, getUse
 import { authMiddleware } from "../Middlewares/auth.middleware.js";
 import multer from "multer";
 
-const storage = multer.memoryStorage(); // no files saved to disk
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 const userRouter = express.Router();

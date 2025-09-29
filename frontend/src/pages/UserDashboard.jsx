@@ -23,7 +23,7 @@ const FeedbackModal = ({ isOpen, onClose, ngoId, requestHandlingId, onSubmit }) 
 
   return (
     <div style={{
-      position: "fixed", top:0, left:0, right:0, bottom:0,
+      position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
       backgroundColor: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center",
       zIndex: 1000,
     }}>
@@ -33,7 +33,7 @@ const FeedbackModal = ({ isOpen, onClose, ngoId, requestHandlingId, onSubmit }) 
         <label>
           Rating:
           <select value={rating} onChange={e => setRating(parseInt(e.target.value))} style={{ width: "100%", marginBottom: 10 }}>
-            {[5,4,3,2,1].map(val => (<option key={val} value={val}>{val} Stars</option>))}
+            {[5, 4, 3, 2, 1].map(val => (<option key={val} value={val}>{val} Stars</option>))}
           </select>
         </label>
         <label>
@@ -124,11 +124,11 @@ const UserDashboard = () => {
           prev.map((req) =>
             req.handling?.some(h => h._id === handlingId)
               ? {
-                  ...req,
-                  handling: req.handling.map(h =>
-                    h._id === handlingId ? { ...h, userConfirmed: true } : h
-                  )
-                }
+                ...req,
+                handling: req.handling.map(h =>
+                  h._id === handlingId ? { ...h, userConfirmed: true } : h
+                )
+              }
               : req
           )
         );
@@ -241,12 +241,19 @@ const UserDashboard = () => {
                         <p><strong>Status:</strong> {handle.status.charAt(0).toUpperCase() + handle.status.slice(1)}</p>
                         {renderStatusBar(handle.status)}
 
-                        {handle.status === "scheduled" && handle.volunteer && (
+                        {handle.scheduled_details && (
                           <div style={{ marginTop: 8 }}>
-                            <p><strong>Volunteer:</strong> {handle.volunteer.name}</p>
-                            <p><strong>Contact:</strong> {handle.volunteer.phone}</p>
+                            <p><strong>Volunteer:</strong> {handle.scheduled_details.volunteer_name}</p>
+                            <p><strong>Contact:</strong> {handle.scheduled_details.volunteer_contact}</p>
+                            <p>
+                              <strong>Date:</strong>{" "}
+                              {new Date(handle.scheduled_details.schedule_date).toLocaleDateString()}
+                            </p>
+                            <p><strong>Time:</strong> {handle.scheduled_details.schedule_time}</p>
                           </div>
                         )}
+
+
 
                         {handle.status === "scheduled" && !handle.userConfirmed && (
                           <button

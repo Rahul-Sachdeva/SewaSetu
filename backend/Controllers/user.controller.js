@@ -288,11 +288,19 @@ export const checkFollowing = async (req, res) => {
 
 export const saveDeviceToken = async (req, res) => {
   try {
-    const userId = req.user._id;
+    let userId = req.user._id;
+    if(req.user.ngo) userId = req.user.ngo;
+    let userType = req.user.ngo? "NGO":"User";
     const { token } = req.body;
     if (!token) return res.status(400).json({ message: "Device token is required" });
 
-    const user = await User.findById(userId);
+    let user;
+    if(userType=="User"){
+      user = await User.findById(userId);
+    }
+    else{
+      user = await NGO.findById(userId);
+    }
     if (!user) return res.status(404).json({ message: "User not found" });
 
     // Use a Set or ensure no duplicates
