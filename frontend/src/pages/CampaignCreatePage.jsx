@@ -194,7 +194,7 @@ const CampaignCreatePage = ({ mode = "create" }) => {
   return (
     <>
       <div style={{ fontFamily: "'Inter', Arial, sans-serif", background: "#f4f6f8", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-        <Navbar />
+      
 
         <div className="flex justify-center items-center min-h-screen bg-slate-50 p-4">
           <Card className="w-full max-w-4xl shadow-lg border border-gray-200 rounded-2xl">

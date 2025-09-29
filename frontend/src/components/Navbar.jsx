@@ -65,7 +65,7 @@ const activeStyle = {
                 Home
               </NavLink>
               <NavLink
-                to="/ngo-requests"
+                to="/dashboard"
                 style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
               >
                 NGO Dashboard
@@ -77,23 +77,26 @@ const activeStyle = {
                 Campaigns
               </NavLink>
               <NavLink
-                to="/create-campaign"
+                to="/chat"
                 style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
               >
-                Create Campaign
+                Chat
               </NavLink>
-              <NavLink
-                to="/ngo-profile"
-                style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
-              >
-                My Profile
-              </NavLink>
+              
               <NavLink
                 to="/notifications"
                 style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
               >
                 Notifications
               </NavLink>
+
+              <NavLink
+                to="/ngo-profile"
+                style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
+              >
+                My Profile
+              </NavLink>
+              
               <a
                 className="logout-btn"
                 href="#logout"

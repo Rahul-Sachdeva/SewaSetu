@@ -43,7 +43,6 @@ const MyCampaignsPage = () => {
 
   return (
     <div style={{ fontFamily: "'Inter', Arial, sans-serif", background: "#f4f6f8", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <Navbar />
       <div className="px-4 md:px-12 pt-0.7 pb-6">
 
         <h1 className="text-2xl font-bold mb-6">My Campaigns</h1>

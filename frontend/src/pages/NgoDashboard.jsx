@@ -135,7 +135,6 @@ const NgoDashboard = () => {
 
   return (
     <div style={{ fontFamily: "'Inter', Arial, sans-serif", background: "#f4f6f8", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <Navbar />
       <div style={{ flex: 1, padding: "2rem", maxWidth: 1000, margin: "0 auto" }}>
         <h2 style={{ fontSize: "2rem", fontWeight: 700, marginBottom: "1.5rem", color: "#0f2a66", textAlign: "center" }}>
           Incoming Assistance Requests

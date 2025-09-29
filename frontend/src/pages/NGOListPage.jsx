@@ -37,7 +37,7 @@ const NGOListPage = () => {
 
   return (
     <>
-    <Navbar/>
+    
     <div className="max-w-7xl mx-auto p-4 space-y-4">
       <Input
         placeholder="Search NGOs..."
