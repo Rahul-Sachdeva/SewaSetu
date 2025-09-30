@@ -87,7 +87,7 @@ const Navbar = () => {
                 onClick={(e) => {
                   e.preventDefault(); // Prevent anchor default navigation
                   localStorage.clear();
-                  navigate("/");
+                  navigate("/login");
                 }}
                 style={{ color: "white", fontWeight: "bold" }}
               >
@@ -144,7 +144,7 @@ const Navbar = () => {
                 onClick={(e) => {
                   e.preventDefault(); // Prevent anchor default navigation
                   localStorage.clear();
-                  navigate("/");
+                  navigate("/login");
                 }}
                 style={{ color: "white", fontWeight: "bold" }}
               >
@@ -194,7 +194,7 @@ const Navbar = () => {
                   onClick={(e) => {
                     e.preventDefault(); // Prevent anchor default navigation
                     localStorage.clear();
-                    navigate("/");
+                    navigate("/login");
                   }}
                   style={{ color: "white", fontWeight: "bold" }}
                 >
@@ -271,7 +271,7 @@ const Navbar = () => {
                   onClick={(e) => {
                     e.preventDefault(); // Prevent anchor default navigation
                     localStorage.clear();
-                    navigate("/");
+                    navigate("/login");
                   }}
                   style={{ color: "white", fontWeight: "bold" }}
                 >
