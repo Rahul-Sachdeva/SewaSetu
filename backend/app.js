@@ -13,6 +13,7 @@ import notificationRouter from "./Routes/notification.routes.js";
 import donationRouter from "./Routes/donation.routes.js"; 
 
 
+import fundRouter from "./Routes/fund.routes.js";
 
 // initialize server
 const app = express();
@@ -37,5 +38,6 @@ app.use("/api/v1/conversation", conversationRouter);
 app.use("/api/v1/message", messageRouter);
 app.use("/api/notifications", notificationRouter);
 app.use("/api/v1/donations", donationRouter);
+app.use("/api/v1/fund", fundRouter);
 
 export {app} 

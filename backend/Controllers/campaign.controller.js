@@ -1,6 +1,13 @@
 import { Campaign } from "../Models/campaign.model.js";
 import uploadCloudinary from "../Utils/cloudinary.js";
 import { Conversation } from "../Models/conversation.model.js";
+import { Fund } from "../Models/fund.model.js";
+import Razorpay from "razorpay";
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_SECRET
+});
 
 // Create a campaign
 export const createCampaign = async (req, res) => {
@@ -15,6 +22,7 @@ export const createCampaign = async (req, res) => {
       address,
       targetFunds,
       targetVolunteers,
+      razorpayQR, // new field
     } = req.body;
 
     if (!title || !category || !startDate || !endDate || !location_coordinates) {
@@ -53,6 +61,7 @@ export const createCampaign = async (req, res) => {
       bannerImage: bannerImageUrl,
       targetFunds: targetFunds || 0,
       targetVolunteers: targetVolunteers || 0,
+      razorpayQR: razorpayQR || "", // save QR if provided
     });
 
     // 🔹 Create corresponding conversation
@@ -89,7 +98,9 @@ export const listCampaigns = async (req, res) => {
 
         const campaigns = await Campaign.find(filter)
             .populate("ngo", "name")
-            .populate("participants.user", "name email");
+            .populate("participants.user", "name email")
+            .populate("donations", "donor amount status createdAt")
+            .exec();
 
         return res.status(200).json(campaigns);
     } catch (err) {
@@ -102,7 +113,9 @@ export const getCampaignById = async (req, res) => {
     try {
         const campaign = await Campaign.findById(req.params.id)
             .populate("ngo", "name")
-            .populate("participants.user", "name email");
+            .populate("participants.user", "name email")
+            .populate("donations", "donor amount status createdAt")
+            .exec();
 
         if (!campaign) return res.status(404).json({ message: "Campaign not found" });
         return res.status(200).json(campaign);
@@ -261,6 +274,7 @@ export const updateCampaign = async (req, res) => {
       address,
       targetFunds,
       targetVolunteers,
+      razorpayQR, // new field
     } = req.body;
 
     // 🔹 Find campaign
@@ -307,6 +321,7 @@ export const updateCampaign = async (req, res) => {
     campaign.targetFunds = targetFunds !== undefined ? targetFunds : campaign.targetFunds;
     campaign.targetVolunteers =
       targetVolunteers !== undefined ? targetVolunteers : campaign.targetVolunteers;
+    campaign.razorpayQR = razorpayQR !== undefined ? razorpayQR : campaign.razorpayQR;
 
     await campaign.save();
 
@@ -384,5 +399,81 @@ export const getCampaignsByNGO = async (req, res) => {
       message: "Error fetching NGO campaigns",
       error: err.message,
     });
+  }
+};
+
+export const getTopDonors = async (req, res) => {
+  try {
+    const { campaignId } = req.params;
+    const funds = await Fund.find({ campaign: campaignId, status: "paid" })
+      .populate("donor", "name email")
+      .sort({ amount: -1 })
+      .limit(10);
+    res.json(funds);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const getCampaignDonations = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const campaign = await Campaign.findById(id).populate("donations").exec();
+
+    if (!campaign) {
+      return res.status(404).json({ message: "Campaign not found" });
+    }
+
+    res.json({
+      campaignId: campaign._id,
+      title: campaign.title,
+      targetFunds: campaign.targetFunds,
+      collectedFunds: campaign.collectedFunds,
+      donations: campaign.donations
+    });
+  } catch (err) {
+    console.error("Get campaign donations error:", err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+export const initiateCampaignDonation = async (req, res) => {
+  try {
+    const { id: campaignId } = req.params; // campaign ID
+    const { amount } = req.body;           // donation amount
+    const userId = req.user.id;
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ message: "Invalid donation amount" });
+    }
+
+    const options = {
+      amount: amount * 100, // paise
+      currency: "INR",
+      receipt: `fund_${campaignId}_${Date.now()}`
+    };
+
+    const order = await razorpay.orders.create(options);
+
+    // Create Fund entry in DB
+    const fund = await Fund.create({
+      campaign: campaignId,
+      donor: userId,
+      amount,
+      orderId: order.id,
+      status: "created"
+    });
+
+    // Respond with order info for frontend Razorpay checkout
+    res.json({
+      orderId: order.id,
+      amount,
+      currency: "INR",
+      fundId: fund._id
+    });
+
+  } catch (err) {
+    console.error("Initiate donation error:", err.message);
+    res.status(500).json({ error: "Server error" });
   }
 };

@@ -1,13 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog } from "@headlessui/react";
 import axios from "axios";
 import {
   FaRegCalendarAlt,
   FaMapMarkerAlt,
-  FaUser,
-  FaTimes,
-  FaMoneyBillWave,
   FaUsers,
+  FaMoneyBillWave,
   FaHandHoldingHeart,
   FaShareAlt,
 } from "react-icons/fa";
@@ -20,7 +18,7 @@ const CampaignDialog = ({ campaign, onClose, onRegister }) => {
   const { user } = useAuth();
   const [role, setRole] = useState("attendee");
   const [isRegistered, setIsRegistered] = useState(
-    campaign.participants?.some((p) => p.user?._id === user?.id) || false
+    campaign?.participants?.some((p) => p.user?._id === user?.id) || false
   );
   const [loading, setLoading] = useState(false);
 
@@ -28,7 +26,6 @@ const CampaignDialog = ({ campaign, onClose, onRegister }) => {
 
   const start = dayjs(campaign.startDate).format("MMM D, YYYY h:mm A");
   const end = dayjs(campaign.endDate).format("MMM D, YYYY h:mm A");
-
   const totalRegistrations = campaign.participants?.length || 0;
 
   const categoryColors = {
@@ -47,32 +44,80 @@ const CampaignDialog = ({ campaign, onClose, onRegister }) => {
     cancelled: "bg-red-200 text-red-700",
   };
 
-  // Backend registration function
+  // ------------------- Handle registration -------------------
   const handleRegister = async () => {
-    if (isRegistered) return; // Already registered
+    if (isRegistered) return;
 
     setLoading(true);
     try {
       const res = await axios.post(
         `${BaseURL}/api/v1/campaign/${campaign._id}/register`,
         { role },
-        {
-          headers: {
-            Authorization: `Bearer ${userToken}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${userToken}` } }
       );
 
       if (res.status === 200) {
         setIsRegistered(true);
         onRegister(campaign._id, {
-          participants: [...campaign.participants, user?.id], // add current user
+          participants: [...campaign.participants, { user, role }],
         });
-        alert("Registered successfully!");
+        alert("✅ Registered successfully!");
       }
     } catch (err) {
-      console.log("error: ",err);
+      console.error(err);
       alert(err.response?.data?.message || "Error registering for campaign");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+   // ------------------- Handle fundraising donation -------------------
+  const handleDonate = async () => {
+    const amount = prompt("Enter donation amount (INR):", "500");
+    if (!amount || isNaN(amount) || parseFloat(amount) <= 0) return;
+
+    setLoading(true);
+    try {
+      const res = await axios.post(
+        `${BaseURL}/api/v1/fund/create-order`,
+        { campaignId: campaign._id, amount: parseFloat(amount) * 100 }, // Razorpay expects paise
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+     
+      const order = res.data;
+      
+      
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "KEY NOT AVAILABLE",
+        amount: order.amount,
+        currency: order.currency,
+        name: campaign.title,
+        description: "Donation",
+        order_id: order.orderId,
+        prefill: { name: user?.name, email: user?.email },
+        handler: async (response) => {
+          try {
+            console.log("response: ", response)
+            await axios.post(
+              `${BaseURL}/api/v1/fund/verify-payment`,
+              { ...response, campaignId: campaign._id,  },
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            alert("✅ Donation successful!");
+            window.location.reload(); // Refresh to update collectedFunds
+          } catch (err) {
+            console.error(err);
+            alert("❌ Payment verification failed.");
+          }
+        },
+        theme: { color: "#19398a" },
+      };
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error(err);
+      alert("❌ Failed to initiate donation.");
     } finally {
       setLoading(false);
     }
@@ -85,15 +130,19 @@ const CampaignDialog = ({ campaign, onClose, onRegister }) => {
         <Dialog.Panel className="w-full max-w-7xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-xl">
           {/* Category & Status */}
           <div className="flex justify-between p-4">
-            <span className={`px-3 py-1 text-sm font-semibold rounded ${categoryColors[campaign.category]}`}>
-              Type of Event: {campaign.category.replace("_", " ").toUpperCase()}
+            <span
+              className={`px-3 py-1 text-sm font-semibold rounded ${categoryColors[campaign.category]}`}
+            >
+              {campaign.category.replace("_", " ").toUpperCase()}
             </span>
-            <span className={`px-3 py-1 text-sm font-semibold rounded ${statusColors[campaign.status]}`}>
+            <span
+              className={`px-3 py-1 text-sm font-semibold rounded ${statusColors[campaign.status]}`}
+            >
               {campaign.status.toUpperCase()}
             </span>
           </div>
 
-          {/* Two Column Layout */}
+          {/* Two-column layout */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-6 pb-4">
             {/* Left Column */}
             <div className="space-y-4">
@@ -104,18 +153,6 @@ const CampaignDialog = ({ campaign, onClose, onRegister }) => {
                   className="w-full h-48 border-2 object-cover rounded-lg"
                 />
               )}
-
-              <div className="flex items-center gap-3">
-                <img
-                  src={campaign.ngo?.logo || "/placeholder-logo.png"}
-                  alt={campaign.ngo?.name}
-                  className="w-14 h-14 rounded-full border"
-                />
-                <div>
-                  <h3 className="font-bold text-lg text-gray-800">{campaign.ngo?.name}</h3>
-                  <button className="text-sm text-[#19398a] hover:underline">View Profile</button>
-                </div>
-              </div>
 
               <div>
                 <h2 className="text-2xl font-bold text-gray-800">{campaign.title}</h2>
@@ -131,46 +168,10 @@ const CampaignDialog = ({ campaign, onClose, onRegister }) => {
                   <FaMapMarkerAlt className="mr-2 text-[#19398a]" />
                   <span>{campaign.address}</span>
                 </div>
-                {campaign.city && <p className="ml-6">City: {campaign.city}</p>}
-                {campaign.state && <p className="ml-6">State: {campaign.state}</p>}
               </div>
 
-              {/* Expected Impacts */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
-                <div className="p-3 bg-gray-100 rounded-lg shadow-sm flex flex-col items-center text-center">
-                  <FaMoneyBillWave className="text-green-600 text-2xl mb-2" />
-                  <p className="text-sm font-semibold text-gray-800">Provide Funds</p>
-                </div>
-                <div className="p-3 bg-gray-100 rounded-lg shadow-sm flex flex-col items-center text-center">
-                  <FaHandHoldingHeart className="text-red-600 text-2xl mb-2" />
-                  <p className="text-sm font-semibold text-gray-800">Help Needy People</p>
-                </div>
-                <div className="p-3 bg-gray-100 rounded-lg shadow-sm flex flex-col items-center text-center">
-                  <FaUsers className="text-blue-600 text-2xl mb-2" />
-                  <p className="text-sm font-semibold text-gray-800">Volunteers Needed</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column */}
-            <div className="space-y-6">
-              {campaign.location_coordinates?.length === 2 && (
-                <div className="h-48 w-full rounded-md overflow-hidden border">
-                  <iframe
-                    title="campaign-location"
-                    className="w-full h-full rounded-lg border"
-                    src={`https://www.google.com/maps?q=${campaign.location_coordinates[1]},${campaign.location_coordinates[0]}&hl=es;z=14&output=embed`}
-                    loading="lazy"
-                  ></iframe>
-                </div>
-              )}
-
-              <div className="p-4 bg-gray-50 rounded-lg shadow-sm">
-                <h3 className="font-semibold text-gray-800">Registrations</h3>
-                <p className="mt-1 text-2xl font-bold text-[#19398a]">{totalRegistrations}</p>
-              </div>
-
-              <div className="p-4 bg-gray-50 rounded-lg shadow-sm">
+              {/* Registration Section */}
+              <div className="p-4 bg-gray-50 rounded-lg shadow-sm mt-4">
                 <h3 className="font-semibold text-gray-800 mb-2">Register</h3>
                 <div className="flex flex-col sm:flex-row gap-4 items-center">
                   {!isRegistered ? (
@@ -180,8 +181,12 @@ const CampaignDialog = ({ campaign, onClose, onRegister }) => {
                         onChange={(e) => setRole(e.target.value)}
                         className="border rounded-md px-3 py-2 text-gray-700 focus:ring-2 focus:ring-[#19398a]"
                       >
-                        <option value="attendee">Attendee</option>
-                        <option value="volunteer">Volunteer</option>
+                        {campaign.category !== "fundraising" && (
+                          <>
+                            <option value="attendee">Attendee</option>
+                            <option value="volunteer">Volunteer</option>
+                          </>
+                        )}
                         <option value="donor">Donor</option>
                       </select>
                       <button
@@ -202,23 +207,50 @@ const CampaignDialog = ({ campaign, onClose, onRegister }) => {
                 </div>
               </div>
 
-              {/* Share Buttons */}
-              <div className="flex p-4 bg-gray-50 rounded-lg shadow-sm">
-                <h3 className="font-semibold text-gray-800 mb-2">Share</h3>
-                <div className="w-full justify-center flex gap-3">
-                  <button className="px-3 py-2 text-sm bg-green-500 text-white rounded-md hover:bg-green-600">
-                    WhatsApp
-                  </button>
-                  <button className="px-3 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600">
-                    Twitter
-                  </button>
+              {/* Fundraising Section */}
+              {campaign.category === "fundraising" && (
+                <div className="p-4 bg-gray-50 rounded-lg shadow-sm mt-4">
+                  <h3 className="font-semibold text-gray-800 mb-2">Donate</h3>
+                  <p className="mb-2 text-gray-600">
+                    Collected: ₹{campaign.collectedFunds || 0} / ₹{campaign.targetFunds || 0}
+                  </p>
+                  <div className="w-full bg-gray-200 rounded-full h-3 mt-1">
+                    <div
+                      className="bg-green-600 h-3 rounded-full"
+                      style={{
+                        width: `${((campaign.collectedFunds || 0) / (campaign.targetFunds || 1)) * 100}%`,
+                      }}
+                    />
+                  </div>
                   <button
-                    onClick={() => navigator.clipboard.writeText(window.location.href)}
-                    className="px-3 py-2 text-sm bg-gray-700 text-white rounded-md hover:bg-gray-800 flex items-center gap-2"
+                    onClick={handleDonate}
+                    disabled={loading || campaign.status !== "ongoing"}
+                    className="w-full mt-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
                   >
-                    <FaShareAlt /> Copy Link
+                    {loading ? "Processing..." : "Donate Now"}
                   </button>
                 </div>
+              )}
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-6">
+              {/* Map */}
+              {campaign.location_coordinates?.length === 2 && (
+                <div className="h-48 w-full rounded-md overflow-hidden border">
+                  <iframe
+                    title="campaign-location"
+                    className="w-full h-full rounded-lg border"
+                    src={`https://www.google.com/maps?q=${campaign.location_coordinates[1]},${campaign.location_coordinates[0]}&hl=es;z=14&output=embed`}
+                    loading="lazy"
+                  ></iframe>
+                </div>
+              )}
+
+              {/* Total Registrations */}
+              <div className="p-4 bg-gray-50 rounded-lg shadow-sm">
+                <h3 className="font-semibold text-gray-800">Registrations</h3>
+                <p className="mt-1 text-2xl font-bold text-[#19398a]">{totalRegistrations}</p>
               </div>
             </div>
           </div>

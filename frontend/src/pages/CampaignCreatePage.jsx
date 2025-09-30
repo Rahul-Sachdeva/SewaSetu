@@ -57,7 +57,9 @@ const CampaignCreatePage = ({ mode = "create" }) => {
     location_coordinates: "",
     targetFunds: "",
     targetVolunteers: "",
+    razorpayQR: "", // new
   });
+
   const { id } = useParams(); // campaignId when editing
   const navigate = useNavigate();
 
@@ -79,17 +81,18 @@ const CampaignCreatePage = ({ mode = "create" }) => {
 
           const data = res.data;
 
-          setFormData({
-            title: data.title,
-            description: data.description,
-            category: data.category,
-            startDate: data.startDate?.slice(0, 10),
-            endDate: data.endDate?.slice(0, 10),
-            address: data.address,
-            location_coordinates: data.location_coordinates, // store as-is
-            targetFunds: data.targetFunds,
-            targetVolunteers: data.targetVolunteers,
-          });
+        setFormData({
+          title: data.title,
+          description: data.description,
+          category: data.category,
+          startDate: data.startDate?.slice(0, 10),
+          endDate: data.endDate?.slice(0, 10),
+          address: data.address,
+          location_coordinates: data.location_coordinates,
+          targetFunds: data.targetFunds,
+          targetVolunteers: data.targetVolunteers,
+          razorpayQR: data.razorpayQR || "",
+        });
 
           if (data.bannerImage) {
             setPreviewUrl(data.bannerImage);
@@ -368,37 +371,51 @@ const CampaignCreatePage = ({ mode = "create" }) => {
                   </div>
                 </div>
 
-                {/* Section: Banner */}
-                <div>
-                  <h2 className="text-lg font-semibold text-[#19398a] mb-2">
-                    Banner Image
-                  </h2>
-                  <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-4 cursor-pointer hover:border-[#19398a] transition">
-                    <label className="block text-sm font-medium text-gray-600 mb-2">
-                      Upload Campaign Poster
-                    </label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className="hidden"
-                      id="banner"
-                    />
-                    <label
-                      htmlFor="banner"
-                      className="px-4 py-2 bg-[#19398a] text-white text-sm rounded-lg cursor-pointer hover:bg-[#2e58c2] transition"
-                    >
-                      Choose File
-                    </label>
-                    {previewUrl && (
-                      <img
-                        src={previewUrl}
-                        alt="Preview"
-                        className="mt-3 w-50 h-30 object-cover rounded-md border"
-                      />
-                    )}
-                  </div>
-                </div>
+            {/* Section: Banner */}
+            <div>
+              <h2 className="text-lg font-semibold text-[#19398a] mb-2">
+                Banner Image
+              </h2>
+              <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-4 cursor-pointer hover:border-[#19398a] transition">
+                <label className="block text-sm font-medium text-gray-600 mb-2">
+                  Upload Campaign Poster
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                  id="banner"
+                />
+                <label
+                  htmlFor="banner"
+                  className="px-4 py-2 bg-[#19398a] text-white text-sm rounded-lg cursor-pointer hover:bg-[#2e58c2] transition"
+                >
+                  Choose File
+                </label>
+                {previewUrl && (
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    className="mt-3 w-50 h-30 object-cover rounded-md border"
+                  />
+                )}
+              </div>
+            </div>
+            {formData.category === "fundraising" && (
+              <div className="space-y-2">
+                <Label htmlFor="razorpayQR">Razorpay QR (optional)</Label>
+                <Input
+                  id="razorpayQR"
+                  type="text"
+                  name="razorpayQR"
+                  value={formData.razorpayQR}
+                  onChange={handleChange}
+                  placeholder="Paste Razorpay QR URL here"
+                />
+              </div>
+            )}
+
 
                 {/* Buttons */}
                 <div className="flex gap-4 justify-end">

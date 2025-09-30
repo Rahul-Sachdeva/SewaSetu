@@ -11,7 +11,10 @@ import {
     getCampaignParticipants,
     updateCampaign,
     deleteCampaign,
-    getCampaignsByNGO
+    getCampaignsByNGO,
+    getTopDonors,
+    getCampaignDonations,
+    initiateCampaignDonation
 } from "../Controllers/campaign.controller.js";
 
 import { authMiddleware, roleMiddleware } from "../Middlewares/auth.middleware.js";
@@ -31,7 +34,13 @@ campaignRouter.post(
   createCampaign
 );
 
+campaignRouter.get("/:id/donations",authMiddleware,roleMiddleware(["ngo", "admin"]),getCampaignDonations);
+
+// Frontend calls this to initiate a donation (creates Fund / Razorpay order)
+campaignRouter.post("/:id/donate",authMiddleware,initiateCampaignDonation);
+
 campaignRouter.get("/ngo/:ngoId",authMiddleware,roleMiddleware(["ngo", "admin"]),getCampaignsByNGO);
+campaignRouter.get("/top-donors",authMiddleware,getTopDonors);
 
 // 🔹 New Features
 campaignRouter.get("/:id/participants", authMiddleware, roleMiddleware(["ngo", "admin"]), getCampaignParticipants);
@@ -51,5 +60,7 @@ campaignRouter.post("/:id/unregister", authMiddleware, unregisterFromCampaign);
 
 // Update participant status (approve/reject) - NGO/Admin only
 campaignRouter.post("/:id/participant-status",authMiddleware,roleMiddleware(["ngo", "admin"]),updateParticipantStatus);
+
+
 
 export default campaignRouter;
