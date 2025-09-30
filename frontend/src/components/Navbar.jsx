@@ -29,7 +29,7 @@ const Navbar = () => {
   return (
     <nav
       style={{
-        padding: "1rem 2.5rem",
+        padding: "1rem 1.5rem",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
@@ -114,7 +114,7 @@ const Navbar = () => {
 
 
               {/* User Dashboard Dropdown */}
-              <div className="dropdown" style={{ paddingLeft: 15 }}>
+              <div className="dropdown" style={{ paddingLeft: 1 }}>
                 <span style={isUserDashboardActive ? activeStyle : defaultStyle}>
                   User Dashboard ▾
                 </span>
