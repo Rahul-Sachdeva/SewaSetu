@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { NavLink, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const activeStyle = {
     borderBottom: "2px solid #123180ff",
@@ -82,9 +84,10 @@ const Navbar = () => {
               <a
                 className="logout-btn"
                 href="#logout"
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault(); // Prevent anchor default navigation
                   localStorage.clear();
-                  window.location.reload();
+                  navigate("/");
                 }}
                 style={{ color: "white", fontWeight: "bold" }}
               >
@@ -138,9 +141,10 @@ const Navbar = () => {
               <a
                 className="logout-btn"
                 href="#logout"
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault(); // Prevent anchor default navigation
                   localStorage.clear();
-                  window.location.reload();
+                  navigate("/");
                 }}
                 style={{ color: "white", fontWeight: "bold" }}
               >
@@ -187,9 +191,10 @@ const Navbar = () => {
                 <a
                   className="logout-btn"
                   href="#logout"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault(); // Prevent anchor default navigation
                     localStorage.clear();
-                    window.location.reload();
+                    navigate("/");
                   }}
                   style={{ color: "white", fontWeight: "bold" }}
                 >
@@ -263,9 +268,10 @@ const Navbar = () => {
                 <a
                   className="logout-btn"
                   href="#logout"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault(); // Prevent anchor default navigation
                     localStorage.clear();
-                    window.location.reload();
+                    navigate("/");
                   }}
                   style={{ color: "white", fontWeight: "bold" }}
                 >

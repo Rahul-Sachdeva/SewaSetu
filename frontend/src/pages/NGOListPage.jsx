@@ -4,12 +4,14 @@ import { BaseURL } from "@/BaseURL";
 import NGOCard from "@/components/NGOCard";
 import { Input } from "@/components/ui/input";
 import Navbar from "@/components/Navbar";
+import { useAuth } from "../context/AuthContext";
 
 const NGOListPage = () => {
   const [ngos, setNgos] = useState([]);
   const [search, setSearch] = useState("");
   const [filtered, setFiltered] = useState([]);
-
+    const { user } = useAuth();
+  
   // Filter states (example: city and verification)
   const [cityFilter, setCityFilter] = useState("");
   const [verificationFilter, setVerificationFilter] = useState("");
@@ -62,7 +64,7 @@ const NGOListPage = () => {
 
   return (
     <>
-      <Navbar />
+      {user && user.role !== "ngo" && <Navbar />}
 
       <div className="max-w-7xl mx-auto p-4 space-y-4">
         <Input

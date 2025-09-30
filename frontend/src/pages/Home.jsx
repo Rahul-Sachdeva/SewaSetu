@@ -5,6 +5,7 @@ import axios from "axios";
 import { BaseURL } from "../BaseURL";
 import CampaignCard from "../components/CampaignCard";
 import CampaignDialog from "../components/CampaignsDialog";
+import { useAuth } from "../context/AuthContext";
 
 const features = [
   {
@@ -46,6 +47,7 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCampaign, setSelectedCampaign] = useState(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchCampaigns = async () => {
@@ -121,40 +123,83 @@ const Home = () => {
             Donate essentials, request help, or support campaigns – all in one place.
           </p>
           <div>
-            <Link to="/donate">
-              <button
-                style={{
-                  marginRight: 16,
-                  padding: "1rem 2rem",
-                  background: "#FFD600",
-                  color: "#111",
-                  border: "2px solid #f1ca56ff",
-                  borderRadius: "8px",
-                  fontWeight: "bold",
-                  fontSize: "1.05rem",
-                  cursor: "pointer",
-                }}
-              >
-                Donate Now
-              </button>
-            </Link>
-            <Link to="/request">
-              <button
-                style={{
-                  padding: "1rem 2rem",
-                  background: "#fff",
-                  border: "2px solid #19398aff",
-                  color: "#19398aff",
-                  borderRadius: "8px",
-                  fontWeight: "bold",
-                  fontSize: "1.05rem",
-                  cursor: "pointer",
-                }}
-              >
-                Request Assistance
-              </button>
-            </Link>
+            {user && user.role === "ngo" ? (
+              // NGO-specific CTA
+              <>
+                <Link to="/dashboard">
+                  <button
+                    style={{
+                      marginRight: 16,
+                      padding: "1rem 1rem",
+                      background: "#FFD600",
+                      color: "#111",
+                      border: "2px solid #f1ca56ff",
+                      borderRadius: "8px",
+                      fontWeight: "bold",
+                      fontSize: "1.05rem",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Go to NGO Dashboard
+                  </button>
+                </Link>
+                <Link to="/campaigns">
+                  <button
+                    style={{
+                      padding: "1rem 1rem",
+                      background: "#fff",
+                      border: "2px solid #19398aff",
+                      color: "#19398aff",
+                      borderRadius: "8px",
+                      fontWeight: "bold",
+                      fontSize: "1.05rem",
+                      cursor: "pointer",
+                    }}
+                  >
+                    View Campaigns
+                  </button>
+                </Link>
+              </>
+            ) : (
+              // User/General CTA
+              <>
+                <Link to="/donate">
+                  <button
+                    style={{
+                      marginRight: 16,
+                      padding: "1rem 2rem",
+                      background: "#FFD600",
+                      color: "#111",
+                      border: "2px solid #f1ca56ff",
+                      borderRadius: "8px",
+                      fontWeight: "bold",
+                      fontSize: "1.05rem",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Donate Now
+                  </button>
+                </Link>
+                <Link to="/request">
+                  <button
+                    style={{
+                      padding: "1rem 2rem",
+                      background: "#fff",
+                      border: "2px solid #19398aff",
+                      color: "#19398aff",
+                      borderRadius: "8px",
+                      fontWeight: "bold",
+                      fontSize: "1.05rem",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Request Assistance
+                  </button>
+                </Link>
+              </>
+            )}
           </div>
+
         </div>
         <img
           src="/src/assets/hero-family.jpeg"
