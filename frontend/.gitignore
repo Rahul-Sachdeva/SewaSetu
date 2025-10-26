@@ -16,10 +16,10 @@ dist-ssr
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-/public/firebase-messaging-sw.js
-/src/context/AuthContext.jsx
-/src/hooks/useNotificationPermission.js
-/src/utils/firebaseClient.js
+# /public/firebase-messaging-sw.js
+# /src/context/AuthContext.jsx
+# /src/hooks/useNotificationPermission.js
+# /src/utils/firebaseClient.js
 .idea
 .DS_Store
 *.suo

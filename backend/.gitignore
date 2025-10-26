@@ -14,7 +14,7 @@ dist-ssr
 
 # Editor directories and files
 .vscode/*
-Utils/serviceAccountKey.json
+# Utils/serviceAccountKey.json
 !.vscode/extensions.json
 .idea
 .DS_Store
