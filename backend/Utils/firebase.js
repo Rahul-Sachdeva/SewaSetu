@@ -1,31 +1,31 @@
 import admin from "firebase-admin";
-import serviceAccount from "./serviceAccountKey.json" with { type: "json" };
+import serviceAccount from "./serviceAccountKey.js";
 
-
-// Initialize Firebase Admin
+// Initialize Firebase Admin only once
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
   });
 }
+
 export const sendFirebaseNotification = async (tokens, payload) => {
   try {
-    console.log("tokens: ", tokens);
-    console.log("payload: ", payload);
-
-    const response = await admin.messaging().sendEachForMulticast({ 
-      tokens: tokens, 
-      notification: payload.notification, 
-      data: payload.data || {}, 
+    const response = await admin.messaging().sendEachForMulticast({
+      tokens,
+      notification: payload.notification,
+      data: payload.data || {},
     });
 
     response.responses.forEach((resp, idx) => {
       if (!resp.success) {
-        console.error(`Failed for token ${tokens[idx]}:`, resp.error.code, resp.error.message);
+        console.error(
+          `Failed for token ${tokens[idx]}:`,
+          resp.error.code,
+          resp.error.message
+        );
       }
     });
 
-    console.log("FCM response: ", response);
     return response;
   } catch (error) {
     console.error("Error sending FCM notification:", error);
