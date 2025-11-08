@@ -11,7 +11,9 @@ import conversationRouter from "./Routes/conversation.routes.js";
 import messageRouter from "./Routes/message.routes.js";
 import notificationRouter from "./Routes/notification.routes.js";
 import donationRouter from "./Routes/donation.routes.js"; 
-
+import postRouter from "./Routes/post.routes.js";
+import likeRouter from "./Routes/like.routes.js";
+import commentRouter from "./Routes/comment.routes.js";
 
 import fundRouter from "./Routes/fund.routes.js";
 
@@ -39,5 +41,8 @@ app.use("/api/v1/message", messageRouter);
 app.use("/api/notifications", notificationRouter);
 app.use("/api/v1/donations", donationRouter);
 app.use("/api/v1/fund", fundRouter);
+app.use("/api/v1/posts", postRouter);
+app.use("/api/v1/likes", likeRouter);
+app.use("/api/v1/comments", commentRouter);
 
 export {app} 

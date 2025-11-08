@@ -34,11 +34,6 @@ app.use((req, res, next)=> {
 });
 
 io.on("connection", (socket) => {
-  
-  socket.on("joinConversation", (conversationId) => {
-    socket.join(conversationId);
-  });
-
   socket.on("sendMessage", async (data) => {
     try {
       const message = await Message.create({
@@ -59,11 +54,6 @@ io.on("connection", (socket) => {
     } catch (err) {
       console.error("Error saving message:", err);
     }
-  });
-
-
-  socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
   });
 });
 
