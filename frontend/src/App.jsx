@@ -27,8 +27,10 @@ import UserDonation from "./components/UserDonation";
 import ReelsPage from "./pages/ReelsPage";
 import FeedPage from "./pages/FeedPage";
 import CreatePost from "./pages/CreatePost";
+import ChatbotWidget from "./components/Chatbot/ChatbotWidget";
 
 function App() {
+  
   return (
     <BrowserRouter>
       <Routes>
@@ -79,6 +81,7 @@ function App() {
         <Route path="/feed-page" element={<FeedPage />} />
         <Route path="/create-post" element={<CreatePost />} />
       </Routes>
+      <ChatbotWidget/>
     </BrowserRouter>
   );
 }
