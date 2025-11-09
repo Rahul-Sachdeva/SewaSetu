@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 
 export default function DonationForm() {
   const { user } = useAuth();
+
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -18,18 +19,52 @@ export default function DonationForm() {
     pickupTime: "",
   });
 
+  /* -------------------------------------------------------------------------- */
+  /* 🧠 1️⃣ Load prefill data from chatbot (localStorage)                        */
+  /* -------------------------------------------------------------------------- */
+  useEffect(() => {
+    const storedPrefill = localStorage.getItem("prefillForm");
+    if (storedPrefill) {
+      try {
+        const prefillData = JSON.parse(storedPrefill);
+        console.log("🧩 Applying chatbot prefill:", prefillData);
+
+        // Only apply non-empty fields
+        setForm((prev) => ({
+          ...prev,
+          ...Object.fromEntries(
+            Object.entries(prefillData).filter(
+              ([, value]) => value !== "" && value !== null && value !== undefined
+            )
+          ),
+        }));
+
+        // Clear after use ✅
+        localStorage.removeItem("prefillForm");
+      } catch (err) {
+        console.error("⚠️ Invalid prefill data in localStorage:", err);
+      }
+    }
+  }, []);
+
+  /* -------------------------------------------------------------------------- */
+  /* 👤 2️⃣ Load user defaults (Auth context)                                    */
+  /* -------------------------------------------------------------------------- */
   useEffect(() => {
     if (user) {
       setForm((prev) => ({
         ...prev,
-        name: user.name || "",
-        phone: user.phone || "",
-        email: user.email || "",
-        location: user.address || "",
+        name: prev.name || user.name || "",
+        phone: prev.phone || user.phone || "",
+        email: prev.email || user.email || "",
+        location: prev.location || user.address || "",
       }));
     }
   }, [user]);
 
+  /* -------------------------------------------------------------------------- */
+  /* ✍️ 3️⃣ Handle field changes                                                 */
+  /* -------------------------------------------------------------------------- */
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (name === "images") {
@@ -39,6 +74,9 @@ export default function DonationForm() {
     }
   };
 
+  /* -------------------------------------------------------------------------- */
+  /* 🚀 4️⃣ Submit donation form                                                */
+  /* -------------------------------------------------------------------------- */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -55,10 +93,6 @@ export default function DonationForm() {
       }
     });
 
-    for (let pair of formData.entries()) {
-      console.log(`${pair[0]}:`, pair[1]);
-    }
-
     try {
       await api.post("/donations", formData, {
         headers: {
@@ -67,11 +101,13 @@ export default function DonationForm() {
         },
       });
       alert("✅ Donation submitted successfully!");
+
+      // Reset form after submit
       setForm({
-        name: "",
-        phone: "",
-        email: "",
-        location: "",
+        name: user?.name || "",
+        phone: user?.phone || "",
+        email: user?.email || "",
+        location: user?.address || "",
         type: "",
         title: "",
         description: "",
@@ -86,6 +122,9 @@ export default function DonationForm() {
     }
   };
 
+  /* -------------------------------------------------------------------------- */
+  /* 🧱 5️⃣ Render Form                                                         */
+  /* -------------------------------------------------------------------------- */
   return (
     <div
       style={{
@@ -123,6 +162,7 @@ export default function DonationForm() {
         </h2>
 
         <form onSubmit={handleSubmit} style={{ display: "grid", gap: "2rem" }}>
+          {/* Full Name */}
           <div>
             <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
               Full Name
@@ -144,6 +184,7 @@ export default function DonationForm() {
             />
           </div>
 
+          {/* Phone + Email */}
           <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
             <div style={{ flex: 1 }}>
               <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
@@ -186,6 +227,7 @@ export default function DonationForm() {
             </div>
           </div>
 
+          {/* Location */}
           <div>
             <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
               Pickup Location
@@ -207,6 +249,7 @@ export default function DonationForm() {
             />
           </div>
 
+          {/* Item Type */}
           <div>
             <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
               Item Type
@@ -232,6 +275,7 @@ export default function DonationForm() {
             </select>
           </div>
 
+          {/* Title */}
           <div>
             <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
               Title
@@ -253,6 +297,7 @@ export default function DonationForm() {
             />
           </div>
 
+          {/* Description + Quantity */}
           <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
             <div style={{ flex: 2 }}>
               <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
@@ -295,6 +340,7 @@ export default function DonationForm() {
             </div>
           </div>
 
+          {/* Image Upload */}
           <div>
             <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>
               Upload Image
@@ -314,6 +360,7 @@ export default function DonationForm() {
             />
           </div>
 
+          {/* Pickup Date + Time */}
           <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
             <div style={{ flex: 1 }}>
               <label style={{ fontWeight: 600, marginBottom: 6, display: "block" }}>

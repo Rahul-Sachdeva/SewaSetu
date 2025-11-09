@@ -22,6 +22,34 @@ const Campaigns = () => {
   const [category, setCategory] = useState("All");
   const [status, setStatus] = useState("All");
 
+  useEffect(() => {
+  const campaignId = localStorage.getItem("chatbotOpenCampaign");
+  if (!campaignId) return;
+
+  const fetchCampaign = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`${BaseURL}/api/v1/campaign/${campaignId}`, {
+        headers: { Authorization: token ? `Bearer ${token}` : undefined },
+      });
+
+      if (res.data) {
+        setSelectedCampaign(res.data);
+      } else {
+        alert("⚠️ Could not find that campaign.");
+      }
+    } catch (err) {
+      console.error("Error fetching campaign from chatbot:", err);
+      alert("❌ Failed to fetch campaign details. Please try again.");
+    } finally {
+      // Clear after use
+      localStorage.removeItem("chatbotOpenCampaign");
+    }
+  };
+
+  fetchCampaign();
+}, []);
+
   const fetchCampaigns = async () => {
     try {
       const token = localStorage.getItem("token");
