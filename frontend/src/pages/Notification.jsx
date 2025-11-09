@@ -38,7 +38,7 @@ const Notification = () => {
   const markAsRead = async (id) => {
     try {
       const token = localStorage.getItem("token");
-      await fetch(`/api/notifications/${id}/read`, {
+      await fetch(`${BaseURL}/api/notifications/${id}/read`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -69,45 +69,45 @@ const Notification = () => {
   return (
     <>
       <Navbar />
-      <div
+      <main
         style={{
-          maxWidth: 800,
+          maxWidth: 750,
           margin: "40px auto",
           fontFamily: "'Inter', Arial, sans-serif",
-          backgroundColor: "#fff",
-          borderRadius: 12,
-          boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
+          background: "#fff",
+          borderRadius: 18,
+          boxShadow: "0 8px 24px rgba(25,57,138,0.08)",
           overflow: "hidden",
-          paddingBottom: 20,
         }}
       >
         <header
           style={{
-            backgroundColor: "#19398a",
-            color: "white",
-            padding: "12px 24px",
-            fontSize: "1.8rem",
-            fontWeight: "700",
-            position: "relative",
+            background: "linear-gradient(90deg, #19398a 80%, #2747bb 100%)",
+            color: "#fff",
+            padding: "18px 32px",
+            fontSize: "2rem",
+            fontWeight: "bold",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
-            borderBottom: "2px solid #2e58c2",
-            borderRadius: "12px 12px 0 0",
+            justifyContent: "space-between",
+            borderBottom: "2px solid #2747bb",
+            borderRadius: "18px 18px 0 0",
           }}
         >
-          Notifications
-          {notifications.length > 0 && (
+          <span>
+            <span style={{ verticalAlign: "middle" }}>🔔</span> Notifications
+          </span>
+          {notifications.filter((n) => !n.isRead).length > 0 && (
             <span
               style={{
-                backgroundColor: "#ff3b3f",
+                backgroundColor: "#ff1744",
                 color: "#fff",
                 borderRadius: "9999px",
-                padding: "4px 14px",
-                fontSize: "0.85rem",
-                fontWeight: "600",
+                padding: "5px 15px",
+                fontSize: "1rem",
+                fontWeight: "bold",
                 marginLeft: 12,
-                boxShadow: "0 0 6px #ff3b3f",
+                boxShadow: "0 0 7px #ff1744",
                 animation: "pulse 2s infinite",
               }}
             >
@@ -117,17 +117,38 @@ const Notification = () => {
         </header>
 
         {loading ? (
-          <p style={{ textAlign: "center", marginTop: 20 }}>Loading notifications...</p>
+          <div style={{ textAlign: "center", padding: "40px 0" }}>
+            <span
+              style={{
+                display: "inline-block",
+                borderRadius: "50%",
+                width: 36,
+                height: 36,
+                background: "#e3f2fd",
+                marginRight: 12,
+                animation: "spin 1s linear infinite",
+                verticalAlign: "middle",
+              }}
+            ></span>
+            <span style={{ fontSize: "1.05rem", color: "#2747bb" }}>
+              Loading notifications...
+            </span>
+          </div>
         ) : error ? (
-          <p style={{ color: "red", textAlign: "center", marginTop: 20 }}>{error}</p>
+          <div style={{ color: "#f44336", textAlign: "center", padding: "24px 0" }}>
+            <strong>Error:</strong> {error}
+          </div>
         ) : notifications.length === 0 ? (
-          <p style={{ textAlign: "center", marginTop: 20 }}>No notifications found</p>
+          <div style={{ textAlign: "center", padding: "40px 0", color: "#888" }}>
+            <span style={{ fontSize: "1.4rem", marginRight: 8 }}>📭</span>
+            No notifications found
+          </div>
         ) : (
           <ul
             style={{
               listStyle: "none",
-              margin: 0,
               padding: 0,
+              margin: 0,
               maxHeight: "65vh",
               overflowY: "auto",
               scrollbarWidth: "thin",
@@ -138,50 +159,105 @@ const Notification = () => {
               <li
                 key={n._id}
                 onClick={() => handleClick(n)}
+                tabIndex={0}
                 style={{
-                  backgroundColor: n.isRead ? "#f9fafb" : "#e1f5fe",
-                  padding: "15px 20px",
-                  borderBottom: "1px solid #ddd",
+                  background: n.isRead
+                    ? "#f8fafd"
+                    : "linear-gradient(90deg, #e3f2fd 85%, #bbdefb 100%)",
+                  borderBottom: "1px solid #e3e7ea",
+                  margin: "0 18px",
+                  borderRadius: 12,
+                  boxShadow: n.isRead ? "none" : "0 2px 10px #90caf9",
+                  transition: "background 0.2s, box-shadow 0.2s",
                   cursor: "pointer",
-                  boxShadow: n.isRead ? "none" : "0 0 10px #29b6f6",
-                  transition: "background-color 0.2s, box-shadow 0.2s",
+                  padding: "22px 28px",
+                  marginTop: 18,
+                  outline: "none"
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.background =
+                    "linear-gradient(90deg, #bbdefb 90%, #e3f2fd 100%)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.background = n.isRead
+                    ? "#f8fafd"
+                    : "linear-gradient(90deg, #e3f2fd 85%, #bbdefb 100%)";
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#bbdefb";
-                  e.currentTarget.style.boxShadow = "0 0 15px #42a5f5";
+                  e.currentTarget.style.background =
+                    "linear-gradient(90deg, #bbdefb 90%, #e3f2fd 100%)";
+                  e.currentTarget.style.boxShadow = "0 4px 18px #42a5f5";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = n.isRead ? "#f9fafb" : "#e1f5fe";
-                  e.currentTarget.style.boxShadow = n.isRead ? "none" : "0 0 10px #29b6f6";
+                  e.currentTarget.style.background = n.isRead
+                    ? "#f8fafd"
+                    : "linear-gradient(90deg, #e3f2fd 85%, #bbdefb 100%)";
+                  e.currentTarget.style.boxShadow = n.isRead
+                    ? "none"
+                    : "0 2px 10px #90caf9";
                 }}
               >
-                <strong style={{ fontSize: "1.1rem", color: "#19398a" }}>{n.title}</strong>
-                <p style={{ margin: "6px 0", color: "#555", fontSize: "0.9rem" }}>{n.message}</p>
-                <small style={{ color: "#999", fontSize: "0.75rem" }}>
-                  {new Date(n.createdAt).toLocaleString()}
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <span
+                    style={{
+                      display: "inline-block",
+                      marginRight: 14,
+                      fontSize: "1.3rem",
+                      color: n.isRead ? "#90caf9" : "#19398a"
+                    }}
+                  >
+                    {n.isRead ? "📖" : "🕑"}
+                  </span>
+                  <strong style={{ fontSize: "1.1rem", color: "#19398a" }}>
+                    {n.title}
+                  </strong>
+                </div>
+                <p
+                  style={{
+                    margin: "8px 0 0 34px",
+                    color: "#333",
+                    fontSize: "1rem",
+                    fontWeight: 500
+                  }}
+                >
+                  {n.message}
+                </p>
+                <small
+                  style={{
+                    marginLeft: 34,
+                    color: "#999",
+                    fontSize: "0.87rem",
+                    letterSpacing: "0.04em"
+                  }}
+                >
+                  {new Date(n.createdAt).toLocaleString([], {
+                    year: "2-digit",
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                  })}
                 </small>
               </li>
             ))}
           </ul>
         )}
-      </div>
+      </main>
       <style>{`
         @keyframes pulse {
-          0%, 100% {
-            transform: scale(1);
-            opacity: 1;
-          }
-          50% {
-            transform: scale(1.1);
-            opacity: 0.85;
-          }
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.1); opacity: 0.85; }
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg);}
         }
         ul::-webkit-scrollbar {
-          width: 6px;
+          width: 7px;
         }
         ul::-webkit-scrollbar-thumb {
           background-color: #90caf9;
-          border-radius: 3px;
+          border-radius: 4px;
         }
         ul::-webkit-scrollbar-track {
           background: transparent;

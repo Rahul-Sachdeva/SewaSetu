@@ -7,6 +7,9 @@ import {
     getNGOById,
     updateNGOStatus,
     getPendingNGOs,
+    getNGOPoints,
+    getNGOLeaderboard,
+    getNGORank,
 } from "../Controllers/ngo.controller.js";
 import { NGO } from "../Models/ngo.model.js"; // import NGO model
 
@@ -19,7 +22,9 @@ const upload = multer({ storage });
 const ngoRouter = express.Router();
 
 ngoRouter.get("/filtered", listFilteredNGOs);
-
+ngoRouter.get("/:id/points", getNGOPoints);
+ngoRouter.get("/leaderboard", getNGOLeaderboard);
+ngoRouter.get("/:id/rank", getNGORank);
 // Get all verified NGOs for normal request selection
 ngoRouter.get("/verified", async (req, res) => {
     try {

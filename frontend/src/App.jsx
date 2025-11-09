@@ -24,6 +24,7 @@ import NotAuthorised from "./pages/NotAuthorised";
 import Notification from "./pages/Notification";
 import DonationsManagement from "./pages/DonationsManagement";
 import UserDonation from "./components/UserDonation";
+import UserLeaderboard from "./pages/UserLeaderboard";
 
 
 
@@ -33,14 +34,14 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register-user" element={<RegisterUser />} />
-        <Route path="/register-ngo" element={<RegisterNGO/>} />
+        <Route path="/register-ngo" element={<RegisterNGO />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
-        
+
         {/*  <PrivateRoute roles={["admin","ngo","user"]}> */}
         <Route path="/" element={<Home />} />
         <Route path="/home" element={<Home />} />
         <Route path="/profile" element={
-          <PrivateRoute roles={["admin","user"]}>
+          <PrivateRoute roles={["admin", "user"]}>
             <UserProfile />
           </PrivateRoute>
         } />
@@ -50,19 +51,19 @@ function App() {
         {/* Visit mode (view another NGO) */}
         <Route path="/ngo/:ngoId" element={<NGOProfile mode="visit" />} />
         <Route path="/ngo-list" element={<NGOListPage />} />
-        <Route path="/create-campaign" element={<CampaignCreatePage mode="create"/>} />
-        <Route path="/campaign/:id/edit" element={<CampaignCreatePage mode="edit"/>} />
-        <Route path="/campaigns" element={<Campaigns/>} />
+        <Route path="/create-campaign" element={<CampaignCreatePage mode="create" />} />
+        <Route path="/campaign/:id/edit" element={<CampaignCreatePage mode="edit" />} />
+        <Route path="/campaigns" element={<Campaigns />} />
         <Route path="/chat">
           <Route index element={<ChatLayout />} />              {/* shows list + "empty" */}
-          <Route path=":id" element={<ChatLayout />} />   
-                {/* shows list + chat */}
+          <Route path=":id" element={<ChatLayout />} />
+          {/* shows list + chat */}
         </Route>
         <Route path="/request" element={<Request />} />
         <Route path="/select-ngo" element={<SelectNGO />} />
-        <Route path="/pending-ngo" element={<PendingNGOsPage/>}/>
-        <Route path="/ngo/my-campaigns" element={<MyCampaignsPage/>}/>
-        <Route path="/campaign/:id/registrations" element={<CampaignRegistrationsPage/>}/>
+        <Route path="/pending-ngo" element={<PendingNGOsPage />} />
+        <Route path="/ngo/my-campaigns" element={<MyCampaignsPage />} />
+        <Route path="/campaign/:id/registrations" element={<CampaignRegistrationsPage />} />
         <Route path="/ngo-requests" element={<NgoDashboard />} />
         <Route path="/notifications" element={<Notification />} />
         <Route path="/user-requests" element={<UserDashboard />} />
@@ -72,6 +73,12 @@ function App() {
         <Route path="/dashboard" element={<NGOdashboardPage />} />
         <Route path="/donations-management" element={<DonationsManagement />} />
         <Route path="/user-donation" element={<UserDonation />} />
+        <Route path="/leaderboard" element={
+          <PrivateRoute roles={["user", "admin"]}>
+            <UserLeaderboard />
+          </PrivateRoute>
+        } />
+
       </Routes>
     </BrowserRouter>
   );

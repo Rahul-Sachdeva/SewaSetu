@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Dialog } from "@headlessui/react";
 import { Pencil } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
@@ -7,12 +6,22 @@ import axios from "axios";
 import { BaseURL } from "../BaseURL";
 import EditProfileDialog from "../components/EditProfileDialog";
 
+const badgeThresholds = [
+  { name: "Bronze", points: 100 },
+  { name: "Silver", points: 300 },
+  { name: "Gold", points: 600 },
+  { name: "Platinum", points: 1000 }
+];
+
 const UserProfile = () => {
-  const { user } = useAuth(); // basic auth user (from login)
+  const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  
-  // Hardcoded stats + contributions (until backend supports them)
+  const [points, setPoints] = useState(0);
+  const [badges, setBadges] = useState([]);
+  const [activityHistory, setActivityHistory] = useState([]);
+
+  // Hardcoded stats + contributions placeholder
   const stats = [
     { label: "Donations Given", value: 12, icon: "🏆" },
     { label: "Campaigns Joined", value: 5, icon: "📢" },
@@ -25,7 +34,7 @@ const UserProfile = () => {
     { title: "Joined Tree Plantation Drive", date: "2025-06-10" },
   ];
 
-  // Fetch profile details
+  // Fetch profile
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -38,154 +47,175 @@ const UserProfile = () => {
         console.error("Failed to fetch profile", err);
       }
     };
-
     fetchProfile();
   }, []);
 
-  // ✅ Submit handler for update
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("");
-
-    try {
-      const token = localStorage.getItem("token");
-
-      const data = new FormData();
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value) data.append(key, value);
-      });
-      if (profileImage) {
-        data.append("profileImage", profileImage);
+  // Fetch gamification data
+  useEffect(() => {
+    const fetchUserGamification = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get(`${BaseURL}/api/v1/user/points`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setPoints(res.data.points);
+        setBadges(res.data.badges);
+        setActivityHistory(res.data.activityHistory);
+      } catch (err) {
+        console.error("Failed to fetch user gamification data", err);
       }
+    };
+    fetchUserGamification();
+  }, []);
 
-      const res = await axios.put(`${BaseURL}/api/v1/user/profile`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      setMessage("Profile updated successfully!");
-      setIsEditOpen(false);
-
-      if (onProfileUpdated) {
-        onProfileUpdated(res.data.user); // callback to refresh profile in parent
-      }
-    } catch (err) {
-      setMessage(err.response?.data?.message || "Failed to update profile");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Next badge progress calculation
+  const nextBadge = badgeThresholds.find(b => !badges.includes(b.name));
+  const progressPercent = nextBadge ? Math.min((points / nextBadge.points) * 100, 100) : 100;
 
   return (
     <>
       <Navbar />
-      <div className="max-w-6xl mx-auto px-6 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* ---- Left Column: Profile & Details ---- */}
-        <div className="col-span-1 bg-[#19398a0d] shadow-md rounded-xl p-6 flex flex-col justify-center items-center text-center lg:text-left">
+      <main className="max-w-6xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Profile Sidebar */}
+        <section className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center text-center lg:text-left">
           <img
             src={profile?.profile_image || "https://via.placeholder.com/150"}
-            alt="Profile"
+            alt={`${profile?.name || user?.name}'s profile`}
             className="w-32 h-32 rounded-full border-4 border-[#19398a] object-cover"
           />
-          <h2 className="text-xl font-bold text-gray-800 mt-3">
-            {profile?.name || user?.name}
-          </h2>
-          
-          <div className="mt-4 space-y-1 text-sm text-gray-700">
-            <p>
-              <span className="font-semibold">Email:</span>{" "}
-              {profile?.email || "N/A"}
-            </p>
-            <p>
-              <span className="font-semibold">Phone:</span>{" "}
-              {profile?.phone || "N/A"}
-            </p>
-            <p>
-              <span className="font-semibold">City:</span>{" "}
-              {profile?.city || "N/A"}
-            </p>
-            <p>
-              <span className="font-semibold">State:</span>{" "}
-              {profile?.state || "N/A"}
-            </p>
-            <p>
-              <span className="font-semibold">Address:</span>{" "}
-              {profile?.address
-                ? profile.address.length > 20
-                  ? profile.address.slice(0, 20) + "..."
-                  : profile.address
-                : "N/A"}
-            </p>
+          <h2 className="text-2xl font-bold text-gray-900 mt-4">{profile?.name || user?.name}</h2>
+
+          {/* Points and Badges */}
+          <div className="mt-4 w-full">
+            <p className="font-semibold text-lg text-gray-800">Points: {points}</p>
+            <div className="flex flex-wrap gap-2 mt-2 justify-center lg:justify-start" aria-label="User badges">
+              {badges.length > 0 ? (
+                badges.map((badge, idx) => (
+                  <span
+                    key={idx}
+                    className="px-3 py-1 bg-yellow-400 text-xs rounded-full font-semibold shadow-sm cursor-default select-none"
+                    title={`${badge} Badge`}
+                    tabIndex={0}
+                    aria-label={`${badge} badge`}
+                  >
+                    {badge}
+                  </span>
+                ))
+              ) : (
+                <span className="text-gray-500 italic text-sm">No badges earned yet</span>
+              )}
+            </div>
+            {nextBadge && (
+              <div className="mt-4" role="progressbar" aria-valuenow={points} aria-valuemin={0} aria-valuemax={nextBadge.points}>
+                <div className="text-xs text-gray-700 mb-1">
+                  Progress to <strong>{nextBadge.name}</strong> badge: {points} / {nextBadge.points} pts
+                </div>
+                <div className="w-full bg-gray-300 h-3 rounded-full overflow-hidden">
+                  <div className="h-3 bg-yellow-500 transition-all duration-500 ease-in-out" style={{ width: `${progressPercent}%` }} />
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* Contact Info */}
+          <dl className="mt-6 w-full text-left space-y-2">
+            <div>
+              <dt className="font-semibold text-gray-700">Email</dt>
+              <dd className="text-gray-900">{profile?.email || "N/A"}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-gray-700">Phone</dt>
+              <dd className="text-gray-900">{profile?.phone || "N/A"}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-gray-700">City</dt>
+              <dd className="text-gray-900">{profile?.city || "N/A"}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-gray-700">State</dt>
+              <dd className="text-gray-900">{profile?.state || "N/A"}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-gray-700">Address</dt>
+              <dd className="text-gray-900 truncate max-w-xs" title={profile?.address}>
+                {profile?.address || "N/A"}
+              </dd>
+            </div>
+          </dl>
 
           <button
             onClick={() => setIsEditOpen(true)}
-            className="mt-4 inline-flex items-center px-4 py-2 bg-[#19398a] text-white text-sm font-medium rounded-lg hover:bg-[#2e58c2] transition"
+            className="mt-6 px-5 py-2 bg-[#19398a] text-white rounded-lg shadow hover:bg-[#2e58c2] transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#19398a] inline-flex items-center"
+            aria-label="Edit Profile"
           >
-            <Pencil className="w-4 h-4 mr-2" /> Edit Profile
+            <Pencil className="w-4 h-4 mr-2" />
+            Edit Profile
           </button>
-        </div>
+        </section>
 
-        {/* ---- Right Column: About + Stats + Contributions ---- */}
-        <div className="col-span-2 flex flex-col gap-6">
+        {/* Main Content */}
+        <section className="col-span-2 flex flex-col gap-6">
           {/* About */}
-          <div className="bg-[#f9fafb] shadow-md rounded-xl p-5">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">About</h3>
-            <p className="text-gray-600 text-sm">
-              {profile?.about ||
-                "Passionate individual making an impact through donations and volunteering."}
-            </p>
-          </div>
+          <article className="bg-white rounded-xl shadow-md p-6">
+            <h3 className="text-xl font-semibold text-gray-900 mb-3">About</h3>
+            <p className="text-gray-700">{profile?.about || "Passionate individual making an impact through donations and volunteering."}</p>
+          </article>
 
           {/* Impact Stats */}
-          <div className="grid grid-cols-3 gap-4">
-            {stats.map((s, idx) => (
+          <section className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {stats.map((stat, idx) => (
               <div
                 key={idx}
-                className="flex flex-col items-center justify-center rounded-xl p-4 shadow-sm"
-                style={{
-                  backgroundColor:
-                    idx === 0
-                      ? "#19398a0d"
-                      : idx === 1
-                      ? "#ffd6000d"
-                      : "#19398a0d",
-                }}
+                className={`p-6 rounded-xl shadow-sm flex flex-col items-center justify-center ${
+                  idx === 1 ? "bg-yellow-50" : "bg-[#19398a0d]"
+                }`}
+                aria-label={`${stat.label}: ${stat.value}`}
               >
-                <span className="text-2xl">{s.icon}</span>
-                <span className="text-xl font-bold mt-1 text-[#19398a]">
-                  {s.value}
-                </span>
-                <span className="text-xs text-gray-600">{s.label}</span>
+                <span className="text-4xl">{stat.icon}</span>
+                <span className="mt-2 text-3xl font-extrabold text-[#19398a]">{stat.value}</span>
+                <span className="text-sm text-gray-700">{stat.label}</span>
               </div>
             ))}
-          </div>
+          </section>
 
-          {/* Contributions */}
-          <div className="bg-[#f9fafb] shadow-md rounded-xl p-5">
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">
-              Recent Contributions
-            </h3>
-            <ul className="space-y-2">
-              {contributions.map((c, idx) => (
-                <li
-                  key={idx}
-                  className="flex justify-between border-b pb-2 last:border-0"
-                >
-                  <span className="text-gray-700 text-sm">{c.title}</span>
-                  <span className="text-gray-500 text-xs">{c.date}</span>
+          {/* Recent Contributions */}
+          <article className="bg-white rounded-xl shadow-md p-6">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Recent Contributions</h3>
+            <ul className="divide-y divide-gray-200 max-h-64 overflow-y-auto">
+              {contributions.map((contrib, idx) => (
+                <li key={idx} className="flex justify-between py-3">
+                  <p className="text-gray-800 truncate" title={contrib.title}>{contrib.title}</p>
+                  <time className="text-sm text-gray-500">{contrib.date}</time>
                 </li>
               ))}
+              {contributions.length === 0 && <p className="text-gray-400 italic">No contributions yet.</p>}
             </ul>
-            <button className="mt-3 text-[#19398a] text-sm font-semibold hover:underline">
+            <button className="mt-4 text-[#19398a] text-sm font-semibold hover:underline self-start">
               View All →
             </button>
-          </div>
-        </div>
-      </div>
+          </article>
+
+          {/* Gamification Activity History */}
+          <article className="bg-white rounded-xl shadow-md p-6">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Recent Gamification Activity</h3>
+            <ul className="divide-y divide-gray-200 max-h-48 overflow-y-auto text-gray-600 text-sm">
+              {activityHistory.length > 0 ? (
+                activityHistory.slice(0, 6).map((activity, idx) => (
+                  <li key={idx} className="flex justify-between py-2">
+                    <span className="truncate max-w-[70%]" title={activity.activity}>{activity.activity}</span>
+                    <span className={activity.points > 0 ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}>
+                      {activity.points > 0 ? `+${activity.points}` : activity.points}
+                    </span>
+                  </li>
+                ))
+              ) : (
+                <p className="italic text-gray-400">No recent gamification activity</p>
+              )}
+            </ul>
+          </article>
+        </section>
+      </main>
+
       <EditProfileDialog
         isEditOpen={isEditOpen}
         setIsEditOpen={setIsEditOpen}

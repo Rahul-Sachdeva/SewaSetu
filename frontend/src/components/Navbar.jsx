@@ -128,6 +128,9 @@ const Navbar = () => {
                   <NavLink to="/profile" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                     My Profile
                   </NavLink>
+                  <NavLink to="/leaderboard" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    User Leaderboard
+                  </NavLink>
                   <NavLink to="/chat" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                     Chat
                   </NavLink>
@@ -181,6 +184,9 @@ const Navbar = () => {
                 </NavLink>
                 <NavLink to="/ngo-profile" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                   My Profile
+                </NavLink>
+                <NavLink to="/leaderboard" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                  User Leaderboard
                 </NavLink>
                 <NavLink to="/create-campaign" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                   Create Campaign

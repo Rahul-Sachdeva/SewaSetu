@@ -43,7 +43,7 @@ export const createRequest = async (req, res) => {
       status: "open"
     });
     console.log("Request Created")
-    
+
     // Assign to selected NGOs & send notifications
     const assignments = await Promise.all(
       selectedNGOs.map(async (ngoId) => {
@@ -158,7 +158,7 @@ export const updateRequestStatus = async (req, res) => {
     await sendNotification(handling.request_id.requestedBy, userModel, {
       title: `Assistance Request ID ${status.charAt(0).toUpperCase() + status.slice(1)}`,
       message: `Your request for assistance for "${handling.request_id.category}" has been ${status} by NGO.`,
-      type:"request_status_update",
+      type: "request_status_update",
       referenceId: handling.request_id._id,
     });
 
@@ -171,6 +171,12 @@ export const updateRequestStatus = async (req, res) => {
         },
         { status: "cancelled" }
       );
+    }
+
+    if (status === "accepted") {
+      await updateNGOPoints(handling.handledBy, "request_accepted", 10);
+    } else if (status === "completed") {
+      await updateNGOPoints(handling.handledBy, "request_completed", 20);
     }
 
     return res.status(200).json({ message: "Request status updated successfully", handling });

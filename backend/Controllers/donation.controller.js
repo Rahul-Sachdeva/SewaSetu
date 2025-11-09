@@ -1,5 +1,6 @@
 import { Donation } from "../Models/donation.model.js";
 import uploadCloudinary from "../Utils/cloudinary.js";
+import { updateUserPoints } from "../Controllers/user.controller.js";
 
 // Create Donation
 
@@ -23,12 +24,12 @@ export const createDonation = async (req, res) => {
       return res.status(400).json({ message: "Missing required donation fields" });
     }
 
-    // ✅ Ensure donor is attached from auth middleware
+    // Ensure donor is attached from auth middleware
     if (!req.user?._id) {
       return res.status(401).json({ message: "Unauthorized: user not found" });
     }
 
-    // ✅ Upload images if provided
+    // Upload images if provided
     let imageUrls = [];
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
@@ -37,7 +38,7 @@ export const createDonation = async (req, res) => {
       }
     }
 
-    // ✅ Save to DB with logged-in user as donor
+    // Save to DB with logged-in user as donor
     const donation = await Donation.create({
       donor: req.user._id,  // <--- main part of step 2
       name,
@@ -54,6 +55,9 @@ export const createDonation = async (req, res) => {
       status: "pending",
     });
 
+    // Award 50 points for donation request
+    await updateUserPoints(req.user._id, "donation_request", 50);
+    
     return res.status(201).json({
       message: "Donation created successfully",
       donation,
@@ -132,7 +136,7 @@ export const updateDonationStatus = async (req, res) => {
 };
 
 
-// ✅ Get donations made by the currently logged-in user
+// Get donations made by the currently logged-in user
 export const getMyDonations = async (req, res) => {
   try {
     // Make sure user is authenticated

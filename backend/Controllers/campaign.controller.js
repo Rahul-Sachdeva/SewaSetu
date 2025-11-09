@@ -2,6 +2,7 @@ import { Campaign } from "../Models/campaign.model.js";
 import uploadCloudinary from "../Utils/cloudinary.js";
 import { Conversation } from "../Models/conversation.model.js";
 import { Fund } from "../Models/fund.model.js";
+import { updateUserPoints } from "../Controllers/user.controller.js";
 import Razorpay from "razorpay";
 
 const razorpay = new Razorpay({
@@ -88,40 +89,40 @@ export const createCampaign = async (req, res) => {
 
 // List campaigns with optional filters
 export const listCampaigns = async (req, res) => {
-    try {
-        const { category, status, ngoId } = req.query;
-        const filter = {};
+  try {
+    const { category, status, ngoId } = req.query;
+    const filter = {};
 
-        if (category) filter.category = category;
-        if (status) filter.status = status;
-        if (ngoId) filter.ngo = ngoId;
+    if (category) filter.category = category;
+    if (status) filter.status = status;
+    if (ngoId) filter.ngo = ngoId;
 
-        const campaigns = await Campaign.find(filter)
-            .populate("ngo", "name")
-            .populate("participants.user", "name email")
-            .populate("donations", "donor amount status createdAt")
-            .exec();
+    const campaigns = await Campaign.find(filter)
+      .populate("ngo", "name")
+      .populate("participants.user", "name email")
+      .populate("donations", "donor amount status createdAt")
+      .exec();
 
-        return res.status(200).json(campaigns);
-    } catch (err) {
-        return res.status(500).json({ message: "Error fetching campaigns", error: err.message });
-    }
+    return res.status(200).json(campaigns);
+  } catch (err) {
+    return res.status(500).json({ message: "Error fetching campaigns", error: err.message });
+  }
 };
 
 // Get a single campaign by ID
 export const getCampaignById = async (req, res) => {
-    try {
-        const campaign = await Campaign.findById(req.params.id)
-            .populate("ngo", "name")
-            .populate("participants.user", "name email")
-            .populate("donations", "donor amount status createdAt")
-            .exec();
+  try {
+    const campaign = await Campaign.findById(req.params.id)
+      .populate("ngo", "name")
+      .populate("participants.user", "name email")
+      .populate("donations", "donor amount status createdAt")
+      .exec();
 
-        if (!campaign) return res.status(404).json({ message: "Campaign not found" });
-        return res.status(200).json(campaign);
-    } catch (err) {
-        return res.status(500).json({ message: "Error fetching campaign", error: err.message });
-    }
+    if (!campaign) return res.status(404).json({ message: "Campaign not found" });
+    return res.status(200).json(campaign);
+  } catch (err) {
+    return res.status(500).json({ message: "Error fetching campaign", error: err.message });
+  }
 };
 
 // Register a user for a campaign
@@ -150,8 +151,11 @@ export const registerForCampaign = async (req, res) => {
       status: "pending",
     });
     await campaign.save();
+    
+    // Award 10 points for registering for campaign
+    await updateUserPoints(req.user._id, "campaign_registration", 10);
 
-    // 🔹 Add user to campaign conversation
+    // Add user to campaign conversation
     let conversation = await Conversation.findOne({
       type: "campaign",
       campaign: campaign._id,
@@ -213,6 +217,9 @@ export const unregisterFromCampaign = async (req, res) => {
     );
     await campaign.save();
 
+    // Deduct 10 points for unregistering from campaign
+    await updateUserPoints(req.user._id, "campaign_unregistration", -10);
+
     // 🔹 Remove user from campaign conversation
     const conversation = await Conversation.findOne({
       type: "campaign",
@@ -240,22 +247,22 @@ export const unregisterFromCampaign = async (req, res) => {
 
 // Optional: Approve or reject a participant (NGO only)
 export const updateParticipantStatus = async (req, res) => {
-    try {
-        const { campaignId, participantId, status } = req.body;
+  try {
+    const { campaignId, participantId, status } = req.body;
 
-        const campaign = await Campaign.findById(campaignId);
-        if (!campaign) return res.status(404).json({ message: "Campaign not found" });
+    const campaign = await Campaign.findById(campaignId);
+    if (!campaign) return res.status(404).json({ message: "Campaign not found" });
 
-        const participant = campaign.participants.id(participantId);
-        if (!participant) return res.status(404).json({ message: "Participant not found" });
+    const participant = campaign.participants.id(participantId);
+    if (!participant) return res.status(404).json({ message: "Participant not found" });
 
-        participant.status = status; // approved / rejected
-        await campaign.save();
+    participant.status = status; // approved / rejected
+    await campaign.save();
 
-        return res.status(200).json({ message: "Participant status updated", participant });
-    } catch (err) {
-        return res.status(500).json({ message: "Error updating participant status", error: err.message });
-    }
+    return res.status(200).json({ message: "Participant status updated", participant });
+  } catch (err) {
+    return res.status(500).json({ message: "Error updating participant status", error: err.message });
+  }
 };
 
 // Get participants of a campaign (NGO/Admin only)
@@ -341,7 +348,7 @@ export const deleteCampaign = async (req, res) => {
   try {
     const campaign = await Campaign.findById(req.params.id);
     if (!campaign) return res.status(404).json({ message: "Campaign not found" });
-    
+
     // Only NGO who created it or admin
     if (
       req.user.user_type !== "admin" &&
@@ -383,7 +390,7 @@ export const getCampaignParticipants = async (req, res) => {
 export const getCampaignsByNGO = async (req, res) => {
   try {
     const { ngoId } = req.params;
-    
+
     if (!ngoId) {
       return res.status(400).json({ message: "NGO ID is required" });
     }

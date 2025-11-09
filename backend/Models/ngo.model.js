@@ -1,3 +1,4 @@
+//ngo.model.js
 import mongoose from "mongoose";
 
 const ngoSchema = new mongoose.Schema(
@@ -30,6 +31,14 @@ const ngoSchema = new mongoose.Schema(
             type: [String],
             default: []
         },
+        points: { type: Number, default: 0 },
+        activityHistory: [
+            {
+                activity: String,
+                points: Number,
+                date: { type: Date, default: Date.now }
+            }
+        ],
 
         account: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
         members: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],

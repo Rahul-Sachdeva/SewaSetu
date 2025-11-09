@@ -71,7 +71,8 @@ export const registerUser = async (req, res) => {
       ngo: user_type === "ngo" ? ngo : undefined,
       location_coordinates,
     });
-
+    
+    await updateUserPoints(user._id, "registration", 10);
     await sendVerificationEmail(user);
 
     return res.status(201).json({
@@ -291,16 +292,16 @@ export const checkFollowing = async (req, res) => {
 export const saveDeviceToken = async (req, res) => {
   try {
     let userId = req.user._id;
-    if(req.user.ngo) userId = req.user.ngo;
-    let userType = req.user.ngo? "NGO":"User";
+    if (req.user.ngo) userId = req.user.ngo;
+    let userType = req.user.ngo ? "NGO" : "User";
     const { token } = req.body;
     if (!token) return res.status(400).json({ message: "Device token is required" });
 
     let user;
-    if(userType=="User"){
+    if (userType == "User") {
       user = await User.findById(userId);
     }
-    else{
+    else {
       user = await NGO.findById(userId);
     }
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -317,3 +318,119 @@ export const saveDeviceToken = async (req, res) => {
     return res.status(500).json({ message: "Error saving device token", error: err.message });
   }
 };
+
+// Utility: badge thresholds
+const badgeThresholds = [
+  { name: "Bronze", points: 100 },
+  { name: "Silver", points: 300 },
+  { name: "Gold", points: 600 },
+  { name: "Platinum", points: 1000 }
+];
+
+// Update points and badges based on activity
+export const updateUserPoints = async (userId, activity, pointsEarned) => {
+  const user = await User.findById(userId);
+  if (!user) throw new Error("User not found");
+
+  // Update points and activity
+  user.points += pointsEarned;
+  user.activityHistory.push({ activity, points: pointsEarned });
+
+  // Check badge eligibility
+  for (const badge of badgeThresholds) {
+    if (user.points >= badge.points && !user.badges.includes(badge.name)) {
+      user.badges.push(badge.name);
+    }
+  }
+  console.log(`User badges count: ${user.badges.length}`);
+  await user.save();
+  return user;
+};
+
+// API to get user points and badges
+export const getUserPoints = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("points badges activityHistory");
+    if (!user) return res.status(404).json({ message: "User not found" });
+    return res.status(200).json({ points: user.points, badges: user.badges, activityHistory: user.activityHistory });
+  } catch (error) {
+    return res.status(500).json({ message: "Error fetching user points", error: error.message });
+  }
+};
+
+export const getUserLeaderboard = async (req, res) => {
+  try {
+    const period = req.query.period || "allTime"; // Accept "thisMonth" or default "allTime"
+    let matchStage = {};
+    const startOfMonth = new Date();
+    if (period === "thisMonth") {
+      const startOfMonth = new Date();
+      startOfMonth.setHours(0, 0, 0, 0);
+      matchStage = {
+        "activityHistory.date": { $gte: startOfMonth }
+      };
+    }
+
+    // Aggregate total points based on period
+    const pipeline = [
+      { $match: matchStage },
+      {
+        $addFields: {
+          totalPoints: period === "thisMonth"
+            ? {
+                $sum: {
+                  $map: {
+                    input: {
+                      $filter: {
+                        input: "$activityHistory",
+                        as: "activity",
+                        cond: { $gte: ["$$activity.date", new Date(startOfMonth)] }
+                      }
+                    },
+                    as: "activity",
+                    in: "$$activity.points"
+                  }
+                }
+              }
+            : "$points"
+        }
+      },
+      { $sort: { totalPoints: -1 } },
+      { $limit: 20 },
+      {
+        $project: {
+          name: 1,
+          email: 1,
+          points: "$totalPoints",
+          badges: 1,
+          profile_image: 1,
+          city: 1,
+          state: 1
+        }
+      }
+    ];
+
+    const leaderboard = await User.aggregate(pipeline);
+
+    return res.json({ leaderboard });
+  } catch (error) {
+    return res.status(500).json({ message: "Error fetching user leaderboard", error: error.message });
+  }
+};
+
+export const getUserRank = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Count how many users have more points
+    const higherRankCount = await User.countDocuments({ points: { $gt: user.points } });
+    const rank = higherRankCount + 1;
+
+    return res.json({ rank, points: user.points, badges: user.badges });
+  } catch (error) {
+    return res.status(500).json({ message: "Error fetching user rank", error: error.message });
+  }
+};
+

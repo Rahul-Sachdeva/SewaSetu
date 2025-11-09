@@ -143,6 +143,8 @@ export const registerNGO = async (req, res) => {
       ],
     });
 
+    await updateNGOPoints(ngo._id, "registration", 10);
+
     return res.status(201).json({
       message: "NGO registered successfully, pending admin verification",
       ngo,
@@ -153,6 +155,30 @@ export const registerNGO = async (req, res) => {
       message: "Error registering NGO",
       error: err.message,
     });
+  }
+};
+
+export const getNGOPoints = async (req, res) => {
+  try {
+    const ngoId = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(ngoId)) {
+      return res.status(400).json({ message: "Invalid NGO ID" });
+    }
+
+    const ngo = await NGO.findById(ngoId).select("points badges activityHistory");
+
+    if (!ngo) {
+      return res.status(404).json({ message: "NGO not found" });
+    }
+
+    return res.status(200).json({
+      points: ngo.points,
+      badges: ngo.badges || [],
+      activityHistory: ngo.activityHistory || [],
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Error fetching NGO points", error: error.message });
   }
 };
 
@@ -348,5 +374,90 @@ export const getPendingNGOs = async (req, res) => {
     res.status(200).json(pendingNGOs);
   } catch (err) {
     res.status(500).json({ message: "Error fetching pending NGOs", error: err.message });
+  }
+};
+
+export const updateNGOPoints = async (ngoId, activity, points) => {
+  const ngo = await NGO.findById(ngoId);
+  if (!ngo) throw new Error("NGO not found");
+
+  ngo.points += points;
+  ngo.activityHistory.push({ activity, points });
+
+  await ngo.save();
+  return ngo;
+};
+
+export const getNGOLeaderboard = async (req, res) => {
+  try {
+    const period = req.query.period || "allTime";
+    let matchStage = {};
+
+    if (period === "thisMonth") {
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      matchStage = {
+        "activityHistory.date": { $gte: startOfMonth }
+      };
+    }
+
+    const pipeline = [
+      { $match: matchStage },
+      {
+        $addFields: {
+          totalPoints: period === "thisMonth"
+            ? {
+                $sum: {
+                  $map: {
+                    input: {
+                      $filter: {
+                        input: "$activityHistory",
+                        as: "activity",
+                        cond: { $gte: ["$$activity.date", startOfMonth] }
+                      }
+                    },
+                    as: "activity",
+                    in: "$$activity.points"
+                  }
+                }
+              }
+            : "$points"
+        }
+      },
+      { $sort: { totalPoints: -1 } },
+      { $limit: 20 },
+      {
+        $project: {
+          name: 1,
+          city: 1,
+          state: 1,
+          points: "$totalPoints",
+          badges: 1,
+          logo: 1,
+          category: 1
+        }
+      }
+    ];
+
+    const leaderboard = await NGO.aggregate(pipeline);
+    return res.json({ leaderboard });
+  } catch (error) {
+    return res.status(500).json({ message: "Error fetching NGO leaderboard", error: error.message });
+  }
+};
+
+export const getNGORank = async (req, res) => {
+  try {
+    const ngoId = req.params.id;
+    const ngo = await NGO.findById(ngoId);
+    if (!ngo) return res.status(404).json({ message: "NGO not found" });
+
+    const higherRankCount = await NGO.countDocuments({ points: { $gt: ngo.points } });
+    const rank = higherRankCount + 1;
+
+    return res.json({ rank, points: ngo.points, badges: ngo.badges });
+  } catch (error) {
+    return res.status(500).json({ message: "Error fetching NGO rank", error: error.message });
   }
 };

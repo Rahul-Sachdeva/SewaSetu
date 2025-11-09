@@ -1,3 +1,4 @@
+//user.model.js
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 
@@ -55,6 +56,17 @@ const userSchema = new mongoose.Schema(
         },
         notificationTokens: [String],
         notificationPermissionRequested: { type: Boolean, default: false },
+
+        // Gamification-related fields
+        points: { type: Number, default: 0 },
+        badges: [{ type: String }],
+        activityHistory: [
+            {
+                activity: String,
+                points: Number,
+                date: { type: Date, default: Date.now }
+            }
+        ],
 
         // 🔑 For email verification
         isVerified: { type: Boolean, default: false },

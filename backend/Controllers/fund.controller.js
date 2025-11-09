@@ -2,6 +2,7 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import { Campaign } from "../Models/campaign.model.js"; // import campaign schema
 import { Fund } from "../Models/fund.model.js";
+import { updateUserPoints } from "../Controllers/user.controller.js";
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -33,7 +34,7 @@ export const createOrder = async (req, res) => {
     const fund = await Fund.create({
       campaign: campaignId,
       donor: userId,
-      amount: amount/100,
+      amount: amount / 100,
       orderId: order.id,
       status: "created",
     });
@@ -77,6 +78,12 @@ export const verifyPayment = async (req, res) => {
         fund.campaignUpdated = true;
         await fund.save();
       }
+
+      // Calculate points: 1 point per 10 rupees
+      const points = Math.floor(fund.amount / 10);
+
+      // Award points to the donor
+      await updateUserPoints(fund.donor, "donation_amount", points);
 
       return res.json({ success: true, fund });
     } else {
