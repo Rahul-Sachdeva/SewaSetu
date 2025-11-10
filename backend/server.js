@@ -10,7 +10,7 @@ import http from "http";
 
 import { Message } from "./Models/message.model.js";
 import { Conversation } from "./Models/conversation.model.js";
-
+import "./cron/monthlyReportJob.js";
 
 
 

@@ -17,6 +17,8 @@ import commentRouter from "./Routes/comment.routes.js";
 import dashboardRouter from "./Routes/dashboard.routes.js";
 import fundRouter from "./Routes/fund.routes.js";
 import chatbotRouter from "./Routes/chatbot.routes.js";
+import analyticsRouter from "./Routes/analytics.routes.js";
+import reportRouter from "./Routes/report.routes.js";
 
 // initialize server
 const app = express();
@@ -47,5 +49,7 @@ app.use("/api/v1/likes", likeRouter);
 app.use("/api/v1/comments", commentRouter);
 app.use("/api/v1/chatbot", chatbotRouter);
 app.use("/dashboard", dashboardRouter);
+app.use("/api/analytics", analyticsRouter);
+app.use("/api/reports", reportRouter);
 
 export {app} 

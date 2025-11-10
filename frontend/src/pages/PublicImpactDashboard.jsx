@@ -1,6 +1,8 @@
+// frontend/pages/PublicImpactDashboard.jsx
 import React, { useState, useEffect } from "react";
-import html2pdf from "html2pdf.js";
+import axios from "axios";
 import Navbar from "../components/Navbar";
+import { BaseURL } from "@/BaseURL";
 import {
   ResponsiveContainer,
   BarChart,
@@ -16,73 +18,7 @@ import {
   Line,
 } from "recharts";
 
-// Sample summary values (will always show, feel free to adjust)
-const statsConfig = [
-  { key: "totalMeals", label: "Total Meals Donated", icon: "🍽️", bg: "#d1fae5", color: "#065f46", value: 5826 },
-  { key: "totalNGOs", label: "Total NGOs Onboarded", icon: "🏢", bg: "#bfdbfe", color: "#1e3a8a", value: 17 },
-  { key: "citiesImpacted", label: "Cities Impacted", icon: "🏙️", bg: "#ede9fe", color: "#6d28d9", value: 12 },
-  { key: "activeCampaigns", label: "Active Campaigns This Month", icon: "📅", bg: "#fef9c3", color: "#b45309", value: 4 },
-  { key: "totalDonors", label: "Total Donors", icon: "🎁", bg: "#fde0e6", color: "#be123c", value: 120 },
-  { key: "totalRequestsCompleted", label: "Requests Completed", icon: "✅", bg: "#e0e7ff", color: "#4338ca", value: 95 },
-];
-
-const PIE_COLORS = ["#4CAF50", "#0862abff", "#9C27B0", "#cec14eff", "#a41309ff", "#c0780dff"];
-
-// Bar chart: Top cities impacted by requests
-const citiesData = [
-  { city: "Ahmedabad", count: 18 },
-  { city: "Bangalore", count: 13 },
-  { city: "Delhi", count: 12 },
-  { city: "Mumbai", count: 9 },
-  { city: "Pune", count: 8 },
-  { city: "Surat", count: 7 },
-  { city: "Jaipur", count: 6 },
-  { city: "Hyderabad", count: 5 },
-  { city: "Kolkata", count: 5 },
-  { city: "Chennai", count: 4 },
-];
-
-// Pie chart: Donations by campaign
-const donationsByCampaign = [
-  { campaignName: "Food Drive", amount: 4100 },
-  { campaignName: "Book Collection", amount: 1700 },
-  { campaignName: "Medical Camp", amount: 2400 },
-  { campaignName: "Winter Clothes", amount: 900 },
-];
-
-// Pie chart: Request status distribution
-const requestStatusDist = [
-  { label: "completed", value: 64 },
-  { label: "open", value: 17 },
-  { label: "in_progress", value: 12 },
-  { label: "cancelled", value: 3 },
-];
-
-// Bar chart: Top NGOs by donations
-const topNGOs = [
-  { ngoName: "Helping Hands NGO", value: 1250 },
-  { ngoName: "Sewa Setu Trust", value: 1100 },
-  { ngoName: "HealthPlus", value: 890 },
-  { ngoName: "EduForAll", value: 850 },
-  { ngoName: "Udaan Initiative", value: 720 },
-];
-
-// Line chart: Donations over time (monthly)
-const donationsOverTime = [
-  { label: "2025-1", value: 450 },
-  { label: "2025-2", value: 580 },
-  { label: "2025-3", value: 720 },
-  { label: "2025-4", value: 900 },
-  { label: "2025-5", value: 800 },
-  { label: "2025-6", value: 1000 },
-  { label: "2025-7", value: 930 },
-  { label: "2025-8", value: 1050 },
-  { label: "2025-9", value: 1120 },
-  { label: "2025-10", value: 1300 },
-  { label: "2025-11", value: 1400 },
-  { label: "2025-12", value: 1600 },
-];
-
+const PIE_COLORS = ["#4CAF50", "#0862ab", "#9C27B0", "#F59E0B", "#EF4444", "#3B82F6"];
 const chartContainerStyle = {
   background: "white",
   padding: "1rem",
@@ -90,243 +26,228 @@ const chartContainerStyle = {
   boxShadow: "0 2px 6px rgb(0 0 0 / 0.1)",
 };
 
-// Function to replace 'oklch' color values with safe hex colors recursively
-const replaceOklchColors = (element) => {
-  if (!element) return;
+export default function PublicImpactDashboard() {
+  const [analytics, setAnalytics] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [downloading, setDownloading] = useState(false);
 
-  // Collect element and all descendants
-  const elements = [element, ...element.querySelectorAll("*")];
-  elements.forEach((el) => {
-    const computedStyle = window.getComputedStyle(el);
-
-    // Properties to check
-    ["backgroundColor", "color", "borderColor"].forEach((prop) => {
-      const value = computedStyle[prop];
-      if (value && value.includes("oklch")) {
-        // Replace with fallback safe color: background gets light gray, others dark gray
-        if (prop === "backgroundColor") {
-          el.style[prop] = "#f9fafb";
-        } else {
-          el.style[prop] = "#111827";
-        }
-      }
-    });
-  });
-};
-
-const PublicImpactDashboard = () => {
-  const [pdfLoading, setPdfLoading] = useState(false);
-
+  // 📊 Fetch analytics
   useEffect(() => {
-    const element = document.getElementById("dashboard-content");
-    if (element) {
-      element.style.backgroundColor = "#f9fafb";
-      element.style.color = "#111827";
-    }
+    const fetchAnalytics = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get(`${BaseURL}/api/analytics`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setAnalytics(res.data);
+      } catch (err) {
+        console.error("Error fetching analytics:", err);
+        setError("Unable to load analytics data");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAnalytics();
   }, []);
 
+  // 🧾 Handle both print + backend PDF download
   const handleGeneratePDF = async () => {
-    setPdfLoading(true);
-    const element = document.getElementById("dashboard-content");
-    if (!element) {
-      alert("Dashboard content not found");
-      setPdfLoading(false);
-      return;
-    }
+    // 1️⃣ Existing browser print feature
+    window.print();
 
-    // Replace all 'oklch' colors before generating PDF
-    const replaceOklchColors = (element) => {
-      if (!element) return;
-
-      const elements = [element, ...element.querySelectorAll("*")];
-      const propsToCheck = [
-        "backgroundColor",
-        "color",
-        "borderColor",
-        "borderTopColor",
-        "borderRightColor",
-        "borderBottomColor",
-        "borderLeftColor",
-        "boxShadow",
-        "textShadow",
-      ];
-
-      elements.forEach((el) => {
-        const computedStyle = window.getComputedStyle(el);
-
-        propsToCheck.forEach((prop) => {
-          const value = computedStyle[prop];
-          if (value && value.includes("oklch")) {
-            if (prop === "backgroundColor") {
-              el.style[prop] = "#f9fafb";
-            } else if (prop.includes("shadow")) {
-              // Remove shadows to avoid complex color formats
-              el.style[prop] = "none";
-            } else {
-              el.style[prop] = "#111827";
-            }
-          }
-        });
-      });
-    };
-
-
+    // 2️⃣ Also generate & download backend PDF
     try {
-      await html2pdf()
-        .set({
-          margin: [10, 10],
-          filename: "ImpactDashboard.pdf",
-          image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2, logging: true, useCORS: true },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        })
-        .from(element)
-        .save();
-    } catch (error) {
-      console.error("PDF generation error:", error);
+      setDownloading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${BaseURL}/api/reports/generate`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) throw new Error("Backend PDF generation failed");
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `SewaSetu_Admin_Report_${new Date().toISOString().slice(0, 10)}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+
+      console.log("✅ Backend PDF downloaded successfully");
+    } catch (err) {
+      console.error("❌ Backend report download failed:", err);
+      alert("Failed to download the backend-generated report. Check console for details.");
+    } finally {
+      setDownloading(false);
     }
-    setPdfLoading(false);
   };
 
+  if (loading) return <div className="p-10 text-center">Loading dashboard...</div>;
+  if (error) return <div className="p-10 text-red-600 text-center">{error}</div>;
+
+  const {
+    summary,
+    requestStatusDist,
+    donationsOverTime,
+    donationTypeBreakdown,
+    donationHandlingDist,
+    topDonors,
+    topCampaigns,
+    ngoLeaderboard,
+  } = analytics || {};
+
+  const stats = [
+    { label: "Total Funds Raised", value: summary?.totalFunds, icon: "💰" },
+    { label: "Total NGOs", value: summary?.totalNGOs, icon: "🏢" },
+    { label: "Active Campaigns", value: summary?.activeCampaigns, icon: "📅" },
+    { label: "Total Donors", value: summary?.totalDonors, icon: "🎁" },
+    { label: "Avg Donation (₹)", value: summary?.avgDonation, icon: "📈" },
+    { label: "Requests Completed", value: summary?.completedRequests, icon: "✅" },
+    { label: "Cities Impacted", value: summary?.citiesImpacted, icon: "🏙️" },
+    { label: "Total Donations", value: summary?.totalDonations, icon: "📦" },
+  ];
+
   return (
-    <div className="bg-[#f9fafb] text-[#111827] min-h-screen flex flex-col">
-      {/* Navbar with bottom border and background matching dashboard */}
-      <header className="bg-white shadow-md sticky top-0 z-20">
-        <Navbar />
-      </header>
-      <div className="max-w-7xl mx-auto px-20 py-12 space-y-12 bg-[#f9fafb] text-[#111827]">
-        <div className="flex items-center justify-between mb-10">
-          <h1 className="text-4xl font-extrabold text-gray-900">
-            Public Impact Dashboard
-          </h1>
+    <div className="bg-gray-50 min-h-screen">
+      <Navbar />
+      <style>
+        {`
+          @media print {
+            body * { visibility: hidden; }
+            #dashboard-root, #dashboard-root * { visibility: visible; }
+            #dashboard-root { position: absolute; left: 0; top: 0; width: 100%; }
+            .print-hide { display: none !important; }
+            .chart-box { page-break-inside: avoid; }
+            body { background-color: #fff !important; }
+          }
+        `}
+      </style>
+
+      <div className="max-w-7xl mx-auto px-6 py-10 space-y-10" id="dashboard-root">
+        <div className="flex justify-between items-center print-hide">
+          <h1 className="text-3xl font-bold text-gray-800">Admin Analytics Dashboard</h1>
           <button
             onClick={handleGeneratePDF}
-            className="px-6 py-3 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 transition shadow"
-            disabled={pdfLoading}
+            className={`px-5 py-2 rounded-lg font-semibold text-white transition shadow ${
+              downloading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+            }`}
+            disabled={downloading}
           >
-            {pdfLoading ? "Generating PDF..." : "Download PDF Report"}
+            {downloading ? "Generating..." : "Download PDF"}
           </button>
         </div>
 
-        <div id="dashboard-content">
-          {/* Summary cards: 4 in first row, 2 centered in second */}
-          <div className="grid grid-cols-4 gap-8 justify-center mx-auto max-w-5xl">
-            {statsConfig.map(({ key, label, icon, bg, color, value }, index) => (
-              <div
-                key={key}
-                style={{ background: bg, color: color }}
-                className={`rounded-xl shadow-md p-6 flex flex-col items-center justify-center ${index >= 4 ? "col-span-2" : ""
-                  }`}
-                role="region"
-                aria-label={label}
-              >
-                <div className="text-5xl mb-4" aria-hidden="true">
-                  {icon}
-                </div>
-                <p className="text-3xl font-bold">{value.toLocaleString()}</p>
-                <p className="mt-2 text-lg font-semibold text-center">{label}</p>
-              </div>
-            ))}
-          </div>
+        {/* Summary Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {stats.map((s, i) => (
+            <div key={i} className="bg-white rounded-xl shadow p-6 text-center">
+              <div className="text-4xl mb-2">{s.icon}</div>
+              <p className="text-2xl font-bold">
+                {s.value ? s.value.toLocaleString() : 0}
+              </p>
+              <p className="text-gray-600 font-medium">{s.label}</p>
+            </div>
+          ))}
+        </div>
 
-          {/* Layout charts: center with max width and spacing */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-12 max-w-6xl mx-auto">
-            {/* Bar Chart: Cities Impacted */}
-            <section style={chartContainerStyle}>
-              <h2 className="text-2xl font-semibold mb-6 text-gray-800">Cities Impacted (Top 10)</h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={citiesData} margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
-                  <XAxis dataKey="city" tick={{ fontSize: 12 }} angle={-30} textAnchor="end" height={70} />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="count" fill="#6366f1" name="Requests" />
-                </BarChart>
-              </ResponsiveContainer>
-            </section>
-
-            {/* Pie Chart: Donations by Campaign */}
-            <section style={chartContainerStyle}>
-              <h2 className="text-2xl font-semibold mb-6 text-gray-800">Donations by Campaign</h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={donationsByCampaign}
-                    dataKey="amount"
-                    nameKey="campaignName"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={90}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    fill="#8884d8"
-                  >
-                    {donationsByCampaign.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => value.toLocaleString()} />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </section>
-
-            {/* Pie Chart: Request Status Distribution */}
-            <section style={chartContainerStyle}>
-              <h2 className="text-2xl font-semibold mb-6 text-gray-800">Requests by Status</h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={requestStatusDist}
-                    dataKey="value"
-                    nameKey="label"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={90}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    fill="#4caf50"
-                  >
-                    {requestStatusDist.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => value.toLocaleString()} />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </section>
-
-            {/* Bar Chart: Top NGOs by Donations */}
-            <section style={chartContainerStyle}>
-              <h2 className="text-2xl font-semibold mb-6 text-gray-800">Top NGOs by Donations</h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={topNGOs} margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
-                  <XAxis dataKey="ngoName" tick={{ fontSize: 12 }} angle={-30} textAnchor="end" height={70} />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="value" fill="#10b981" name="Donations" />
-                </BarChart>
-              </ResponsiveContainer>
-            </section>
-
-            {/* Line Chart: Donations Over Time */}
-            <section style={chartContainerStyle} className="md:col-span-2">
-              <h2 className="text-2xl font-semibold mb-6 text-gray-800">Donations Over Time (Past Year)</h2>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={donationsOverTime} margin={{ top: 10, right: 30, left: 0, bottom: 5 }}>
-                  <XAxis dataKey="label" />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="value" stroke="#6366f1" name="Donations" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
-            </section>
-          </div>
+        {/* Charts */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <ChartBox title="Requests by Status">
+            <PieChartWrapper data={requestStatusDist} nameKey="label" dataKey="value" />
+          </ChartBox>
+          <ChartBox title="Donations by Type">
+            <PieChartWrapper data={donationTypeBreakdown} nameKey="label" dataKey="value" />
+          </ChartBox>
+          <ChartBox title="Donation Handling Status">
+            <PieChartWrapper data={donationHandlingDist} nameKey="label" dataKey="value" />
+          </ChartBox>
+          <ChartBox title="Top Donors (All NGOs)">
+            <BarChartWrapper data={topDonors} xKey="donorName" yKey="totalDonated" />
+          </ChartBox>
+          <ChartBox title="Top Campaigns by Fundraising">
+            <BarChartWrapper data={topCampaigns} xKey="campaignName" yKey="amount" />
+          </ChartBox>
+          <ChartBox title="Top NGOs by Funds Raised">
+            <BarChartWrapper data={ngoLeaderboard} xKey="ngoName" yKey="totalFunds" />
+          </ChartBox>
+          <ChartBox title="Monthly Donations Trend" wide>
+            <LineChartWrapper data={donationsOverTime} />
+          </ChartBox>
         </div>
       </div>
     </div>
   );
-};
+}
 
-export default PublicImpactDashboard;
+/* ---------- Chart Components ---------- */
+function ChartBox({ title, children, wide }) {
+  return (
+    <section style={chartContainerStyle} className={`chart-box ${wide ? "md:col-span-2" : ""}`}>
+      <h2 className="text-lg font-semibold mb-4 text-gray-800">{title}</h2>
+      {children}
+    </section>
+  );
+}
+
+function PieChartWrapper({ data, nameKey, dataKey }) {
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <PieChart>
+        <Pie
+          data={data || []}
+          dataKey={dataKey}
+          nameKey={nameKey}
+          cx="50%"
+          cy="50%"
+          outerRadius={90}
+          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+          isAnimationActive={false}
+        >
+          {(data || []).map((_, i) => (
+            <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+          ))}
+        </Pie>
+        <Tooltip />
+        <Legend />
+      </PieChart>
+    </ResponsiveContainer>
+  );
+}
+
+function BarChartWrapper({ data, xKey, yKey }) {
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart data={data || []}>
+        <XAxis dataKey={xKey} tick={{ fontSize: 12 }} angle={-20} textAnchor="end" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Bar dataKey={yKey} fill="#3B82F6" isAnimationActive={false} />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}
+
+function LineChartWrapper({ data }) {
+  return (
+    <ResponsiveContainer width="100%" height={300}>
+      <LineChart data={data || []}>
+        <XAxis dataKey="label" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Line
+          type="monotone"
+          dataKey="value"
+          stroke="#6366f1"
+          strokeWidth={2}
+          isAnimationActive={false}
+        />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}
