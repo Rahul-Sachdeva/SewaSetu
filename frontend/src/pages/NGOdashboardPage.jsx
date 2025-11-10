@@ -71,7 +71,7 @@ export default function NGODashboard() {
   }, [active, user]);
 
   const menuItems = [
-    { id: "overview", label: "Overview / Summary", icon: <LayoutDashboard size={18} /> },
+    { id: "overview", label: "My Activity", icon: <LayoutDashboard size={18} /> },
     { id: "ngo-requests", label: "Requests Management", icon: <ClipboardList size={18} /> },
     { id: "donations", label: "Donations Management", icon: <Gift size={18} /> },
     { id: "campaign-new", label: "Create New Campaign", icon: <FolderPlus size={18} /> },
@@ -107,7 +107,7 @@ export default function NGODashboard() {
 
         {/* Main Content */}
         <main className="flex-1 p-8">
-          {/* Overview Tab */}
+          {/* Activity Tab */}
           {active === "overview" && (
             <div className="bg-white rounded-xl shadow-md p-6 max-w-4xl mx-auto">
               <h2 className="text-2xl font-semibold mb-4">Your Points & Activity</h2>
