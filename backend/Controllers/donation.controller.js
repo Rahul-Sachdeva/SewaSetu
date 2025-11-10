@@ -1,6 +1,7 @@
 import { Donation } from "../Models/donation.model.js";
 import uploadCloudinary from "../Utils/cloudinary.js";
 import { updateUserPoints } from "../Controllers/user.controller.js";
+import { updateNGOPoints } from "../Controllers/ngo.controller.js";
 
 // Create Donation
 
@@ -105,6 +106,7 @@ export const getDonationById = async (req, res) => {
 export const updateDonationStatus = async (req, res) => {
   try {
     const { status } = req.body;
+    const donationId = req.params.id;
 
     // allowed statuses
     const validStatuses = ["pending", "accepted", "rejected", "picked"];
@@ -112,14 +114,22 @@ export const updateDonationStatus = async (req, res) => {
       return res.status(400).json({ message: "Invalid status value" });
     }
 
-    const donation = await Donation.findByIdAndUpdate(
-      req.params.id,
-      { status: status.toLowerCase() },
-      { new: true }
-    );
-
+    const donation = await Donation.findById(donationId);
     if (!donation) {
       return res.status(404).json({ message: "Donation not found" });
+    }
+
+    // Update status
+    donation.status = status.toLowerCase();
+    await donation.save();
+
+    // If accepted, add points to the related NGO
+    if (donation.status === "accepted") {
+      const campaign = await Campaign.findById(donation.campaign);
+      if (campaign && campaign.ngo) {
+        // Add points, e.g., 15 for accepting donation
+        await updateNGOPoints(campaign.ngo, "accept_donation", 15);
+      }
     }
 
     return res.status(200).json({

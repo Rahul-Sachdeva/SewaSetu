@@ -421,15 +421,63 @@ export const getUserLeaderboard = async (req, res) => {
 export const getUserRank = async (req, res) => {
   try {
     const userId = req.params.id;
+    const period = req.query.period || "allTime";
+    console.log(`Calculating rank for user ${userId} in period ${period}`);
+
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) {
+      console.log("User not found");
+      return res.status(404).json({ message: "User not found" });
+    }
 
-    // Count how many users have more points
-    const higherRankCount = await User.countDocuments({ points: { $gt: user.points } });
-    const rank = higherRankCount + 1;
+    if (period === "thisMonth") {
+      const startOfMonth = new Date();
+      startOfMonth.setHours(0, 0, 0, 0);
 
-    return res.json({ rank, points: user.points, badges: user.badges });
+      // Calculate user's points for this month from activityHistory
+      const monthlyPoints = user.activityHistory
+        .filter(a => a.date >= startOfMonth)
+        .reduce((acc, a) => acc + a.points, 0);
+
+      console.log(`User monthly points: ${monthlyPoints}`);
+
+      // Count how many users have higher points this month
+      const higherRankCount = await User.countDocuments({
+        "activityHistory.date": { $gte: startOfMonth },
+        $expr: {
+          $gt: [{
+            $sum: {
+              $map: {
+                input: {
+                  $filter: {
+                    input: "$activityHistory",
+                    as: "activity",
+                    cond: { $gte: ["$$activity.date", startOfMonth] }
+                  }
+                },
+                as: "activity",
+                in: "$$activity.points"
+              }
+            }
+          }, monthlyPoints]
+        }
+      });
+
+      const rank = higherRankCount + 1;
+      console.log(`User this month rank: ${rank}`);
+
+      return res.json({ rank, points: monthlyPoints, badges: user.badges });
+
+    } else {
+      // All time rank based on total points
+      const higherRankCount = await User.countDocuments({ points: { $gt: user.points } });
+      const rank = higherRankCount + 1;
+      console.log(`User all-time points: ${user.points}, rank: ${rank}`);
+      return res.json({ rank, points: user.points, badges: user.badges });
+    }
+
   } catch (error) {
+    console.error("Error fetching user rank:", error);
     return res.status(500).json({ message: "Error fetching user rank", error: error.message });
   }
 };

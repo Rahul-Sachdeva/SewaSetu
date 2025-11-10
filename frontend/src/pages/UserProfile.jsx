@@ -13,6 +13,13 @@ const badgeThresholds = [
   { name: "Platinum", points: 1000 }
 ];
 
+const badgeColors = {
+  Bronze: "bg-amber-700 text-white",
+  Silver: "bg-gray-200 text-gray-800",
+  Gold: "bg-yellow-200 text-yellow-900",
+  Platinum: "bg-slate-200 text-slate-800"
+};
+
 const UserProfile = () => {
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
@@ -81,9 +88,9 @@ const UserProfile = () => {
           <img
             src={profile?.profile_image || "https://via.placeholder.com/150"}
             alt={`${profile?.name || user?.name}'s profile`}
-            className="w-32 h-32 rounded-full border-4 border-[#19398a] object-cover"
+            className="w-32 h-32 rounded-full border-4 border-[#19398a] object-cover shadow-lg transition-transform hover:scale-105 hover:shadow-blue-300"
           />
-          <h2 className="text-2xl font-bold text-gray-900 mt-4">{profile?.name || user?.name}</h2>
+          <h2 className="text-2xl font-black tracking-tight text-gray-900 mt-4">{profile?.name || user?.name}</h2>
 
           {/* Points and Badges */}
           <div className="mt-4 w-full">
@@ -93,12 +100,12 @@ const UserProfile = () => {
                 badges.map((badge, idx) => (
                   <span
                     key={idx}
-                    className="px-3 py-1 bg-yellow-400 text-xs rounded-full font-semibold shadow-sm cursor-default select-none"
+                    className={`px-2 py-1 rounded-full font-semibold shadow-sm cursor-default select-none flex items-center gap-1 ${badgeColors[badge] || "bg-yellow-200 text-yellow-900"}`}
                     title={`${badge} Badge`}
                     tabIndex={0}
                     aria-label={`${badge} badge`}
                   >
-                    {badge}
+                    <span className="text-base">🌟</span> {badge}
                   </span>
                 ))
               ) : (
@@ -107,11 +114,14 @@ const UserProfile = () => {
             </div>
             {nextBadge && (
               <div className="mt-4" role="progressbar" aria-valuenow={points} aria-valuemin={0} aria-valuemax={nextBadge.points}>
-                <div className="text-xs text-gray-700 mb-1">
-                  Progress to <strong>{nextBadge.name}</strong> badge: {points} / {nextBadge.points} pts
+                <div className="flex justify-between items-center text-xs mb-1">
+                  <span className="text-gray-700">
+                    Progress to <strong>{nextBadge.name}</strong>: {points} / {nextBadge.points} pts
+                  </span>
+                  <span className="ml-2 text-gray-500" title={`${100 - progressPercent}% to go`}>{Math.max(0, nextBadge.points - points)} pts left</span>
                 </div>
                 <div className="w-full bg-gray-300 h-3 rounded-full overflow-hidden">
-                  <div className="h-3 bg-yellow-500 transition-all duration-500 ease-in-out" style={{ width: `${progressPercent}%` }} />
+                  <div className="h-3 bg-gradient-to-r from-amber-400 via-yellow-300 to-lime-200 transition-all duration-700" style={{ width: `${progressPercent}%` }} />
                 </div>
               </div>
             )}
@@ -166,43 +176,33 @@ const UserProfile = () => {
             {stats.map((stat, idx) => (
               <div
                 key={idx}
-                className={`p-6 rounded-xl shadow-sm flex flex-col items-center justify-center ${
-                  idx === 1 ? "bg-yellow-50" : "bg-[#19398a0d]"
-                }`}
+                className={`p-6 rounded-xl shadow-md flex flex-col items-center bg-gradient-to-tr
+                  ${idx === 1
+                    ? "from-yellow-100 via-yellow-50 to-orange-50"
+                    : idx === 2
+                      ? "from-blue-50 to-cyan-50"
+                      : "from-lime-50 to-yellow-100"}
+                `}
                 aria-label={`${stat.label}: ${stat.value}`}
               >
-                <span className="text-4xl">{stat.icon}</span>
-                <span className="mt-2 text-3xl font-extrabold text-[#19398a]">{stat.value}</span>
+                <span className="text-4xl mb-2">{stat.icon}</span>
+                <span className="text-3xl font-extrabold text-[#19398a]">{stat.value}</span>
                 <span className="text-sm text-gray-700">{stat.label}</span>
               </div>
             ))}
           </section>
-
-          {/* Recent Contributions */}
-          <article className="bg-white rounded-xl shadow-md p-6">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">Recent Contributions</h3>
-            <ul className="divide-y divide-gray-200 max-h-64 overflow-y-auto">
-              {contributions.map((contrib, idx) => (
-                <li key={idx} className="flex justify-between py-3">
-                  <p className="text-gray-800 truncate" title={contrib.title}>{contrib.title}</p>
-                  <time className="text-sm text-gray-500">{contrib.date}</time>
-                </li>
-              ))}
-              {contributions.length === 0 && <p className="text-gray-400 italic">No contributions yet.</p>}
-            </ul>
-            <button className="mt-4 text-[#19398a] text-sm font-semibold hover:underline self-start">
-              View All →
-            </button>
-          </article>
 
           {/* Gamification Activity History */}
           <article className="bg-white rounded-xl shadow-md p-6">
             <h3 className="text-xl font-semibold text-gray-900 mb-4">Recent Gamification Activity</h3>
             <ul className="divide-y divide-gray-200 max-h-48 overflow-y-auto text-gray-600 text-sm">
               {activityHistory.length > 0 ? (
-                activityHistory.slice(0, 6).map((activity, idx) => (
-                  <li key={idx} className="flex justify-between py-2">
-                    <span className="truncate max-w-[70%]" title={activity.activity}>{activity.activity}</span>
+                activityHistory.slice().reverse().slice(0, 6).map((activity, idx) => (
+                  <li key={idx} className="flex justify-between py-2 items-center animate-fadeIn">
+                    <span className="truncate max-w-[70%] flex items-center gap-1" title={activity.activity}>
+                      {activity.points > 0 ? <span className="text-green-500 font-bold">▲</span> : <span className="text-red-400">▼</span>}
+                      {activity.activity}
+                    </span>
                     <span className={activity.points > 0 ? "text-green-600 font-semibold" : "text-red-600 font-semibold"}>
                       {activity.points > 0 ? `+${activity.points}` : activity.points}
                     </span>
@@ -212,6 +212,23 @@ const UserProfile = () => {
                 <p className="italic text-gray-400">No recent gamification activity</p>
               )}
             </ul>
+          </article>
+
+          {/* Recent Contributions */}
+          <article className="bg-white rounded-xl shadow-md p-6">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Recent Contributions</h3>
+            <ul className="divide-y divide-gray-200 max-h-64 overflow-y-auto">
+              {contributions.map((contrib, idx) => (
+                <li key={idx} className="flex justify-between py-3">
+                  <span className="text-gray-800 truncate">{contrib.title}</span>
+                  <time className="text-sm text-gray-500">{contrib.date}</time>
+                </li>
+              ))}
+              {contributions.length === 0 && <p className="text-gray-400 italic">No contributions yet.</p>}
+            </ul>
+            <button className="mt-4 text-[#19398a] text-sm font-semibold hover:underline transition-transform hover:scale-105 self-start">
+              View All →
+            </button>
           </article>
         </section>
       </main>

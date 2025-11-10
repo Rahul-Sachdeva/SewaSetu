@@ -25,6 +25,7 @@ import Notification from "./pages/Notification";
 import DonationsManagement from "./pages/DonationsManagement";
 import UserDonation from "./components/UserDonation";
 import UserLeaderboard from "./pages/UserLeaderboard";
+import NGOLeaderboard from "./pages/NGOLeaderboard";
 import PublicImpactDashboard from "./pages/PublicImpactDashboard";
 
 
@@ -83,6 +84,11 @@ function App() {
         <Route path="/leaderboard" element={
           <PrivateRoute roles={["user", "admin"]}>
             <UserLeaderboard />
+          </PrivateRoute>
+        } />
+        <Route path="/ngo-leaderboard" element={
+          <PrivateRoute roles={["user", "admin", 'ngo']}>
+            <NGOLeaderboard />
           </PrivateRoute>
         } />
 

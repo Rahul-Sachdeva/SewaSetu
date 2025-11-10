@@ -3,8 +3,9 @@ import { Post } from "../Models/post.model.js";
 import { moderateText, moderateImage, moderateVideo } from "../Utils/moderation.js";
 import uploadCloudinary from "../Utils/cloudinary.js";
 import { Like } from "../Models/like.model.js";
+import { updateUserPoints } from "../Controllers/user.controller.js";
 
-// 🔹 CREATE Post / Story / Reel
+// CREATE Post / Story / Reel
 export const createPost = async (req, res) => {
   try {
     const { type, title, content } = req.body;
@@ -12,7 +13,7 @@ export const createPost = async (req, res) => {
     let mediaUrl = "";
     let isVideo = false;
 
-    // 1️⃣ Upload to Cloudinary if file provided
+    // Upload to Cloudinary if file provided
     if (req.file) {
       isVideo = req.file.mimetype.startsWith("video") || req.file.mimetype.startsWith("text/plain");
       if(!isVideo && type=="reel"){
@@ -22,14 +23,14 @@ export const createPost = async (req, res) => {
       mediaUrl = uploadResult.secure_url || uploadResult.url;
     }
 
-    // 2️⃣ Story expiration logic
+    // Story expiration logic
     const expiresAt =
       type === "story" ? new Date(Date.now() + 24 * 60 * 60 * 1000) : null;
 
-    // 3️⃣ Moderate text
+    // Moderate text
     const textResult = await moderateText(`${title || ""} ${content || ""}`);
 
-    // 4️⃣ Moderate media (if exists)
+    // Moderate media (if exists)
     let mediaResult = { status: "safe" };
     if (mediaUrl) {
       mediaResult = isVideo
@@ -37,13 +38,13 @@ export const createPost = async (req, res) => {
         : await moderateImage(mediaUrl);
     }
 
-    // 5️⃣ Final moderation decision
+    // Final moderation decision
     const finalStatus =
       textResult === "unsafe" || mediaResult.status === "unsafe"
         ? "pending"
         : "published";
 
-    // 6️⃣ Create the post
+    // Create the post
     const post = await Post.create({
       author: req.user._id,
       type,
@@ -54,6 +55,11 @@ export const createPost = async (req, res) => {
       status: finalStatus,
       verified: finalStatus === "published",
     });
+
+    // Award points for posting content (example: 10 points)
+    if(finalStatus === "published"){
+      await updateUserPoints(req.user._id, "post_content", 10);
+    }
 
     res.status(201).json({
       success: true,
@@ -68,6 +74,7 @@ export const createPost = async (req, res) => {
     res.status(500).json({ success: false, message: "Failed to create post" });
   }
 };
+
 
 /**
  * GET Posts (published or verified)

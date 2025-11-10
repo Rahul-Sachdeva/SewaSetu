@@ -14,7 +14,7 @@ import NGOProfile from "./NGOProfile";
 import DonationsManagement from "./DonationsManagement";
 import Navbar from "../components/Navbar";
 import NgoDashboard from "./NgoDashboard";
-
+import { NavLink } from "react-router-dom";
 import { useEffect } from "react";
 
 export default function NGODashboard() {

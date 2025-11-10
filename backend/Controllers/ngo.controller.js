@@ -377,17 +377,40 @@ export const getPendingNGOs = async (req, res) => {
   }
 };
 
+// Update NGO points based on activity and assign badges
 export const updateNGOPoints = async (ngoId, activity, points) => {
   const ngo = await NGO.findById(ngoId);
   if (!ngo) throw new Error("NGO not found");
 
+  if (!ngo.points) ngo.points = 0;
+  if (!ngo.badges) ngo.badges = [];
+  if (!ngo.activityHistory) ngo.activityHistory = [];
+
   ngo.points += points;
-  ngo.activityHistory.push({ activity, points });
+  ngo.activityHistory.push({ activity, points, date: new Date() });
+
+  // Badge thresholds example
+  const badgeThresholds = [
+    { name: "Bronze", points: 100 },
+    { name: "Silver", points: 300 },
+    { name: "Gold", points: 600 },
+    { name: "Platinum", points: 1000 }
+  ];
+
+  // Assign badges
+  for (const badge of badgeThresholds) {
+    if (ngo.points >= badge.points && !ngo.badges.includes(badge.name)) {
+      ngo.badges.push(badge.name);
+      // Optional: notify NGO of badge achievement
+    }
+  }
 
   await ngo.save();
   return ngo;
 };
 
+
+// Get NGO leaderboard with period filter and totalPoints aggregation
 export const getNGOLeaderboard = async (req, res) => {
   try {
     const period = req.query.period || "allTime";
@@ -414,7 +437,7 @@ export const getNGOLeaderboard = async (req, res) => {
                       $filter: {
                         input: "$activityHistory",
                         as: "activity",
-                        cond: { $gte: ["$$activity.date", startOfMonth] }
+                        cond: { $gte: ["$$activity.date", new Date(startOfMonth)] }
                       }
                     },
                     as: "activity",
@@ -447,6 +470,8 @@ export const getNGOLeaderboard = async (req, res) => {
   }
 };
 
+
+// Get NGO rank based on points
 export const getNGORank = async (req, res) => {
   try {
     const ngoId = req.params.id;

@@ -72,9 +72,6 @@ const Navbar = () => {
               <NavLink to="/campaigns" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                 Campaigns
               </NavLink>
-              <NavLink to="/chat" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
-                Chat
-              </NavLink>
               <NavLink to="/notifications" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                 Notifications
               </NavLink>
@@ -85,8 +82,32 @@ const Navbar = () => {
                 to="/impact-dashboard"
                 style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
               >
-                SewaSetu Analytics
+                Analytics
               </NavLink>
+              <div className="dropdown" style={{ paddingLeft: 10, position: "relative" }}>
+                <span style={{ cursor: "pointer", userSelect: "none" }}>
+                  Interact ▾
+                </span>
+                <div className="dropdown-content">
+                  <NavLink to="/ngo-leaderboard" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    Leaderboard
+                  </NavLink>
+                  <NavLink to="/create-post" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    Add a Post/Reel
+                  </NavLink>
+                  <NavLink to="/reels" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    View Reels
+                  </NavLink>
+                  <NavLink to="/feed-page" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    View Feed
+                  </NavLink>
+                  
+                  <NavLink to="/chat" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    Chat
+                  </NavLink>
+                </div>
+              </div>
+
 
               <a
                 className="logout-btn"
@@ -144,11 +165,20 @@ const Navbar = () => {
                   <NavLink to="/notifications" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                     Notifications
                   </NavLink>
+                  <NavLink to="/create-post" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    Add a Post/Reel
+                  </NavLink>
+                  <NavLink to="/reels" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    View Reels
+                  </NavLink>
+                  <NavLink to="/feed-page" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    View Feed
+                  </NavLink>
                   <NavLink
                     to="/impact-dashboard"
                     style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
                   >
-                    SewaSetu Analytics
+                    Analytics
                   </NavLink>
                 </div>
               </div>
@@ -232,7 +262,7 @@ const Navbar = () => {
                     textDecoration: "none",
                   }}
                 >
-                  SewaSetu Analytics
+                  Analytics
                 </NavLink>
 
                 <NavLink
@@ -329,7 +359,7 @@ const Navbar = () => {
       <style>
         {`
           .nav-links a {
-            margin: 0 1rem;
+            margin: 0 0.9rem;
             color: black;
             text-decoration: none;
           }

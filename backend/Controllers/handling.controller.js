@@ -1,6 +1,7 @@
 import { RequestHandling } from "../Models/requestHandling.model.js";
 import { AssistanceRequest } from "../Models/assistance.model.js";
 import { sendNotification } from "../Utils/notification.utils.js";
+import { updateNGOPoints } from "../Controllers/ngo.controller.js";
 
 
 // ------------------------
@@ -9,25 +10,24 @@ import { sendNotification } from "../Utils/notification.utils.js";
 export const respondToRequest = async (req, res) => {
   try {
     const { requestHandlingId, action } = req.body;
-    // action = 'accept' or 'reject'
-
-
     if (!requestHandlingId || !action || !['accept', 'reject'].includes(action)) {
       return res.status(400).json({ message: "Valid requestHandlingId and action are required" });
     }
 
-
     const handling = await RequestHandling.findById(requestHandlingId).populate('request_id');
     if (!handling) return res.status(404).json({ message: "RequestHandling not found" });
 
-
-    // Update status based on action
     handling.status = action === 'accept' ? 'accepted' : 'rejected';
     handling.updatedAt = new Date();
     await handling.save();
 
+    // Add points to NGO when request accepted
+    if (action === 'accept') {
+      const ngoId = handling.handledBy; // Assuming this holds NGO ObjectId
+      await updateNGOPoints(ngoId, "accept_assistance_request", 10);
+    }
 
-    // Notify the user
+    // Notify user about request status update
     await sendNotification(handling.request_id.requestedBy, "User", {
       type: "request_status_update",
       title: `Assistance Request ${handling.status.charAt(0).toUpperCase() + handling.status.slice(1)}`,
@@ -36,13 +36,13 @@ export const respondToRequest = async (req, res) => {
       referenceModel: "AssistanceRequest"
     });
 
-
     res.status(200).json({ message: `Request ${handling.status} successfully`, handling });
   } catch (err) {
     console.error("Respond to Request Error:", err);
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
+
 
 
 // ------------------------
@@ -109,21 +109,20 @@ export const scheduleRequest = async (req, res) => {
 export const completeRequest = async (req, res) => {
   try {
     const { requestHandlingId } = req.body;
-
-
     if (!requestHandlingId) return res.status(400).json({ message: "RequestHandling ID is required" });
-
 
     const handling = await RequestHandling.findById(requestHandlingId).populate('request_id');
     if (!handling) return res.status(404).json({ message: "RequestHandling not found" });
-
 
     handling.status = "completed";
     handling.updatedAt = new Date();
     await handling.save();
 
+    // Add points to NGO (or possibly the angel/volunteer if tracked)
+    const ngoId = handling.handledBy;
+    await updateNGOPoints(ngoId, "complete_assistance", 20);
 
-    // Notify user to give feedback
+    // Notify user to provide feedback
     await sendNotification(handling.request_id.requestedBy, "User", {
       type: "request_status_update",
       title: "Assistance Request Completed",
@@ -132,13 +131,13 @@ export const completeRequest = async (req, res) => {
       referenceModel: "AssistanceRequest"
     });
 
-
     res.status(200).json({ message: "Request marked as completed", handling });
   } catch (err) {
     console.error("Complete Request Error:", err);
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
+
 
 
 // ------------------------

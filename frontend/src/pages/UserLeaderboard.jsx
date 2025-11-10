@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import axios from "axios";
 import Confetti from "react-confetti";
 import { BaseURL } from "../BaseURL";
@@ -12,6 +12,8 @@ const badgeStyles = {
     platinum: { bg: "bg-stone-200", text: "text-gray-800", shadow: "shadow" },
 };
 
+const badgeOrder = ["bronze", "silver", "gold", "platinum"];
+
 const GRADIENTS = [
     "from-yellow-300 to-yellow-200",
     "from-blue-300 to-blue-200",
@@ -20,6 +22,8 @@ const GRADIENTS = [
     "from-green-300 to-green-200",
 ];
 
+const ITEMS_PER_PAGE = 10;
+
 const UserLeaderboard = () => {
     const { user } = useAuth();
     const [leaderboard, setLeaderboard] = useState([]);
@@ -27,21 +31,45 @@ const UserLeaderboard = () => {
     const [error, setError] = useState("");
     const [period, setPeriod] = useState("allTime");
     const [userRank, setUserRank] = useState(null);
+    const [search, setSearch] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
 
     const containerRef = useRef(null);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
-    // Show confetti only once when banner first appears
     const [showConfetti, setShowConfetti] = useState(false);
+
+    const showCelebration =
+        userRank && userRank <= 5 && (period === "thisMonth" || period === "allTime");
+    const [globalUserRank, setGlobalUserRank] = useState(null);
 
     useEffect(() => {
         if (containerRef.current) {
             setDimensions({
                 width: containerRef.current.offsetWidth,
-                height: 80, // reduced height
+                height: 80,
             });
         }
     }, [loading]);
+
+    useEffect(() => {
+        async function fetchGlobalRank() {
+            if (!user) return;
+            try {
+                const token = localStorage.getItem("token");
+                const rankRes = await axios.get(
+                    `${BaseURL}/api/v1/user/rank/${user.id}?period=${period}`,
+                    {
+                        headers: { Authorization: `Bearer ${token}` },
+                    }
+                );
+                setGlobalUserRank(rankRes.data.rank);
+            } catch (e) {
+                setGlobalUserRank(null);
+            }
+        }
+        fetchGlobalRank();
+    }, [user, period]);
 
     useEffect(() => {
         const fetchLeaderboard = async () => {
@@ -55,23 +83,27 @@ const UserLeaderboard = () => {
                         headers: { Authorization: `Bearer ${token}` },
                     }
                 );
+                console.log("Leaderboard fetched:", res.data.leaderboard);
+
                 const sorted = [...res.data.leaderboard].sort((a, b) => b.points - a.points);
                 setLeaderboard(sorted);
+
                 if (user) {
-                    const rankIndex = res.data.leaderboard.findIndex(
-                        (u) => u._id === user.id
-                    );
+                    const rankIndex = res.data.leaderboard.findIndex((u) => u._id === user.id);
+                    console.log("User ID:", user.id, "Rank Index:", rankIndex);
                     setUserRank(rankIndex >= 0 ? rankIndex + 1 : null);
-                    // Show confetti only once when user enters top 3
+
                     if (rankIndex >= 0 && rankIndex < 3) {
+                        console.log("Showing confetti for user rank:", rankIndex + 1);
                         setShowConfetti(true);
-                        setTimeout(() => setShowConfetti(false), 3000); // confetti for 3 seconds
+                        setTimeout(() => setShowConfetti(false), 3000);
                     }
                 } else {
                     setShowConfetti(false);
                     setUserRank(null);
                 }
             } catch (err) {
+                console.error("Error fetching leaderboard:", err);
                 setError("Failed to load leaderboard.");
                 setUserRank(null);
                 setShowConfetti(false);
@@ -82,7 +114,17 @@ const UserLeaderboard = () => {
         fetchLeaderboard();
     }, [period, user]);
 
-    const showCelebration = userRank && userRank <= 3;
+    const filteredLeaderboard = useMemo(() => {
+        return leaderboard.filter((u) =>
+            u.name.toLowerCase().includes(search.toLowerCase())
+        );
+    }, [leaderboard, search]);
+
+    const totalPages = Math.ceil(filteredLeaderboard.length / ITEMS_PER_PAGE);
+    const paginatedLeaderboard = filteredLeaderboard.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
 
     const ordinalSuffix = (i) => {
         const j = i % 10,
@@ -93,39 +135,47 @@ const UserLeaderboard = () => {
         return `${i}th`;
     };
 
+    function changePage(newPage) {
+        if (newPage < 1 || newPage > totalPages) return;
+        setCurrentPage(newPage);
+    }
+
     return (
         <>
             <Navbar />
+            {showCelebration && (
+                <div className="mb-6 bg-yellow-100 bg-opacity-90 border-b border-yellow-200 shadow-md z-10 transition-all duration-300 flex items-center justify-center rounded-lg">
+                    {showConfetti && <Confetti width={dimensions.width + 20} height={dimensions.height + 80} />}
+                    <div className="flex items-center h-14 font-semibold text-yellow-900 text-lg select-none px-8 py-0">
+                        🎉 Woohoo! You are {ordinalSuffix(userRank)}{" "}
+                        in the Leaderboard{period === "thisMonth" ? " this month" : ""}! 🎉
+                    </div>
+                </div>
+            )}
             <div
                 ref={containerRef}
-                className="min-h-screen bg-gradient-to-tl from-indigo-50 via-white to-blue-50 py-8"
+                className="min-h-screen bg-gradient-to-tl from-indigo-50 via-white to-blue-50 py-2"
                 style={{ minHeight: "100vh" }}
             >
-                {showCelebration && (
-                    <div className="fixed top-20 left-0 w-full bg-yellow-200 bg-opacity-90 border-b border-yellow-200 shadow-md z-20 transition-all duration-300">
-                        {showConfetti && (
-                            <Confetti width={dimensions.width} height={dimensions.height} />
-                        )}
-                        <div className="flex justify-center items-center h-15 font-semibold text-yellow-900 text-lg select-none">
-                            🎉 Woohoo! You are {ordinalSuffix(userRank)} in the Leaderboard! 🎉
-                        </div>
-                    </div>
-                )}
 
-                <div className={`${showCelebration ? "pt-10" : "pt-0"}`}>
-                    <div className="max-w-4xl mx-auto px-4 py-6 bg-white rounded-xl shadow-md border border-gray-200">
-                        <div className="flex justify-between items-center mb-6">
+
+                <div className={showCelebration ? "pt-0" : "pt-5"}>
+                    <div className="max-w-5xl mx-auto px-6 py-6 bg-white rounded-xl shadow-md border border-gray-200">
+                        <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
                             <h1 className="text-3xl font-bold text-blue-900 tracking-normal select-none">
                                 User Leaderboard
                             </h1>
-
-                            <div className="flex gap-4">
+                            <div className="flex gap-4 flex-wrap">
                                 <button
                                     className={`px-5 py-2 rounded-full transition-transform font-semibold focus:outline-none border ${period === "allTime"
                                         ? "bg-blue-600 text-white border-blue-600"
                                         : "bg-gray-100 text-blue-700 border-transparent hover:bg-blue-50"
                                         } text-sm`}
-                                    onClick={() => setPeriod("allTime")}
+                                    onClick={() => {
+                                        setPeriod("allTime");
+                                        setCurrentPage(1);
+                                        setSearch("");
+                                    }}
                                     aria-pressed={period === "allTime"}
                                 >
                                     All Time
@@ -135,7 +185,11 @@ const UserLeaderboard = () => {
                                         ? "bg-yellow-400 text-white border-yellow-400"
                                         : "bg-gray-100 text-yellow-700 border-transparent hover:bg-yellow-50"
                                         } text-sm`}
-                                    onClick={() => setPeriod("thisMonth")}
+                                    onClick={() => {
+                                        setPeriod("thisMonth");
+                                        setCurrentPage(1);
+                                        setSearch("");
+                                    }}
                                     aria-pressed={period === "thisMonth"}
                                 >
                                     This Month
@@ -143,134 +197,152 @@ const UserLeaderboard = () => {
                             </div>
                         </div>
 
+                        <div className="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                            <input
+                                type="search"
+                                className="w-full md:w-200 border border-gray-300 rounded-md p-2 text-sm"
+                                placeholder="Search by user name..."
+                                value={search}
+                                onChange={e => {
+                                    setSearch(e.target.value);
+                                    setCurrentPage(1);
+                                }}
+                                aria-label="Search leaderboard by user name"
+                            />
+                            {globalUserRank && (
+                                <div className="flex items-center justify-start mt-2 md:mt-0">
+                                    <span className="text-blue-800 bg-blue-100 px-3 py-1 rounded-full font-semibold mr-2 shadow-sm">
+                                        Your Rank: {ordinalSuffix(globalUserRank)}
+                                    </span>
+                                </div>
+                            )}
+                        </div>
+
+
                         {loading ? (
                             <div className="flex justify-center items-center h-28">
-                                <div className="flex flex-col items-center text-blue-600">
-                                    <svg
-                                        className="animate-spin -ml-1 mr-2 h-6 w-6"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        aria-hidden="true"
-                                    >
-                                        <circle
-                                            className="opacity-25"
-                                            cx="12"
-                                            cy="12"
-                                            r="10"
-                                            stroke="currentColor"
-                                            strokeWidth="4"
-                                        />
-                                        <path
-                                            className="opacity-75"
-                                            fill="currentColor"
-                                            d="M4 12a8 8 0 018-8v8z"
-                                        />
-                                    </svg>
-                                    <p className="mt-1 text-sm font-medium">Loading leaderboard...</p>
-                                </div>
+                                <svg
+                                    className="animate-spin -ml-1 mr-3 h-8 w-8 text-blue-600"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    aria-hidden="true"
+                                >
+                                    <circle
+                                        className="opacity-25"
+                                        cx="12"
+                                        cy="12"
+                                        r="10"
+                                        stroke="currentColor"
+                                        strokeWidth="4"
+                                    />
+                                    <path
+                                        className="opacity-75"
+                                        fill="currentColor"
+                                        d="M4 12a8 8 0 018-8v8z"
+                                    />
+                                </svg>
+                                <p className="text-blue-600 text-lg font-semibold">Loading leaderboard...</p>
                             </div>
                         ) : error ? (
                             <p className="text-center text-red-600 text-sm font-semibold">{error}</p>
-                        ) : leaderboard.length === 0 ? (
-                            <p className="text-center text-gray-500 text-sm italic">
-                                No leaderboard data available.
-                            </p>
+                        ) : filteredLeaderboard.length === 0 ? (
+                            <p className="text-center text-gray-500 text-sm italic">No leaderboard data available.</p>
                         ) : (
-                            <div className="overflow-x-auto">
-                                <table className="w-full border border-gray-300 rounded-lg shadow-sm text-sm">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th className="text-left py-2 px-4 font-semibold text-gray-700 border-b w-14">
-                                                Rank
-                                            </th>
-                                            <th className="text-left py-2 px-4 font-semibold text-gray-700 border-b">
-                                                User
-                                            </th>
-                                            <th className="text-left py-2 px-4 font-semibold text-gray-700 border-b w-20">
-                                                Points
-                                            </th>
-                                            <th className="text-left py-2 px-4 font-semibold text-gray-700 border-b">
-                                                Badges
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100">
-                                        {leaderboard.map((u, idx) => {
-                                            const isCurrentUser = user && u._id === user.id;
-                                            let rankIcon = null;
-                                            if (idx === 0)
-                                                rankIcon = (
-                                                    <span
-                                                        title="1st Place"
-                                                        role="img"
-                                                        className="mr-1 text-xl select-none"
-                                                    >
-                                                        🥇
-                                                    </span>
-                                                );
-                                            else if (idx === 1)
-                                                rankIcon = (
-                                                    <span
-                                                        title="2nd Place"
-                                                        role="img"
-                                                        className="mr-1 text-xl select-none"
-                                                    >
-                                                        🥈
-                                                    </span>
-                                                );
-                                            else if (idx === 2)
-                                                rankIcon = (
-                                                    <span
-                                                        title="3rd Place"
-                                                        role="img"
-                                                        className="mr-1 text-xl select-none"
-                                                    >
-                                                        🥉
-                                                    </span>
-                                                );
-                                            const avatarGradient =
-                                                GRADIENTS[idx % GRADIENTS.length] || "from-gray-200 to-gray-100";
-                                            return (
-                                                <tr
-                                                    key={u._id}
-                                                    className={`${isCurrentUser
-                                                        ? "bg-yellow-50 font-semibold border-l-4 border-yellow-400 shadow-sm"
-                                                        : "hover:bg-gray-50"
-                                                        } transition-colors cursor-pointer`}
-                                                    tabIndex={0}
-                                                    aria-label={`${u.name}, rank ${idx + 1}, points ${u.points}`}
-                                                >
-                                                    <td className="py-3 px-4 border-b">
-                                                        <div className="flex items-center select-none text-base">
-                                                            {rankIcon}
-                                                            <span>{idx + 1}</span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="py-3 px-4 border-b flex items-center space-x-3">
-                                                        <div
-                                                            className={`p-1 rounded-full bg-gradient-to-br ${avatarGradient} shadow-sm`}
-                                                        >
-                                                            <img
-                                                                src={u.profile_image || "https://via.placeholder.com/40"}
-                                                                alt={`${u.name}'s avatar`}
-                                                                className="w-9 h-9 rounded-full object-cover border border-white"
-                                                            />
-                                                        </div>
-                                                        <span className="truncate max-w-xs text-gray-900 font-medium">
-                                                            {u.name}
+                            <>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full border border-gray-300 rounded-lg shadow-sm text-sm">
+                                        <thead className="bg-gray-50">
+                                            <tr>
+                                                <th className="text-left py-3 px-5 font-semibold text-gray-700 border-b w-16 select-none">
+                                                    Rank
+                                                </th>
+                                                <th className="text-left py-3 px-5 font-semibold text-gray-700 border-b select-none">
+                                                    User
+                                                </th>
+                                                <th className="text-left py-3 px-5 font-semibold text-gray-700 border-b w-20 select-none">
+                                                    Points
+                                                </th>
+                                                <th className="text-left py-3 px-5 font-semibold text-gray-700 border-b select-none">
+                                                    Badges
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-100">
+                                            {paginatedLeaderboard.map((u, idx) => {
+                                                const absoluteRank = (currentPage - 1) * ITEMS_PER_PAGE + idx + 1;
+                                                const isCurrentUser = user && u._id === user.id;
+                                                let rankIcon = null;
+                                                if (absoluteRank === 1)
+                                                    rankIcon = (
+                                                        <span title="1st Place" role="img" className="mr-1 text-xl select-none">
+                                                            🥇
                                                         </span>
-                                                    </td>
-                                                    <td className="py-3 px-4 border-b text-blue-700 font-semibold text-base">
-                                                        {u.points}
-                                                    </td>
-                                                    <td className="py-3 px-4 border-b flex flex-wrap gap-1">
-                                                        {
-                                                            (u.badges ?? []).length > 0 ? (
-                                                                u.badges.map((badge, i) => {
-                                                                    const key = badge.toLowerCase(); // handles 'Silver', 'silver', etc.
+                                                    );
+                                                else if (absoluteRank === 2)
+                                                    rankIcon = (
+                                                        <span title="2nd Place" role="img" className="mr-1 text-xl select-none">
+                                                            🥈
+                                                        </span>
+                                                    );
+                                                else if (absoluteRank === 3)
+                                                    rankIcon = (
+                                                        <span title="3rd Place" role="img" className="mr-1 text-xl select-none">
+                                                            🥉
+                                                        </span>
+                                                    );
+                                                const avatarGradient =
+                                                    GRADIENTS[absoluteRank % GRADIENTS.length] || "from-gray-200 to-gray-100";
+
+                                                const sortedBadges = (u.badges ?? [])
+                                                    .slice()
+                                                    .sort(
+                                                        (a, b) =>
+                                                            badgeOrder.indexOf(a.toLowerCase()) -
+                                                            badgeOrder.indexOf(b.toLowerCase())
+                                                    );
+
+                                                return (
+                                                    <tr
+                                                        key={u._id}
+                                                        className={`${isCurrentUser
+                                                            ? "bg-yellow-50 font-semibold border-l-4 border-yellow-400 shadow-sm"
+                                                            : "hover:bg-gray-50"
+                                                            } transition-colors cursor-pointer`}
+                                                        tabIndex={0}
+                                                        aria-label={`${u.name}, rank ${absoluteRank}, points ${u.points}`}
+                                                    >
+                                                        <td className="py-3 px-5 border-b">
+                                                            <div className="flex items-center select-none text-base">
+                                                                {rankIcon}
+                                                                <span>{absoluteRank}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="py-3 px-5 border-b flex items-center space-x-3">
+                                                            <div
+                                                                className={`p-1 rounded-full bg-gradient-to-br ${avatarGradient} shadow-sm`}
+                                                            >
+                                                                <img
+                                                                    src={u.profile_image || "https://via.placeholder.com/40"}
+                                                                    alt={`${u.name}'s avatar`}
+                                                                    className="w-9 h-9 rounded-full object-cover border border-white"
+                                                                />
+                                                            </div>
+                                                            <span className="truncate max-w-xs text-gray-900 font-medium">
+                                                                {u.name}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-3 px-5 border-b text-blue-700 font-semibold text-base">
+                                                            {u.points}
+                                                        </td>
+                                                        <td className="py-3 px-5 border-b flex flex-wrap gap-1">
+                                                            {sortedBadges.length > 0 ? (
+                                                                sortedBadges.map((badge, i) => {
+                                                                    const key = badge.toLowerCase();
                                                                     const style = badgeStyles[key] || {
-                                                                        bg: "bg-yellow-300", text: "text-yellow-900", shadow: ""
+                                                                        bg: "bg-yellow-300",
+                                                                        text: "text-yellow-900",
+                                                                        shadow: "",
                                                                     };
                                                                     return (
                                                                         <span
@@ -288,14 +360,53 @@ const UserLeaderboard = () => {
                                                                     No badges
                                                                 </span>
                                                             )}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
 
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
+                                <div className="mt-4 flex justify-center items-center space-x-3 select-none">
+                                    <button
+                                        onClick={() => changePage(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                        className={`px-3 py-1 rounded-md border ${currentPage === 1
+                                            ? "border-gray-300 text-gray-400 cursor-not-allowed"
+                                            : "border-blue-600 text-blue-600 hover:bg-blue-50"
+                                            }`}
+                                        aria-label="Previous page"
+                                    >
+                                        &lt;
+                                    </button>
+                                    {Array.from({ length: totalPages }, (_, i) => (
+                                        <button
+                                            key={i + 1}
+                                            onClick={() => changePage(i + 1)}
+                                            className={`px-3 py-1 rounded-md border ${currentPage === i + 1
+                                                ? "bg-blue-600 text-white border-blue-600"
+                                                : "border-gray-300 text-gray-700 hover:bg-gray-100"
+                                                }`}
+                                            aria-label={`Page ${i + 1}`}
+                                            aria-current={currentPage === i + 1 ? "page" : undefined}
+                                        >
+                                            {i + 1}
+                                        </button>
+                                    ))}
+                                    <button
+                                        onClick={() => changePage(currentPage + 1)}
+                                        disabled={currentPage === totalPages}
+                                        className={`px-3 py-1 rounded-md border ${currentPage === totalPages
+                                            ? "border-gray-300 text-gray-400 cursor-not-allowed"
+                                            : "border-blue-600 text-blue-600 hover:bg-blue-50"
+                                            }`}
+                                        aria-label="Next page"
+                                    >
+                                        &gt;
+                                    </button>
+                                </div>
+                            </>
                         )}
                     </div>
                 </div>
