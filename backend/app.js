@@ -14,7 +14,7 @@ import donationRouter from "./Routes/donation.routes.js";
 import postRouter from "./Routes/post.routes.js";
 import likeRouter from "./Routes/like.routes.js";
 import commentRouter from "./Routes/comment.routes.js";
-
+import dashboardRouter from "./Routes/dashboard.routes.js";
 import fundRouter from "./Routes/fund.routes.js";
 import chatbotRouter from "./Routes/chatbot.routes.js";
 
@@ -46,5 +46,6 @@ app.use("/api/v1/posts", postRouter);
 app.use("/api/v1/likes", likeRouter);
 app.use("/api/v1/comments", commentRouter);
 app.use("/api/v1/chatbot", chatbotRouter);
+app.use("/dashboard", dashboardRouter);
 
 export {app} 

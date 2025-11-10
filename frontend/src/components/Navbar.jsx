@@ -81,6 +81,13 @@ const Navbar = () => {
               <NavLink to="/ngo-profile" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                 My Profile
               </NavLink>
+              <NavLink
+                to="/impact-dashboard"
+                style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
+              >
+                SewaSetu Analytics
+              </NavLink>
+
               <a
                 className="logout-btn"
                 href="#logout"
@@ -136,6 +143,12 @@ const Navbar = () => {
                   </NavLink>
                   <NavLink to="/notifications" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                     Notifications
+                  </NavLink>
+                  <NavLink
+                    to="/impact-dashboard"
+                    style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
+                  >
+                    SewaSetu Analytics
                   </NavLink>
                 </div>
               </div>
@@ -209,6 +222,26 @@ const Navbar = () => {
               </>
             ) : (
               <>
+                <NavLink
+                  to="/impact-dashboard"
+                  style={{
+                    marginLeft: "1rem",
+                    marginRight: "1rem",
+                    fontWeight: "600",
+                    color: "#123180ff",
+                    textDecoration: "none",
+                  }}
+                >
+                  SewaSetu Analytics
+                </NavLink>
+
+                <NavLink
+                  className="signup-btn"
+                  to="/login"
+                  style={{ color: "white" }}
+                >
+                  Login
+                </NavLink>
                 <NavLink to="/" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                   Home
                 </NavLink>

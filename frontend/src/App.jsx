@@ -25,6 +25,7 @@ import Notification from "./pages/Notification";
 import DonationsManagement from "./pages/DonationsManagement";
 import UserDonation from "./components/UserDonation";
 import UserLeaderboard from "./pages/UserLeaderboard";
+import PublicImpactDashboard from "./pages/PublicImpactDashboard";
 
 
 import ReelsPage from "./pages/ReelsPage";
@@ -76,6 +77,7 @@ function App() {
         {/* Add routes for other pages here */}
         <Route path="/donate" element={<DonationPage />} />
         <Route path="/dashboard" element={<NGOdashboardPage />} />
+        <Route path="/impact-dashboard" element={<PublicImpactDashboard />} />
         <Route path="/donations-management" element={<DonationsManagement />} />
         <Route path="/user-donation" element={<UserDonation />} />
         <Route path="/leaderboard" element={
