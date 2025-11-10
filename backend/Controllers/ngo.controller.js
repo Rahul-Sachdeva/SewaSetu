@@ -414,12 +414,15 @@ export const updateNGOPoints = async (ngoId, activity, points) => {
 export const getNGOLeaderboard = async (req, res) => {
   try {
     const period = req.query.period || "allTime";
+
+    let startOfMonth = null;
     let matchStage = {};
 
     if (period === "thisMonth") {
-      const startOfMonth = new Date();
+      startOfMonth = new Date();
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
+
       matchStage = {
         "activityHistory.date": { $gte: startOfMonth }
       };
@@ -437,7 +440,7 @@ export const getNGOLeaderboard = async (req, res) => {
                       $filter: {
                         input: "$activityHistory",
                         as: "activity",
-                        cond: { $gte: ["$$activity.date", new Date(startOfMonth)] }
+                        cond: { $gte: ["$$activity.date", startOfMonth] }
                       }
                     },
                     as: "activity",
@@ -466,9 +469,11 @@ export const getNGOLeaderboard = async (req, res) => {
     const leaderboard = await NGO.aggregate(pipeline);
     return res.json({ leaderboard });
   } catch (error) {
+    console.error("Error fetching NGO leaderboard:", error);
     return res.status(500).json({ message: "Error fetching NGO leaderboard", error: error.message });
   }
 };
+
 
 
 // Get NGO rank based on points

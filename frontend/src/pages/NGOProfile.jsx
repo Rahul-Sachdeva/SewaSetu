@@ -113,6 +113,24 @@ const NGOProfile = ({ mode = "profile" }) => {
     }
   }, [ngoId, user]);
 
+  useEffect(() => {
+  const fetchGamification = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const idToFetch = isVisitor ? ngoId : user.ngo;
+      const res = await axios.get(`${BaseURL}/api/v1/ngo/${idToFetch}/points`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPoints(res.data.points);
+      setBadges(res.data.badges);
+      setActivityHistory(res.data.activityHistory);
+    } catch (err) {
+      console.error("Failed to fetch NGO gamification data", err);
+    }
+  };
+  fetchGamification();
+}, [ngoId, user]);
+
   const nextBadge = badgeThresholds.find((b) => !badges.includes(b.name));
   const progressPercent = nextBadge ? Math.min((points / nextBadge.points) * 100, 100) : 100;
 

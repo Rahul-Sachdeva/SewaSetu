@@ -23,7 +23,8 @@ const ngoRouter = express.Router();
 
 ngoRouter.get("/filtered", listFilteredNGOs);
 ngoRouter.get("/:id/points", getNGOPoints);
-ngoRouter.get("/leaderboard", getNGOLeaderboard);
+ngoRouter.get("/ngo-leaderboard", getNGOLeaderboard);
+
 ngoRouter.get("/:id/rank", getNGORank);
 // Get all verified NGOs for normal request selection
 ngoRouter.get("/verified", async (req, res) => {

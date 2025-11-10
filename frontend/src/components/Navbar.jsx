@@ -79,7 +79,7 @@ const Navbar = () => {
                 My Profile
               </NavLink>
               <NavLink
-                to="/impact-dashboard"
+                to="/ngo-impact-dashboard"
                 style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
               >
                 Analytics
@@ -101,7 +101,7 @@ const Navbar = () => {
                   <NavLink to="/feed-page" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                     View Feed
                   </NavLink>
-                  
+
                   <NavLink to="/chat" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                     Chat
                   </NavLink>
@@ -159,6 +159,9 @@ const Navbar = () => {
                   <NavLink to="/leaderboard" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                     User Leaderboard
                   </NavLink>
+                  <NavLink to="/ngo-leaderboard" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    NGO Leaderboard
+                  </NavLink>
                   <NavLink to="/chat" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                     Chat
                   </NavLink>
@@ -174,12 +177,14 @@ const Navbar = () => {
                   <NavLink to="/feed-page" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                     View Feed
                   </NavLink>
-                  <NavLink
-                    to="/impact-dashboard"
-                    style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
-                  >
-                    Analytics
-                  </NavLink>
+                  {user.role === "admin" && (
+                    <NavLink
+                      to="/impact-dashboard"
+                      style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
+                    >
+                      Analytics
+                    </NavLink>
+                  )}
                 </div>
               </div>
 

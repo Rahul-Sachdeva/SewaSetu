@@ -1,7 +1,7 @@
 import { RequestHandling } from "../Models/requestHandling.model.js";
 import { AssistanceRequest } from "../Models/assistance.model.js";
 import { sendNotification } from "../Utils/notification.utils.js";
-import { updateNGOPoints } from "../Controllers/ngo.controller.js";
+import { updateNGOPoints } from "../Controllers/ngo.controller.js"; // Adjust relative path if needed
 
 
 // ------------------------
