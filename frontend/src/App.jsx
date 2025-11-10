@@ -32,6 +32,7 @@ import ReelsPage from "./pages/ReelsPage";
 import FeedPage from "./pages/FeedPage";
 import CreatePost from "./pages/CreatePost";
 import ChatbotWidget from "./components/Chatbot/ChatbotWidget";
+import NgoImpactDashboard from "./pages/NgoImpactDashboard";
 
 function App() {
   
@@ -78,6 +79,7 @@ function App() {
         <Route path="/donate" element={<DonationPage />} />
         <Route path="/dashboard" element={<NGOdashboardPage />} />
         <Route path="/impact-dashboard" element={<PublicImpactDashboard />} />
+        <Route path="/ngo-impact-dashboard" element={<NgoImpactDashboard />} />
         <Route path="/donations-management" element={<DonationsManagement />} />
         <Route path="/user-donation" element={<UserDonation />} />
         <Route path="/leaderboard" element={
