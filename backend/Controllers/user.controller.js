@@ -87,21 +87,45 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
+
+    // 🔹 Step 1: Find user
+    const user = await User.findOne({ email }).populate("ngo");
     if (!user) return res.status(400).json({ message: "Invalid email" });
+
+    // 🔹 Step 2: Validate password
     const isMatch = await user.isPasswordCorrect(password);
     if (!isMatch) return res.status(400).json({ message: "Wrong password" });
+
+    // 🔹 Step 3: Ensure email verified
     if (!user.isVerified) {
       await sendVerificationEmail(user);
-      return res
-        .status(403)
-        .json({ message: "Please verify your email. Verification link sent." });
+      return res.status(403).json({
+        message: "Please verify your email. A new verification link has been sent.",
+      });
     }
 
-    // Add flag indicating if notification permission has been requested/saved previously
-    // Assume you store this flag per user, e.g., user.notificationPermissionRequested (boolean)
+    // 🔹 Step 4: If user is an NGO, check NGO verification status
+    if (user.user_type === "ngo") {
+      const ngoId = user.ngo?._id || user.ngo;
+      if (!ngoId)
+        return res.status(400).json({ message: "NGO profile not linked to this account" });
+
+      const ngo = await NGO.findById(ngoId).lean();
+      if (!ngo)
+        return res.status(404).json({ message: "NGO record not found for this account" });
+
+      if (ngo.verification_status !== "verified") {
+        return res.status(403).json({
+          message:
+            "Your NGO account is pending admin verification. Please wait for approval before logging in.",
+        });
+      }
+    }
+
+    // 🔹 Step 5: Include notification permission info
     const notifyPermissionNeeded = !user.notificationPermissionRequested;
 
+    // 🔹 Step 6: Generate token & respond
     return res.status(200).json({
       message: "Login successful",
       token: generateToken(user),
@@ -119,10 +143,12 @@ export const loginUser = async (req, res) => {
       },
     });
   } catch (err) {
-    return res.status(500).json({ message: "Error logging in", error: err.message });
+    console.error("Login Error:", err);
+    return res
+      .status(500)
+      .json({ message: "Error logging in", error: err.message });
   }
 };
-
 
 export const sendVerificationEmail = async (user) => {
   const token = jwt.sign({ userId: user._id }, process.env.EMAIL_SECRET, { expiresIn: "1h" });
