@@ -197,7 +197,7 @@ const NGOForm = ({
       <input
         type="text"
         name="registration_number"
-        placeholder="Registration Number"
+        placeholder="Darpan Registration Number"
         value={formData.registration_number}
         onChange={handleChange}
         readOnly={!registering}
