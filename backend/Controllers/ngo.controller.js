@@ -401,9 +401,29 @@ export const updateNGOPoints = async (ngoId, activity, points) => {
   for (const badge of badgeThresholds) {
     if (ngo.points >= badge.points && !ngo.badges.includes(badge.name)) {
       ngo.badges.push(badge.name);
-      // Optional: notify NGO of badge achievement
+
+      // In-app notification
+      await Notification.create({
+        user: ngo._id,
+        userModel: "NGO",
+        type: "badge_unlocked",
+        title: `Badge Unlocked: ${badge.name}`,
+        message: `Congratulations! You have successfully earned the prestigious ${badge.name} badge on SewaSetu. This milestone is a testament to your dedication and positive impact within our community. Keep up the fantastic work and continue making a difference – more achievements and rewards await you!`,
+        referenceId: null,
+        referenceModel: null,
+      });
+      
+      // Send Email
+      const emailHTML = `
+    <h2>SewaSetu - Your Bridge To Serve</h2>
+    <h3>Congratulations!</h3>
+    <p>You have successfully earned the prestigious <strong>${badge.name}</strong> badge on SewaSetu. This milestone ...</p>
+`;
+
+      await sendEmail(ngo.email, `Badge Unlocked: ${badge.name}`, emailHTML);
     }
   }
+
 
   await ngo.save();
   return ngo;
@@ -413,14 +433,10 @@ export const updateNGOPoints = async (ngoId, activity, points) => {
 // Get NGO leaderboard with period filter and totalPoints aggregation
 export const getNGOLeaderboard = async (req, res) => {
   try {
-    const period = req.query.period || "allTime";
-
-    let startOfMonth = null;
+    const period = req.query.period || "allTime"; // Accept "thisMonth" or default "allTime"
     let matchStage = {};
-
+    const startOfMonth = new Date();
     if (period === "thisMonth") {
-      startOfMonth = new Date();
-      startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
 
       matchStage = {
@@ -434,20 +450,20 @@ export const getNGOLeaderboard = async (req, res) => {
         $addFields: {
           totalPoints: period === "thisMonth"
             ? {
-                $sum: {
-                  $map: {
-                    input: {
-                      $filter: {
-                        input: "$activityHistory",
-                        as: "activity",
-                        cond: { $gte: ["$$activity.date", startOfMonth] }
-                      }
-                    },
-                    as: "activity",
-                    in: "$$activity.points"
-                  }
+              $sum: {
+                $map: {
+                  input: {
+                    $filter: {
+                      input: "$activityHistory",
+                      as: "activity",
+                      cond: { $gte: ["$$activity.date", startOfMonth] }
+                    }
+                  },
+                  as: "activity",
+                  in: "$$activity.points"
                 }
               }
+            }
             : "$points"
         }
       },

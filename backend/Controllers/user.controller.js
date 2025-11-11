@@ -71,7 +71,7 @@ export const registerUser = async (req, res) => {
       ngo: user_type === "ngo" ? ngo : undefined,
       location_coordinates,
     });
-    
+
     await updateUserPoints(user._id, "registration", 10);
     await sendVerificationEmail(user);
 
@@ -334,12 +334,37 @@ export const updateUserPoints = async (userId, activity, pointsEarned) => {
 
   // Update points and activity
   user.points += pointsEarned;
-  user.activityHistory.push({ activity, points: pointsEarned });
+  user.activityHistory.push({
+    activity: activity,       // activity name string
+    points: pointsEarned,     // numeric points
+    date: new Date(),         // timestamp of activity
+  });
+
 
   // Check badge eligibility
   for (const badge of badgeThresholds) {
     if (user.points >= badge.points && !user.badges.includes(badge.name)) {
       user.badges.push(badge.name);
+
+
+
+      // In-app notification
+      await Notification.create({
+        user: user._id,
+        userModel: "User",
+        type: "badge_unlocked",
+        title: `Badge Unlocked: ${badge.name}`,
+        message: `Congratulations! You have successfully earned the prestigious ${badge.name} badge on SewaSetu. This milestone is a testament to your dedication and positive impact within our community. Keep up the fantastic work and continue making a difference – more achievements and rewards await you!`,
+        referenceId: null,
+        referenceModel: null,
+      });
+
+      // Send Email
+      const emailHTML = `
+    <h2>SewaSetu - Your Bridge To Serve</h2></div>
+    <h2>Congratulations!</h2>
+    <p>You have successfully earned the prestigious <strong>${badge.name}</strong> badge on SewaSetu. This milestone is a testament to your dedication and positive impact within our community. Keep up the fantastic work and continue making a difference – more achievements and rewards await you!</p>`;
+      await sendEmail(user.email, `Badge Unlocked: ${badge.name}`, emailHTML);
     }
   }
   console.log(`User badges count: ${user.badges.length}`);
@@ -364,7 +389,6 @@ export const getUserLeaderboard = async (req, res) => {
     let matchStage = {};
     const startOfMonth = new Date();
     if (period === "thisMonth") {
-      const startOfMonth = new Date();
       startOfMonth.setHours(0, 0, 0, 0);
       matchStage = {
         "activityHistory.date": { $gte: startOfMonth }
@@ -378,20 +402,20 @@ export const getUserLeaderboard = async (req, res) => {
         $addFields: {
           totalPoints: period === "thisMonth"
             ? {
-                $sum: {
-                  $map: {
-                    input: {
-                      $filter: {
-                        input: "$activityHistory",
-                        as: "activity",
-                        cond: { $gte: ["$$activity.date", new Date(startOfMonth)] }
-                      }
-                    },
-                    as: "activity",
-                    in: "$$activity.points"
-                  }
+              $sum: {
+                $map: {
+                  input: {
+                    $filter: {
+                      input: "$activityHistory",
+                      as: "activity",
+                      cond: { $gte: ["$$activity.date", new Date(startOfMonth)] }
+                    }
+                  },
+                  as: "activity",
+                  in: "$$activity.points"
                 }
               }
+            }
             : "$points"
         }
       },

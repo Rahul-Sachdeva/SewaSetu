@@ -137,11 +137,10 @@ const NGOLeaderboard = () => {
               </h1>
               <div className="flex gap-4 flex-wrap">
                 <button
-                  className={`px-5 py-2 rounded-full transition-transform font-semibold focus:outline-none border ${
-                    period === "allTime"
+                  className={`px-5 py-2 rounded-full transition-transform font-semibold focus:outline-none border ${period === "allTime"
                       ? "bg-blue-600 text-white border-blue-600"
                       : "bg-gray-100 text-blue-700 border-transparent hover:bg-blue-50"
-                  } text-sm`}
+                    } text-sm`}
                   onClick={() => {
                     setPeriod("allTime");
                     setCurrentPage(1);
@@ -152,11 +151,10 @@ const NGOLeaderboard = () => {
                   All Time
                 </button>
                 <button
-                  className={`px-5 py-2 rounded-full transition-transform font-semibold focus:outline-none border ${
-                    period === "thisMonth"
+                  className={`px-5 py-2 rounded-full transition-transform font-semibold focus:outline-none border ${period === "thisMonth"
                       ? "bg-yellow-400 text-white border-yellow-400"
                       : "bg-gray-100 text-yellow-700 border-transparent hover:bg-yellow-50"
-                  } text-sm`}
+                    } text-sm`}
                   onClick={() => {
                     setPeriod("thisMonth");
                     setCurrentPage(1);
@@ -270,11 +268,10 @@ const NGOLeaderboard = () => {
                         return (
                           <tr
                             key={ngo._id}
-                            className={`${
-                              isCurrentNgo
+                            className={`${isCurrentNgo
                                 ? "bg-yellow-50 font-semibold border-l-4 border-yellow-400 shadow-sm"
                                 : "hover:bg-gray-50"
-                            } transition-colors cursor-pointer`}
+                              } transition-colors cursor-pointer`}
                             tabIndex={0}
                             aria-label={`${ngo.name}, rank ${absoluteRank}, points ${ngo.points}`}
                           >
@@ -294,8 +291,13 @@ const NGOLeaderboard = () => {
                                   className="w-9 h-9 rounded-full object-cover border border-white"
                                 />
                               </div>
-                              <span className="truncate max-w-xs text-gray-900 font-medium">{ngo.name}</span>
-                            </td>
+                              <div className="flex flex-col">
+                                <span className="truncate max-w-xs text-gray-900 font-medium">{ngo.name}</span>
+                                {/* CITY/STATE DISPLAY */}
+                                {ngo.city && (
+                                  <span className="text-xs text-gray-500">{ngo.city}{ngo.state ? `, ${ngo.state}` : ""}</span>
+                                )}
+                              </div>                            </td>
                             <td className="py-3 px-5 border-b text-blue-700 font-semibold text-base">
                               {ngo.points}
                             </td>
@@ -335,11 +337,10 @@ const NGOLeaderboard = () => {
                   <button
                     onClick={() => changePage(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className={`px-3 py-1 rounded-md border ${
-                      currentPage === 1
+                    className={`px-3 py-1 rounded-md border ${currentPage === 1
                         ? "border-gray-300 text-gray-400 cursor-not-allowed"
                         : "border-blue-600 text-blue-600 hover:bg-blue-50"
-                    }`}
+                      }`}
                     aria-label="Previous page"
                   >
                     &lt;
@@ -348,11 +349,10 @@ const NGOLeaderboard = () => {
                     <button
                       key={i + 1}
                       onClick={() => changePage(i + 1)}
-                      className={`px-3 py-1 rounded-md border ${
-                        currentPage === i + 1
+                      className={`px-3 py-1 rounded-md border ${currentPage === i + 1
                           ? "bg-blue-600 text-white border-blue-600"
                           : "border-gray-300 text-gray-700 hover:bg-gray-100"
-                      }`}
+                        }`}
                       aria-label={`Page ${i + 1}`}
                       aria-current={currentPage === i + 1 ? "page" : undefined}
                     >
@@ -362,11 +362,10 @@ const NGOLeaderboard = () => {
                   <button
                     onClick={() => changePage(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className={`px-3 py-1 rounded-md border ${
-                      currentPage === totalPages
+                    className={`px-3 py-1 rounded-md border ${currentPage === totalPages
                         ? "border-gray-300 text-gray-400 cursor-not-allowed"
                         : "border-blue-600 text-blue-600 hover:bg-blue-50"
-                    }`}
+                      }`}
                     aria-label="Next page"
                   >
                     &gt;

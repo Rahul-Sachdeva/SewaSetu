@@ -15,7 +15,7 @@ const NotificationSchema = new mongoose.Schema(
     type: { // type of notification
       type: String,
       required: true,
-      enum: ["request_received", "request_status_update", "general", 'test']
+      enum: ["request_received", "request_status_update", "general", 'test', 'badge_unlocked']
     },
     title: { type: String, required: true },
     message: { type: String, required: true },

@@ -86,7 +86,7 @@ const Navbar = () => {
               </NavLink>
               <div className="dropdown" style={{ paddingLeft: 10, position: "relative" }}>
                 <span style={{ cursor: "pointer", userSelect: "none" }}>
-                  Interact ▾
+                  Community ▾
                 </span>
                 <div className="dropdown-content">
                   <NavLink to="/ngo-leaderboard" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
@@ -364,7 +364,7 @@ const Navbar = () => {
       <style>
         {`
           .nav-links a {
-            margin: 0 0.9rem;
+            margin: 0 0.75rem;
             color: black;
             text-decoration: none;
           }
