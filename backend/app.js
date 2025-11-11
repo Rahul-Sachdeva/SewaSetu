@@ -6,6 +6,7 @@ import cors from "cors";                    // To allow requests from only allow
 import requestRoutes from "./Routes/request.routes.js";  //this
 import userRouter from "./Routes/user.routes.js";
 import ngoRouter from "./Routes/ngo.routes.js";
+import getNGOLeaderboard from "./Routes/ngo.routes.js";
 import campaignRouter from "./Routes/campaign.routes.js";
 import conversationRouter from "./Routes/conversation.routes.js";
 import messageRouter from "./Routes/message.routes.js";
@@ -15,9 +16,11 @@ import donation_notificationRouter from "./Routes/don_notification.routes.js";
 import postRouter from "./Routes/post.routes.js";
 import likeRouter from "./Routes/like.routes.js";
 import commentRouter from "./Routes/comment.routes.js";
-
+import dashboardRouter from "./Routes/dashboard.routes.js";
 import fundRouter from "./Routes/fund.routes.js";
 import chatbotRouter from "./Routes/chatbot.routes.js";
+import analyticsRouter from "./Routes/analytics.routes.js";
+import reportRouter from "./Routes/report.routes.js";
 
 // initialize server
 const app = express();
@@ -48,5 +51,8 @@ app.use("/api/v1/posts", postRouter);
 app.use("/api/v1/likes", likeRouter);
 app.use("/api/v1/comments", commentRouter);
 app.use("/api/v1/chatbot", chatbotRouter);
+app.use("/dashboard", dashboardRouter);
+app.use("/api/analytics", analyticsRouter);
+app.use("/api/reports", reportRouter);
 
 export {app} 

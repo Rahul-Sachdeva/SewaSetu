@@ -27,12 +27,15 @@ import Don_Notification from "./pages/don_notifiaction";  //ye
 import DonationsManagement from "./pages/DonationsManagement";   //ye
 import UserDonation from "./pages/UserDonation";   //ye
 import UserLeaderboard from "./pages/UserLeaderboard";
+import NGOLeaderboard from "./pages/NGOLeaderboard";
+import PublicImpactDashboard from "./pages/PublicImpactDashboard";
 
 
 import ReelsPage from "./pages/ReelsPage";
 import FeedPage from "./pages/FeedPage";
 import CreatePost from "./pages/CreatePost";
 import ChatbotWidget from "./components/Chatbot/ChatbotWidget";
+import NgoImpactDashboard from "./pages/NgoImpactDashboard";
 
 function App() {
   
@@ -79,12 +82,19 @@ function App() {
         {/* Add routes for other pages here */}
         <Route path="/donate" element={<DonationForm />} />
         <Route path="/dashboard" element={<NGOdashboardPage />} />
+        <Route path="/impact-dashboard" element={<PublicImpactDashboard />} />
+        <Route path="/ngo-impact-dashboard" element={<NgoImpactDashboard />} />
         <Route path="/donations-management" element={<DonationsManagement />} />
         <Route path="/user-donation" element={<UserDonation />} />
         <Route path="/select-ngo-don" element={<SelectNGODon />} />
         <Route path="/leaderboard" element={
           <PrivateRoute roles={["user", "admin"]}>
             <UserLeaderboard />
+          </PrivateRoute>
+        } />
+        <Route path="/ngo-leaderboard" element={
+          <PrivateRoute roles={["user", "admin", 'ngo']}>
+            <NGOLeaderboard />
           </PrivateRoute>
         } />
 

@@ -3,11 +3,12 @@ import uploadCloudinary from "../Utils/cloudinary.js";
 import { Conversation } from "../Models/conversation.model.js";
 import { Fund } from "../Models/fund.model.js";
 import { updateUserPoints } from "../Controllers/user.controller.js";
+import { updateNGOPoints } from "../Controllers/ngo.controller.js";
 import Razorpay from "razorpay";
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_SECRET
+  key_secret: process.env.RAZORPAY_SECRET,
 });
 
 // Create a campaign
@@ -23,14 +24,13 @@ export const createCampaign = async (req, res) => {
       address,
       targetFunds,
       targetVolunteers,
-      razorpayQR, // new field
+      razorpayQR,
     } = req.body;
 
     if (!title || !category || !startDate || !endDate || !location_coordinates) {
       return res.status(400).json({ message: "Required fields missing" });
     }
 
-    // Ensure location_coordinates is an array of numbers
     let coordinates = location_coordinates;
     if (typeof location_coordinates === "string") {
       try {
@@ -42,16 +42,16 @@ export const createCampaign = async (req, res) => {
       }
     }
 
-    // Handle banner upload
     let bannerImageUrl = "";
     if (req.file && req.file.buffer) {
       const uploadResult = await uploadCloudinary(req.file.buffer);
       bannerImageUrl = uploadResult.secure_url;
     }
 
-    // Create campaign
+    const ngoId = req.user.ngo || req.user._id;
+
     const campaign = await Campaign.create({
-      ngo: req.user.ngo || req.user._id,
+      ngo: ngoId,
       title,
       description,
       category,
@@ -62,10 +62,9 @@ export const createCampaign = async (req, res) => {
       bannerImage: bannerImageUrl,
       targetFunds: targetFunds || 0,
       targetVolunteers: targetVolunteers || 0,
-      razorpayQR: razorpayQR || "", // save QR if provided
+      razorpayQR: razorpayQR || "",
     });
 
-    // 🔹 Create corresponding conversation
     await Conversation.create({
       type: "campaign",
       campaign: campaign._id,
@@ -77,6 +76,9 @@ export const createCampaign = async (req, res) => {
       ],
     });
 
+    // Award points to NGO for creating campaign
+    await updateNGOPoints(ngoId, "create_campaign", 25);
+
     return res
       .status(201)
       .json({ message: "Campaign created successfully", campaign });
@@ -87,6 +89,96 @@ export const createCampaign = async (req, res) => {
   }
 };
 
+// Register for campaign
+export const registerForCampaign = async (req, res) => {
+  try {
+    const campaign = await Campaign.findById(req.params.id);
+    if (!campaign)
+      return res.status(404).json({ message: "Campaign not found" });
+
+    const { role } = req.body;
+
+    if (
+      campaign.participants.some(
+        (p) => p.user.toString() === req.user._id.toString()
+      )
+    ) {
+      return res.status(400).json({ message: "User already registered" });
+    }
+
+    campaign.participants.push({
+      user: req.user._id,
+      role: role || "attendee",
+      registeredAt: new Date(),
+      status: "pending",
+    });
+    await campaign.save();
+
+    await updateUserPoints(req.user._id, "campaign_registration", 10);
+
+    let conversation = await Conversation.findOne({
+      type: "campaign",
+      campaign: campaign._id,
+    });
+
+    if (!conversation) {
+      conversation = await Conversation.create({
+        type: "campaign",
+        campaign: campaign._id,
+        participants: [],
+      });
+    }
+
+    if (
+      !conversation.participants.some(
+        (p) => p.participant.toString() === req.user._id.toString()
+      )
+    ) {
+      conversation.participants.push({
+        participantType: "User",
+        participant: req.user._id,
+      });
+      await conversation.save();
+    }
+
+    return res.status(200).json({
+      message: "User registered successfully & added to campaign chat",
+      campaign,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      message: "Error registering for campaign",
+      error: err.message,
+    });
+  }
+};
+
+// Accept donation and update NGO points
+export const acceptDonation = async (req, res) => {
+  try {
+    const { donationId } = req.params;
+    // You need to implement accept donation logic here
+    // Once accepted and verified:
+
+    const donation = await Fund.findById(donationId);
+    if (!donation) return res.status(404).json({ message: "Donation not found" });
+
+    // Assume campaign has ngo reference
+    const campaign = await Campaign.findById(donation.campaign);
+    if (!campaign) return res.status(404).json({ message: "Campaign not found" });
+
+    const ngoId = campaign.ngo;
+
+    // Update NGO points for accepting donation
+    await updateNGOPoints(ngoId, "accept_donation", 15);
+
+    // Update donation status as accepted somewhere here
+
+    return res.status(200).json({ message: "Donation accepted and points updated" });
+  } catch (err) {
+    return res.status(500).json({ message: "Error accepting donation", error: err.message });
+  }
+};
 // List campaigns with optional filters
 export const listCampaigns = async (req, res) => {
   try {
@@ -122,76 +214,6 @@ export const getCampaignById = async (req, res) => {
     return res.status(200).json(campaign);
   } catch (err) {
     return res.status(500).json({ message: "Error fetching campaign", error: err.message });
-  }
-};
-
-// Register a user for a campaign
-export const registerForCampaign = async (req, res) => {
-  try {
-    const campaign = await Campaign.findById(req.params.id);
-    if (!campaign)
-      return res.status(404).json({ message: "Campaign not found" });
-
-    const { role } = req.body;
-
-    // Check if already registered
-    if (
-      campaign.participants.some(
-        (p) => p.user.toString() === req.user._id.toString()
-      )
-    ) {
-      return res.status(400).json({ message: "User already registered" });
-    }
-
-    // Add participant to campaign doc
-    campaign.participants.push({
-      user: req.user._id,
-      role: role || "attendee",
-      registeredAt: new Date(),
-      status: "pending",
-    });
-    await campaign.save();
-    
-    // Award 10 points for registering for campaign
-    await updateUserPoints(req.user._id, "campaign_registration", 10);
-
-    // Add user to campaign conversation
-    let conversation = await Conversation.findOne({
-      type: "campaign",
-      campaign: campaign._id,
-    });
-
-    if (!conversation) {
-      // If conversation somehow missing, create it
-      conversation = await Conversation.create({
-        type: "campaign",
-        campaign: campaign._id,
-        participants: [],
-      });
-    }
-
-    // Only add if not already participant
-    if (
-      !conversation.participants.some(
-        (p) => p.participant.toString() === req.user._id.toString()
-      )
-    ) {
-      conversation.participants.push({
-        participantType: "User",
-        participant: req.user._id,
-      });
-      await conversation.save();
-    }
-
-    return res.status(200).json({
-      message: "User registered successfully & added to campaign chat",
-      campaign,
-    });
-  } catch (err) {
-    return res.status(500).json({
-      message: "Error registering for campaign",
-      error: err.message,
-    });
   }
 };
 

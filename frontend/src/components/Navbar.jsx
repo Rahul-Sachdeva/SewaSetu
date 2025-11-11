@@ -72,15 +72,43 @@ const Navbar = () => {
               <NavLink to="/campaigns" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                 Campaigns
               </NavLink>
-              <NavLink to="/chat" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
-                Chat
-              </NavLink>
               <NavLink to="/notifications" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                 Notifications
               </NavLink>
               <NavLink to="/ngo-profile" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                 My Profile
               </NavLink>
+              <NavLink
+                to="/ngo-impact-dashboard"
+                style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
+              >
+                Analytics
+              </NavLink>
+              <div className="dropdown" style={{ paddingLeft: 10, position: "relative" }}>
+                <span style={{ cursor: "pointer", userSelect: "none" }}>
+                  Interact ▾
+                </span>
+                <div className="dropdown-content">
+                  <NavLink to="/ngo-leaderboard" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    Leaderboard
+                  </NavLink>
+                  <NavLink to="/create-post" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    Add a Post/Reel
+                  </NavLink>
+                  <NavLink to="/reels" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    View Reels
+                  </NavLink>
+                  <NavLink to="/feed-page" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    View Feed
+                  </NavLink>
+
+                  <NavLink to="/chat" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    Chat
+                  </NavLink>
+                </div>
+              </div>
+
+
               <a
                 className="logout-btn"
                 href="#logout"
@@ -131,6 +159,9 @@ const Navbar = () => {
                   <NavLink to="/leaderboard" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                     User Leaderboard
                   </NavLink>
+                  <NavLink to="/ngo-leaderboard" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    NGO Leaderboard
+                  </NavLink>
                   <NavLink to="/chat" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                     Chat
                   </NavLink>
@@ -140,6 +171,23 @@ const Navbar = () => {
                   <NavLink to="/don-notifications" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                     Donation Notifications
                   </NavLink>
+                  <NavLink to="/create-post" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    Add a Post/Reel
+                  </NavLink>
+                  <NavLink to="/reels" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    View Reels
+                  </NavLink>
+                  <NavLink to="/feed-page" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    View Feed
+                  </NavLink>
+                  {user.role === "admin" && (
+                    <NavLink
+                      to="/impact-dashboard"
+                      style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}
+                    >
+                      Analytics
+                    </NavLink>
+                  )}
                 </div>
               </div>
 
@@ -212,6 +260,26 @@ const Navbar = () => {
               </>
             ) : (
               <>
+                <NavLink
+                  to="/impact-dashboard"
+                  style={{
+                    marginLeft: "1rem",
+                    marginRight: "1rem",
+                    fontWeight: "600",
+                    color: "#123180ff",
+                    textDecoration: "none",
+                  }}
+                >
+                  Analytics
+                </NavLink>
+
+                <NavLink
+                  className="signup-btn"
+                  to="/login"
+                  style={{ color: "white" }}
+                >
+                  Login
+                </NavLink>
                 <NavLink to="/" onClick={() => setMenuOpen(false)} style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
                   Home
                 </NavLink>
@@ -299,7 +367,7 @@ const Navbar = () => {
       <style>
         {`
           .nav-links a {
-            margin: 0 1rem;
+            margin: 0 0.9rem;
             color: black;
             text-decoration: none;
           }

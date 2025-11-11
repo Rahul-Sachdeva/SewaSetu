@@ -3,6 +3,7 @@ import { RequestHandling } from "../Models/requestHandling.model.js";
 import { NGO } from "../Models/ngo.model.js";
 import { Notification } from "../Models/notification.model.js";
 import { sendNotification } from "../Utils/notification.utils.js";
+import { updateNGOPoints } from "../Controllers/ngo.controller.js";
 
 // ------------------------
 // Create new request

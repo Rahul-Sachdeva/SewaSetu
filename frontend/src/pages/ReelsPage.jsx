@@ -3,6 +3,7 @@ import axios from "axios";
 import { motion } from "framer-motion";
 import { Heart, MessageCircle, X } from "lucide-react";
 import { BaseURL } from "@/BaseURL";
+import Navbar from "../components/Navbar";
 
 export default function ReelsPage() {
   const [reels, setReels] = useState([]);
@@ -149,6 +150,9 @@ export default function ReelsPage() {
   };
 
   return (
+    <>
+      <Navbar />
+    
     <div className="w-full max-w-[500px] mx-auto bg-black text-white flex flex-col items-center">
       {/* Header */}
       <div className="fixed top-0 left-0 right-0 z-30 flex items-center justify-center p-3 bg-black/50 backdrop-blur-sm">
@@ -278,5 +282,6 @@ export default function ReelsPage() {
         </div>
       )}
     </div>
+    </>
   );
 }

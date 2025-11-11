@@ -378,26 +378,52 @@ export const getPendingNGOs = async (req, res) => {
   }
 };
 
+// Update NGO points based on activity and assign badges
 export const updateNGOPoints = async (ngoId, activity, points) => {
   const ngo = await NGO.findById(ngoId);
   if (!ngo) throw new Error("NGO not found");
 
+  if (!ngo.points) ngo.points = 0;
+  if (!ngo.badges) ngo.badges = [];
+  if (!ngo.activityHistory) ngo.activityHistory = [];
+
   ngo.points += points;
-  ngo.activityHistory.push({ activity, points });
+  ngo.activityHistory.push({ activity, points, date: new Date() });
+
+  // Badge thresholds example
+  const badgeThresholds = [
+    { name: "Bronze", points: 100 },
+    { name: "Silver", points: 300 },
+    { name: "Gold", points: 600 },
+    { name: "Platinum", points: 1000 }
+  ];
+
+  // Assign badges
+  for (const badge of badgeThresholds) {
+    if (ngo.points >= badge.points && !ngo.badges.includes(badge.name)) {
+      ngo.badges.push(badge.name);
+      // Optional: notify NGO of badge achievement
+    }
+  }
 
   await ngo.save();
   return ngo;
 };
 
+
+// Get NGO leaderboard with period filter and totalPoints aggregation
 export const getNGOLeaderboard = async (req, res) => {
   try {
     const period = req.query.period || "allTime";
+
+    let startOfMonth = null;
     let matchStage = {};
 
     if (period === "thisMonth") {
-      const startOfMonth = new Date();
+      startOfMonth = new Date();
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
+
       matchStage = {
         "activityHistory.date": { $gte: startOfMonth }
       };
@@ -444,10 +470,14 @@ export const getNGOLeaderboard = async (req, res) => {
     const leaderboard = await NGO.aggregate(pipeline);
     return res.json({ leaderboard });
   } catch (error) {
+    console.error("Error fetching NGO leaderboard:", error);
     return res.status(500).json({ message: "Error fetching NGO leaderboard", error: error.message });
   }
 };
 
+
+
+// Get NGO rank based on points
 export const getNGORank = async (req, res) => {
   try {
     const ngoId = req.params.id;
