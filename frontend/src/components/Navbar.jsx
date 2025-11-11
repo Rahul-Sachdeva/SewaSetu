@@ -135,7 +135,10 @@ const Navbar = () => {
                     Chat
                   </NavLink>
                   <NavLink to="/notifications" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
-                    Notifications
+                    Request Assistance Notifications
+                  </NavLink>
+                  <NavLink to="/don-notifications" style={({ isActive }) => (isActive ? activeStyle : defaultStyle)}>
+                    Donation Notifications
                   </NavLink>
                 </div>
               </div>

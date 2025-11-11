@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 
-const UserDonationHandlingSchema = new mongoose.Schema(
+const DonationHandlingSchema = new mongoose.Schema(
   {
-    donation_id: {
+    donar_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Donation",
       required: true,
@@ -14,36 +14,25 @@ const UserDonationHandlingSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: [
-        "pending",      // NGO has not yet responded
-        "accepted",     // NGO accepted the donation
-        "rejected",     // NGO rejected the donation
-        "scheduled",    // Pickup scheduled
-        "picked",       // Donation picked up
-        "completed",    // Donation processed/used
-        "cancelled",    // Cancelled by donor or NGO
-      ],
-      default: "pending",
+      enum: ["pending", "accepted", "rejected", "scheduled", "completed", "cancelled"],
+      default: "pending", // All new handling entries start as pending
     },
-
     assignedAt: {
       type: Date,
-      default: Date.now, // When NGO took responsibility
+      default: Date.now, // When the NGO was assigned to this request
     },
     updatedAt: {
       type: Date,
       default: Date.now,
     },
-
-    // 📦 Pickup scheduling info
-    pickup_details: {
+    scheduled_details: {
       volunteer_name: { type: String },
       volunteer_contact: { type: String },
-      pickup_date: { type: Date },
-      pickup_time: { type: String }, // e.g., "15:00"
+      schedule_date: { type: Date },
+      schedule_time: { type: String }, // e.g., "14:30"
     },
 
-    // ⭐ Feedback info (from donor)
+    // New Feedback fields
     feedbackGiven: {
       type: Boolean,
       default: false,
@@ -61,18 +50,18 @@ const UserDonationHandlingSchema = new mongoose.Schema(
       type: Date,
     },
 
-    // ✅ Confirmation that donor handed over the items
-    donorConfirmed: {
+    // To track user pickup confirmation
+    userConfirmed: {
       type: Boolean,
       default: false,
     },
   },
   {
-    timestamps: true, // createdAt & updatedAt
+    timestamps: true, // createdAt & updatedAt managed automatically
   }
 );
 
-export const UserDonationHandling = mongoose.model(
-  "UserDonationHandling",
-  UserDonationHandlingSchema
+export const DonationHandling = mongoose.model(
+  "DonationHandling",
+  DonationHandlingSchema
 );

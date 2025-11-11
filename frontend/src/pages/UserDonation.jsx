@@ -6,7 +6,7 @@ import { BaseURL } from "../BaseURL";
 import { Link } from "react-router-dom";
 
 // Feedback Modal component
-const FeedbackModal = ({ isOpen, onClose, ngoId, requestHandlingId, onSubmit }) => {
+const FeedbackModal = ({ isOpen, onClose, ngoId, donationHandlingId, onSubmit }) => {
   const [rating, setRating] = useState(5);
   const [comments, setComments] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -16,7 +16,7 @@ const FeedbackModal = ({ isOpen, onClose, ngoId, requestHandlingId, onSubmit }) 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    await onSubmit({ ngoId, requestHandlingId, rating, comments });
+    await onSubmit({ ngoId, donationHandlingId, rating, comments });
     setSubmitting(false);
     onClose();
   };
@@ -51,42 +51,42 @@ const FeedbackModal = ({ isOpen, onClose, ngoId, requestHandlingId, onSubmit }) 
   );
 };
 
-const UserDashboard = () => {
+const UserDonation = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [requests, setRequests] = useState([]);
+  const [donations, setDonations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // For feedback modal
-  const [feedbackModalInfo, setFeedbackModalInfo] = useState({ isOpen: false, ngoId: null, requestHandlingId: null });
+  const [feedbackModalInfo, setFeedbackModalInfo] = useState({ isOpen: false, ngoId: null, donationHandlingId: null });
 
   useEffect(() => {
     if (!user) navigate("/login");
     else if (user.role !== "user") navigate("/not-authorized");
   }, [user, navigate]);
 
-  const fetchUserRequests = async () => {
+  const fetchUserDonations = async () => {
     if (!user || user.role !== "user") return;
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const res = await fetch(`${BaseURL}/api/requests/user`, {
+      const res = await fetch(`${BaseURL}/api/v1/donations/user`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error("Failed to fetch requests");
+      if (!res.ok) throw new Error("Failed to fetch donations");
       const data = await res.json();
-      setRequests(data);
+      setDonations(data);
     } catch (err) {
-      console.error("Failed to fetch user requests", err);
-      setError("Failed to load your requests. Please try again later.");
+      console.error("Failed to fetch user donations", err);
+      setError("Failed to load your donations. Please try again later.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchUserRequests();
+    fetchUserDonations();
   }, [user]);
 
   // Status bar helper
@@ -113,14 +113,14 @@ const UserDashboard = () => {
   const confirmPickUp = async (handlingId) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${BaseURL}/api/requests/confirm-pickup`, {
+      const res = await fetch(`${BaseURL}/api/v1/donations/confirm-pickup`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ requestHandlingId: handlingId }),
+        body: JSON.stringify({ donationHandlingId: handlingId }),
       });
       if (res.ok) {
         // Update local state
-        setRequests((prev) =>
+        setDonations((prev) =>
           prev.map((req) =>
             req.handling?.some(h => h._id === handlingId)
               ? {
@@ -140,32 +140,32 @@ const UserDashboard = () => {
     }
   };
 
-  const openFeedbackModal = (ngoId, requestHandlingId) => {
-    setFeedbackModalInfo({ isOpen: true, ngoId, requestHandlingId });
+  const openFeedbackModal = (ngoId, donationHandlingId) => {
+    setFeedbackModalInfo({ isOpen: true, ngoId, donationHandlingId });
   };
 
   const closeFeedbackModal = () => {
-    setFeedbackModalInfo({ isOpen: false, ngoId: null, requestHandlingId: null });
+    setFeedbackModalInfo({ isOpen: false, ngoId: null, donationHandlingId: null });
   };
 
   // Submit feedback API call
-  const submitFeedback = async ({ ngoId, requestHandlingId, rating, comments }) => {
+  const submitFeedback = async ({ ngoId, donationHandlingId, rating, comments }) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${BaseURL}/api/requests/feedback`, {
+      const res = await fetch(`${BaseURL}/api/v1/donations/feedback`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ ngoId, requestHandlingId, rating, comments }),
+        body: JSON.stringify({ ngoId, donationHandlingId, rating, comments }),
       });
       if (!res.ok) {
         throw new Error("Failed to submit feedback");
       }
       // Optionally update local state to mark feedback given
-      setRequests((prev) =>
+      setDonations((prev) =>
         prev.map((req) => ({
           ...req,
           handling: req.handling.map((h) =>
-            h._id === requestHandlingId ? { ...h, feedbackGiven: true } : h
+            h._id === donationHandlingId ? { ...h, feedbackGiven: true } : h
           ),
         }))
       );
@@ -175,7 +175,7 @@ const UserDashboard = () => {
     }
   };
 
-  if (loading) return <p className="text-center mt-10">Loading your requests...</p>;
+  if (loading) return <p className="text-center mt-10">Loading your donations...</p>;
   if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
 
   return (
@@ -183,17 +183,17 @@ const UserDashboard = () => {
       <Navbar />
       <main style={{ maxWidth: 900, margin: "2rem auto", padding: "0 1rem" }}>
         <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 24, color: "#0f2a66", textAlign: "center" }}>
-          Your Requests & NGO Assistance Status
+          Your Donations & NGO Acceptance Status
         </h1>
 
-        {requests.length === 0 ? (
+        {donations.length === 0 ? (
           <>
             <p style={{ textAlign: "center", paddingBottom: 40 }}>
-              No assistance requests found. You can create a new request to get help.
+              No donations found. You can create a new donation to donate.
             </p>
             <div style={{ textAlign: "center", marginBottom: 20 }}>
               <Link
-                to="/request"
+                to="/donate"
                 style={{
                   backgroundColor: "#19398a",
                   color: "#fff",
@@ -205,29 +205,30 @@ const UserDashboard = () => {
                   boxShadow: "0 4px 8px rgba(25, 57, 138, 0.3)",
                 }}
               >
-                Request Assistance
+                Donations
               </Link>
             </div>
           </>
         ) : (
-          requests.map((request) => (
-            <div key={request._id} style={{ background: "#fff", borderRadius: 16, boxShadow: "0 10px 20px rgba(0,0,0,0.05)", marginBottom: 20, padding: 20 }}>
+          donations.map((donation) => (
+            <div key={donation._id} style={{ background: "#fff", borderRadius: 16, boxShadow: "0 10px 20px rgba(0,0,0,0.05)", marginBottom: 20, padding: 20 }}>
               <h2 style={{ fontSize: 20, fontWeight: 600, color: "#123180" }}>
-                Request ID: {request._id}
+                Donation ID: {donation._id}
               </h2>
-              <p><strong>Category:</strong> {request.category}</p>
-              <p><strong>Description:</strong> {request.description}</p>
-              <p><strong>Location:</strong> {request.address}</p>
-              <p><strong>Date Submitted:</strong> {new Date(request.createdAt).toLocaleDateString()}</p>
+              <p><strong>Category:</strong> {donation.category}</p>
+              <p><strong>Description:</strong> {donation.description}</p>
+              <p><strong>Quantity:</strong> {donation.quantity || "Not specified"}</p>
+              <p><strong>Location:</strong> {donation.address}</p>
+              <p><strong>Date Submitted:</strong> {new Date(donation.createdAt).toLocaleDateString()}</p>
 
               <details style={{ marginTop: 15 }}>
                 <summary style={{ cursor: "pointer", fontWeight: "bold", color: "#0f2a66" }}>
-                  NGOs Requested ({request.selectedNGOs.length || 0})
+                  NGOs Requested ({donation.selectedNGOs.length || 0})
                 </summary>
 
                 <div style={{ marginTop: 10 }}>
-                  {request.handling && request.handling.length > 0 ? (
-                    request.handling.map((handle) => (
+                  {donation.handling && donation.handling.length > 0 ? (
+                    donation.handling.map((handle) => (
                       <div key={handle._id} style={{
                         border: "1px solid #cbd5e0",
                         borderRadius: 10,
@@ -304,7 +305,7 @@ const UserDashboard = () => {
         <FeedbackModal
           isOpen={feedbackModalInfo.isOpen}
           ngoId={feedbackModalInfo.ngoId}
-          requestHandlingId={feedbackModalInfo.requestHandlingId}
+          donationHandlingId={feedbackModalInfo.donationHandlingId}
           onClose={closeFeedbackModal}
           onSubmit={submitFeedback}
         />
@@ -313,4 +314,4 @@ const UserDashboard = () => {
   );
 };
 
-export default UserDashboard;
+export default UserDonation;

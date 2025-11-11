@@ -6,7 +6,8 @@ import { Conversation } from "../Models/conversation.model.js";
 import { sendEmail } from "../Utils/sendEmail.js";
 import { Notification } from "../Models/notification.model.js";
 import { sendNotification } from "../Utils/notification.utils.js";
-
+import { DonationNotification } from "../Models/don_notification.model.js";
+import { sendDonationNotification } from "../Utils/don_notification.utils.js";
 
 export const registerNGO = async (req, res) => {
   try {

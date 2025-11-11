@@ -11,19 +11,21 @@ import CampaignCreatePage from "./pages/CampaignCreatePage";
 import Campaigns from "./pages/Campaigns";
 import ChatLayout from "./pages/ChatLayout";
 import NGOListPage from "./pages/NGOListPage";
-import Request from "./pages/Request";
+import Request from "./pages/Request";      //this
 import PendingNGOsPage from "./pages/PendingNGOsPage";
 import MyCampaignsPage from "./pages/MyCampaignsPage";
 import CampaignRegistrationsPage from "./pages/CampaignRegistrationsPage";
-import SelectNGO from "./pages/SelectNGO";
-import DonationPage from "./pages/DonationPage";
+import SelectNGO from "./pages/SelectNGO";              //this
+import SelectNGODon from "./pages/Selectngodon";    //ye
+import DonationForm from "./pages/DonationForm";    //ye
 import NGOdashboardPage from "./pages/NGOdashboardPage";
-import NgoDashboard from "./pages/NgoDashboard";
-import UserDashboard from "./pages/UserDashboard";
+import NgoDashboard from "./pages/NgoDashboard";     //this
+import UserDashboard from "./pages/UserDashboard";    //this
 import NotAuthorised from "./pages/NotAuthorised";
-import Notification from "./pages/Notification";
-import DonationsManagement from "./pages/DonationsManagement";
-import UserDonation from "./components/UserDonation";
+import Notification from "./pages/Notification";   //this 
+import Don_Notification from "./pages/don_notifiaction";  //ye
+import DonationsManagement from "./pages/DonationsManagement";   //ye
+import UserDonation from "./pages/UserDonation";   //ye
 import UserLeaderboard from "./pages/UserLeaderboard";
 
 
@@ -71,13 +73,15 @@ function App() {
         <Route path="/campaign/:id/registrations" element={<CampaignRegistrationsPage />} />
         <Route path="/ngo-requests" element={<NgoDashboard />} />
         <Route path="/notifications" element={<Notification />} />
+        <Route path="/don-notifications" element={<Don_Notification />} />
         <Route path="/user-requests" element={<UserDashboard />} />
         <Route path="/not-authorized" element={<NotAuthorised />} />
         {/* Add routes for other pages here */}
-        <Route path="/donate" element={<DonationPage />} />
+        <Route path="/donate" element={<DonationForm />} />
         <Route path="/dashboard" element={<NGOdashboardPage />} />
         <Route path="/donations-management" element={<DonationsManagement />} />
         <Route path="/user-donation" element={<UserDonation />} />
+        <Route path="/select-ngo-don" element={<SelectNGODon />} />
         <Route path="/leaderboard" element={
           <PrivateRoute roles={["user", "admin"]}>
             <UserLeaderboard />
