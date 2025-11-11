@@ -6,6 +6,7 @@ import cors from "cors";                    // To allow requests from only allow
 import requestRoutes from "./Routes/request.routes.js";
 import userRouter from "./Routes/user.routes.js";
 import ngoRouter from "./Routes/ngo.routes.js";
+import getNGOLeaderboard from "./Routes/ngo.routes.js";
 import campaignRouter from "./Routes/campaign.routes.js";
 import conversationRouter from "./Routes/conversation.routes.js";
 import messageRouter from "./Routes/message.routes.js";

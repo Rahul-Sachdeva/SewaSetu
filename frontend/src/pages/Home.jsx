@@ -374,6 +374,7 @@ const Home = () => {
             </div>
           ))}
         </div>
+        <Link to="/login">
         <button
           style={{
             background: "#19398aff",
@@ -388,6 +389,7 @@ const Home = () => {
         >
           Support Our Work
         </button>
+        </Link>
       </section>
     </div>
   );

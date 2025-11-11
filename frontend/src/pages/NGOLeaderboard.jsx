@@ -56,7 +56,7 @@ const NGOLeaderboard = () => {
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(
-          `${BaseURL}/api/v1/ngo/leaderboard?period=${period}`,
+          `${BaseURL}/api/v1/ngo/ngo-leaderboard?period=${period}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -289,7 +289,7 @@ const NGOLeaderboard = () => {
                                 className={`p-1 rounded-full bg-gradient-to-br ${avatarGradient} shadow-sm`}
                               >
                                 <img
-                                  src={ngo.profile_image || "https://via.placeholder.com/40"}
+                                  src={ngo.logo || "https://via.placeholder.com/40"}
                                   alt={`${ngo.name}'s logo`}
                                   className="w-9 h-9 rounded-full object-cover border border-white"
                                 />

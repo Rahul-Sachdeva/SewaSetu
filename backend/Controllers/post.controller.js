@@ -66,7 +66,7 @@ export const createPost = async (req, res) => {
       message:
         finalStatus === "published"
           ? "✅ Post published successfully."
-          : "⚠️ Post pending admin review (content flagged).",
+          : "⚠️ Post Rejected (content flagged).",
       post,
     });
   } catch (err) {
@@ -342,7 +342,7 @@ export const updatePost = async (req, res) => {
           : await moderateImage(uploadedUrl);
 
       if (moderationResult === "unsafe") {
-        return res.status(400).json({ message: "Media content flagged as unsafe" });
+        return res.status(400).json({ message: "Media content flagged as unsafe, so Rejected by System" });
       }
 
       updates.mediaUrl = uploadedUrl;

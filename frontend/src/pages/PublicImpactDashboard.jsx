@@ -18,7 +18,7 @@ import {
   Line,
 } from "recharts";
 
-const PIE_COLORS = ["#4CAF50", "#0862ab", "#9C27B0", "#F59E0B", "#EF4444", "#3B82F6"];
+const PIE_COLORS = ["#4CAF50", "#0a3f6aff", "#9C27B0", "#F59E0B", "#EF4444", "#3B82F6"];
 const chartContainerStyle = {
   background: "white",
   padding: "1rem",
@@ -32,11 +32,15 @@ export default function PublicImpactDashboard() {
   const [error, setError] = useState(null);
   const [downloading, setDownloading] = useState(false);
 
-  // 📊 Fetch analytics
   useEffect(() => {
     const fetchAnalytics = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Not authenticated");
+        setLoading(false);
+        return;
+      }
       try {
-        const token = localStorage.getItem("token");
         const res = await axios.get(`${BaseURL}/api/analytics`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -50,6 +54,7 @@ export default function PublicImpactDashboard() {
     };
     fetchAnalytics();
   }, []);
+
 
   // 🧾 Handle both print + backend PDF download
   const handleGeneratePDF = async () => {
@@ -132,9 +137,8 @@ export default function PublicImpactDashboard() {
           <h1 className="text-3xl font-bold text-gray-800">Admin Analytics Dashboard</h1>
           <button
             onClick={handleGeneratePDF}
-            className={`px-5 py-2 rounded-lg font-semibold text-white transition shadow ${
-              downloading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-            }`}
+            className={`px-5 py-2 rounded-lg font-semibold text-white transition shadow ${downloading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+              }`}
             disabled={downloading}
           >
             {downloading ? "Generating..." : "Download PDF"}
@@ -226,7 +230,7 @@ function BarChartWrapper({ data, xKey, yKey }) {
         <YAxis />
         <Tooltip />
         <Legend />
-        <Bar dataKey={yKey} fill="#3B82F6" isAnimationActive={false} />
+        <Bar dataKey={yKey} fill="#07989aff" isAnimationActive={false} />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -243,7 +247,7 @@ function LineChartWrapper({ data }) {
         <Line
           type="monotone"
           dataKey="value"
-          stroke="#6366f1"
+          stroke="#650b53ff"
           strokeWidth={2}
           isAnimationActive={false}
         />
