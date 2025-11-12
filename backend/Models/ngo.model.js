@@ -32,6 +32,7 @@ const ngoSchema = new mongoose.Schema(
             default: []
         },
         points: { type: Number, default: 0 },
+        badges: [{ type: String }],
         activityHistory: [
             {
                 activity: String,

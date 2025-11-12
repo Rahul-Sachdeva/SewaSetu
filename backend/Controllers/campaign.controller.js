@@ -77,7 +77,7 @@ export const createCampaign = async (req, res) => {
     });
 
     // Award points to NGO for creating campaign
-    await updateNGOPoints(ngoId, "create_campaign", 25);
+    await updateNGOPoints(ngoId, "create_campaign", 200);
 
     return res
       .status(201)
@@ -114,7 +114,7 @@ export const registerForCampaign = async (req, res) => {
     });
     await campaign.save();
 
-    await updateUserPoints(req.user._id, "campaign_registration", 10);
+    await updateUserPoints(req.user._id, "campaign_registration", 30);
 
     let conversation = await Conversation.findOne({
       type: "campaign",
@@ -146,12 +146,14 @@ export const registerForCampaign = async (req, res) => {
       campaign,
     });
   } catch (err) {
+    console.error("registerForCampaign error:", err.stack);
     return res.status(500).json({
       message: "Error registering for campaign",
       error: err.message,
     });
   }
 };
+
 
 // Accept donation and update NGO points
 export const acceptDonation = async (req, res) => {

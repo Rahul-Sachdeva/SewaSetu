@@ -71,7 +71,7 @@ export const registerUser = async (req, res) => {
       ngo: user_type === "ngo" ? ngo : undefined,
       location_coordinates,
     });
-    
+
     await updateUserPoints(user._id, "registration", 10);
     await sendVerificationEmail(user);
 
@@ -87,21 +87,45 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
+
+    // 🔹 Step 1: Find user
+    const user = await User.findOne({ email }).populate("ngo");
     if (!user) return res.status(400).json({ message: "Invalid email" });
+
+    // 🔹 Step 2: Validate password
     const isMatch = await user.isPasswordCorrect(password);
     if (!isMatch) return res.status(400).json({ message: "Wrong password" });
+
+    // 🔹 Step 3: Ensure email verified
     if (!user.isVerified) {
       await sendVerificationEmail(user);
-      return res
-        .status(403)
-        .json({ message: "Please verify your email. Verification link sent." });
+      return res.status(403).json({
+        message: "Please verify your email. A new verification link has been sent.",
+      });
     }
 
-    // Add flag indicating if notification permission has been requested/saved previously
-    // Assume you store this flag per user, e.g., user.notificationPermissionRequested (boolean)
+    // 🔹 Step 4: If user is an NGO, check NGO verification status
+    if (user.user_type === "ngo") {
+      const ngoId = user.ngo?._id || user.ngo;
+      if (!ngoId)
+        return res.status(400).json({ message: "NGO profile not linked to this account" });
+
+      const ngo = await NGO.findById(ngoId).lean();
+      if (!ngo)
+        return res.status(404).json({ message: "NGO record not found for this account" });
+
+      if (ngo.verification_status !== "verified") {
+        return res.status(403).json({
+          message:
+            "Your NGO account is pending admin verification. Please wait for approval before logging in.",
+        });
+      }
+    }
+
+    // 🔹 Step 5: Include notification permission info
     const notifyPermissionNeeded = !user.notificationPermissionRequested;
 
+    // 🔹 Step 6: Generate token & respond
     return res.status(200).json({
       message: "Login successful",
       token: generateToken(user),
@@ -119,10 +143,12 @@ export const loginUser = async (req, res) => {
       },
     });
   } catch (err) {
-    return res.status(500).json({ message: "Error logging in", error: err.message });
+    console.error("Login Error:", err);
+    return res
+      .status(500)
+      .json({ message: "Error logging in", error: err.message });
   }
 };
-
 
 export const sendVerificationEmail = async (user) => {
   const token = jwt.sign({ userId: user._id }, process.env.EMAIL_SECRET, { expiresIn: "1h" });
@@ -334,12 +360,37 @@ export const updateUserPoints = async (userId, activity, pointsEarned) => {
 
   // Update points and activity
   user.points += pointsEarned;
-  user.activityHistory.push({ activity, points: pointsEarned });
+  user.activityHistory.push({
+    activity: activity,       // activity name string
+    points: pointsEarned,     // numeric points
+    date: new Date(),         // timestamp of activity
+  });
+
 
   // Check badge eligibility
   for (const badge of badgeThresholds) {
     if (user.points >= badge.points && !user.badges.includes(badge.name)) {
       user.badges.push(badge.name);
+
+
+
+      // In-app notification
+      await Notification.create({
+        user: user._id,
+        userModel: "User",
+        type: "badge_unlocked",
+        title: `Badge Unlocked: ${badge.name}`,
+        message: `Congratulations! You have successfully earned the prestigious ${badge.name} badge on SewaSetu. This milestone is a testament to your dedication and positive impact within our community. Keep up the fantastic work and continue making a difference – more achievements and rewards await you!`,
+        referenceId: null,
+        referenceModel: null,
+      });
+
+      // Send Email
+      const emailHTML = `
+    <h2>SewaSetu - Your Bridge To Serve</h2></div>
+    <h2>Congratulations!</h2>
+    <p>You have successfully earned the prestigious <strong>${badge.name}</strong> badge on SewaSetu. This milestone is a testament to your dedication and positive impact within our community. Keep up the fantastic work and continue making a difference – more achievements and rewards await you!</p>`;
+      await sendEmail(user.email, `Badge Unlocked: ${badge.name}`, emailHTML);
     }
   }
   console.log(`User badges count: ${user.badges.length}`);
@@ -364,7 +415,6 @@ export const getUserLeaderboard = async (req, res) => {
     let matchStage = {};
     const startOfMonth = new Date();
     if (period === "thisMonth") {
-      const startOfMonth = new Date();
       startOfMonth.setHours(0, 0, 0, 0);
       matchStage = {
         "activityHistory.date": { $gte: startOfMonth }
@@ -378,20 +428,20 @@ export const getUserLeaderboard = async (req, res) => {
         $addFields: {
           totalPoints: period === "thisMonth"
             ? {
-                $sum: {
-                  $map: {
-                    input: {
-                      $filter: {
-                        input: "$activityHistory",
-                        as: "activity",
-                        cond: { $gte: ["$$activity.date", new Date(startOfMonth)] }
-                      }
-                    },
-                    as: "activity",
-                    in: "$$activity.points"
-                  }
+              $sum: {
+                $map: {
+                  input: {
+                    $filter: {
+                      input: "$activityHistory",
+                      as: "activity",
+                      cond: { $gte: ["$$activity.date", new Date(startOfMonth)] }
+                    }
+                  },
+                  as: "activity",
+                  in: "$$activity.points"
                 }
               }
+            }
             : "$points"
         }
       },
