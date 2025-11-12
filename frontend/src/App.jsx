@@ -11,21 +11,21 @@ import CampaignCreatePage from "./pages/CampaignCreatePage";
 import Campaigns from "./pages/Campaigns";
 import ChatLayout from "./pages/ChatLayout";
 import NGOListPage from "./pages/NGOListPage";
-import Request from "./pages/Request";      //this
+import Request from "./pages/Request";      
 import PendingNGOsPage from "./pages/PendingNGOsPage";
 import MyCampaignsPage from "./pages/MyCampaignsPage";
 import CampaignRegistrationsPage from "./pages/CampaignRegistrationsPage";
-import SelectNGO from "./pages/SelectNGO";              //this
-import SelectNGODon from "./pages/Selectngodon";    //ye
-import DonationForm from "./pages/DonationForm";    //ye
+import SelectNGO from "./pages/SelectNGO";             
+import SelectNGODon from "./pages/Selectngodon";    
+import DonationForm from "./pages/DonationForm";   
 import NGOdashboardPage from "./pages/NGOdashboardPage";
-import NgoDashboard from "./pages/NgoDashboard";     //this
-import UserDashboard from "./pages/UserDashboard";    //this
+import NgoDashboard from "./pages/NgoDashboard";     
+import UserDashboard from "./pages/UserDashboard";    
 import NotAuthorised from "./pages/NotAuthorised";
-import Notification from "./pages/Notification";   //this 
-import Don_Notification from "./pages/don_notifiaction";  //ye
-import DonationsManagement from "./pages/DonationsManagement";   //ye
-import UserDonation from "./pages/UserDonation";   //ye
+import Notification from "./pages/Notification";   
+import Don_Notification from "./pages/don_notifiaction";  
+import DonationsManagement from "./pages/DonationsManagement";   
+import UserDonation from "./pages/UserDonation";   
 import UserLeaderboard from "./pages/UserLeaderboard";
 import NGOLeaderboard from "./pages/NGOLeaderboard";
 import PublicImpactDashboard from "./pages/PublicImpactDashboard";

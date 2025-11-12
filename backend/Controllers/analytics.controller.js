@@ -3,7 +3,7 @@ import { NGO } from "../Models/ngo.model.js";
 import { Campaign } from "../Models/campaign.model.js";
 import { AssistanceRequest } from "../Models/assistance.model.js";
 import { Donation } from "../Models/donation.model.js";
-import { UserDonationHandling } from "../Models/user_donation_handling.model.js";
+import { DonationHandling } from "../Models/user_donation_handling.model.js";
 import { User } from "../Models/user.model.js";
 
 /* ===========================================================

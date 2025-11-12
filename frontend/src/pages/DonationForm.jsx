@@ -15,8 +15,8 @@ const Donate = () => {
     coordinates: "",
     category: "",
     description: "",
-    priority: "Normal",
-    file: null,
+    quantity: "",
+    images: [],
   });
 
   // /* -------------------------------------------------------------------------- */
