@@ -1,4 +1,3 @@
-// frontend/pages/PublicImpactDashboard.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
@@ -55,8 +54,7 @@ export default function PublicImpactDashboard() {
     fetchAnalytics();
   }, []);
 
-
-  // 🧾 Handle both print + backend PDF download
+  // Handle both print + backend PDF download
   const handleGeneratePDF = async () => {
     // 1️⃣ Existing browser print feature
     window.print();
@@ -198,11 +196,15 @@ function ChartBox({ title, children, wide }) {
 }
 
 function PieChartWrapper({ data, nameKey, dataKey }) {
+  if (!data || data.length === 0) {
+    return <p className="text-center text-gray-500 italic mt-35 ">No data yet</p>;
+  }
+
   return (
     <ResponsiveContainer width="100%" height={300}>
       <PieChart>
         <Pie
-          data={data || []}
+          data={data}
           dataKey={dataKey}
           nameKey={nameKey}
           cx="50%"
@@ -211,7 +213,7 @@ function PieChartWrapper({ data, nameKey, dataKey }) {
           label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
           isAnimationActive={false}
         >
-          {(data || []).map((_, i) => (
+          {data.map((_, i) => (
             <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
           ))}
         </Pie>
@@ -223,9 +225,13 @@ function PieChartWrapper({ data, nameKey, dataKey }) {
 }
 
 function BarChartWrapper({ data, xKey, yKey }) {
+  if (!data || data.length === 0) {
+    return <p className="text-center text-gray-500 italic">No data yet</p>;
+  }
+
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <BarChart data={data || []}>
+      <BarChart data={data}>
         <XAxis dataKey={xKey} tick={{ fontSize: 12 }} angle={-20} textAnchor="end" />
         <YAxis />
         <Tooltip />
@@ -237,9 +243,13 @@ function BarChartWrapper({ data, xKey, yKey }) {
 }
 
 function LineChartWrapper({ data }) {
+  if (!data || data.length === 0) {
+    return <p className="text-center text-gray-500 italic">No data yet</p>;
+  }
+
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <LineChart data={data || []}>
+      <LineChart data={data}>
         <XAxis dataKey="label" />
         <YAxis />
         <Tooltip />

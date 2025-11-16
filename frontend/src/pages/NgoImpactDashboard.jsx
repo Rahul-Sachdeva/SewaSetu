@@ -43,12 +43,10 @@ export default function NgoImpactDashboard() {
     fetchNgoData();
   }, []);
 
-  // 🧾 Dual Action PDF Generation (Browser + Backend)
+  // Dual Action PDF Generation (Browser + Backend)
   const handleDownloadPDF = async () => {
-    // Step 1️⃣: Native browser print-to-PDF (fast preview)
     window.print();
 
-    // Step 2️⃣: Also trigger backend Puppeteer-generated detailed report
     try {
       setDownloading(true);
       const token = localStorage.getItem("token");
@@ -81,7 +79,7 @@ export default function NgoImpactDashboard() {
 
   if (loading) return <div className="p-10 text-center">Loading...</div>;
   if (error) return <div className="p-10 text-red-600 text-center">{error}</div>;
-  if (!data) return <div className="p-10 text-center">No data available</div>;
+  if (!data) return <div className="p-10 text-center ">No data available</div>;
 
   const {
     summary,
@@ -96,7 +94,6 @@ export default function NgoImpactDashboard() {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      {/* 🖨️ Print Styles */}
       <style>
         {`
           @media print {
@@ -145,26 +142,30 @@ export default function NgoImpactDashboard() {
         {/* Section 1: Donation Handling Overview */}
         <div className="bg-white p-6 rounded-xl shadow">
           <h2 className="text-xl font-semibold mb-4">Donation Handling Overview</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={handledDonations || []}
-                dataKey="count"
-                nameKey="_id"
-                cx="50%"
-                cy="50%"
-                outerRadius={90}
-                label={({ _id, percent }) => `${_id}: ${(percent * 100).toFixed(0)}%`}
-                isAnimationActive={false}
-              >
-                {(handledDonations || []).map((_, i) => (
-                  <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
+          {!handledDonations || handledDonations.length === 0 ? (
+            <p className="text-center text-gray-500 italic">No donation handling data yet</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={handledDonations}
+                  dataKey="count"
+                  nameKey="_id"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={90}
+                  label={({ _id, percent }) => `${_id}: ${(percent * 100).toFixed(0)}%`}
+                  isAnimationActive={false}
+                >
+                  {handledDonations.map((_, i) => (
+                    <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
         {/* Section 2: Top Donors Table */}
@@ -230,27 +231,33 @@ export default function NgoImpactDashboard() {
         {/* Section 4: Monthly Fund Inflow */}
         <div className="bg-white p-6 rounded-xl shadow">
           <h2 className="text-xl font-semibold mb-4">Monthly Fund Inflow</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={donationsOverTime || []}>
-              <Line
-                type="monotone"
-                dataKey="value"
-                stroke="#3B82F6"
-                strokeWidth={2}
-                isAnimationActive={false}
-              />
-              <Tooltip />
-              <Legend />
-              <XAxis dataKey="label" />
-              <YAxis />
-            </LineChart>
-          </ResponsiveContainer>
+          {!donationsOverTime || donationsOverTime.length === 0 ? (
+            <p className="text-center text-gray-500 italic">No donation data yet</p>
+          ) : (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={donationsOverTime}>
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#3B82F6"
+                  strokeWidth={2}
+                  isAnimationActive={false}
+                />
+                <Tooltip />
+                <Legend />
+                <XAxis dataKey="label" />
+                <YAxis />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
         {/* Section 5: Donor Contribution Ranges */}
-        {donorContributionDist && donorContributionDist.length > 0 && (
-          <div className="bg-white p-6 rounded-xl shadow">
-            <h2 className="text-xl font-semibold mb-4">Donor Contribution Ranges</h2>
+        <div className="bg-white p-6 rounded-xl shadow">
+          <h2 className="text-xl font-semibold mb-4">Donor Contribution Ranges</h2>
+          {!donorContributionDist || donorContributionDist.length === 0 ? (
+            <p className="text-center text-gray-500 italic">No donor contribution data yet</p>
+          ) : (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={donorContributionDist}>
                 <XAxis dataKey="_id" />
@@ -260,8 +267,8 @@ export default function NgoImpactDashboard() {
                 <Bar dataKey="count" fill="#16A34A" />
               </BarChart>
             </ResponsiveContainer>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
