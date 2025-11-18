@@ -58,46 +58,56 @@ const SelectNGOsDon = () => {
   };
 
   const handleConfirm = async () => {
-    if (selectedNgos.length === 0) {
-      setError("Please select at least one NGO");
-      return;
+  if (selectedNgos.length === 0) {
+    setError("Please select at least one NGO");
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem("token");
+
+    const submissionData = new FormData();
+    submissionData.append("full_name", formData.name);
+    submissionData.append("phone", formData.phone || "");
+    submissionData.append("address", formData.address);
+    submissionData.append("category", formData.category);
+    submissionData.append("description", formData.description);
+    submissionData.append("quantity", parseInt(formData.quantity) || 1);
+    submissionData.append("donatedBy", user?._id);
+    // submissionData.append("selectedNGOs", JSON.stringify(selectedNgos)); // array needs to be stringified
+    selectedNgos.forEach((id) => submissionData.append("selectedNGOs[]", id));
+
+    if (formData.coordinates) {
+      submissionData.append(
+        "location_coordinates",
+        JSON.stringify(formData.coordinates.split(",").map((c) => parseFloat(c.trim())))
+      );
     }
-    try {
-      const token = localStorage.getItem("token");
-      
-      const reqBody = {
-        full_name: formData.name,
-        phone: formData.phone || "",
-        address: formData.address,
-        category: formData.category,
-        description: formData.description,
-        quantity: parseInt(formData.quantity) || 1, 
-        donatedBy: user?._id,
-        selectedNGOs: selectedNgos,
-        location_coordinates: formData.coordinates
-          ? formData.coordinates.split(",").map((coord) => parseFloat(coord.trim()))
-          : undefined,
-      };
-      const res = await fetch(`${BaseURL}/api/v1/donations`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(reqBody),
-      });
-      if (res.ok) {
-        alert("Donation submitted successfully!");
-        navigate("/user-donation");
-      } else {
-        const errData = await res.json();
-        alert("Failed to submit donation: " + (errData.message || res.statusText));
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Server error");
+    if (formData.image) {
+      submissionData.append("image", formData.image); // ✅ append file
     }
-  };
+
+    const res = await fetch(`${BaseURL}/api/v1/donations`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: submissionData,
+    });
+
+    if (res.ok) {
+      alert("Donation submitted successfully!");
+      navigate("/user-donation");
+    } else {
+      const errData = await res.json();
+      alert("Failed to submit donation: " + (errData.message || res.statusText));
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Server error");
+  }
+};
+
 
   if (!formData) return null; // or loader
 

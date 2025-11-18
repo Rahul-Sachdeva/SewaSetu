@@ -149,6 +149,15 @@ const NgoDonation = () => {
                 <h3 style={{ fontSize: "1.5rem", fontWeight: 600, color: "#0f2a66", marginBottom: "0.5rem" }}>
                   {req.donar_id?.full_name}
                 </h3>
+                {req.donar_id?.image && (
+                  <div style={{ marginTop: 10 }}>
+                    <img
+                      src={req.donar_id.image} // URL/path to the image
+                      alt={`Donation ${req.donar_id._id}`}
+                      style={{ width: "100%", maxHeight: 250, objectFit: "cover", borderRadius: 8 }}
+                    />
+                  </div>
+                )}
                 <p><strong>Category:</strong> {req.donar_id?.category}</p>
                 <p><strong>Quantity:</strong> {req.donar_id?.quantity || "Not specified"}</p>
                 <p><strong>Description:</strong> {req.donar_id?.description}</p>

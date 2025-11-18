@@ -16,7 +16,7 @@ const Donate = () => {
     category: "",
     description: "",
     quantity: "",
-    images: [],
+    image: null,
   });
 
   // /* -------------------------------------------------------------------------- */
@@ -77,7 +77,7 @@ const Donate = () => {
   };
 
   const handleFileChange = (e) => {
-    setFormData({ ...formData, file: e.target.files[0] });
+    setFormData({ ...formData, image: e.target.files[0] });
   };
 
   const handleSubmit = (e) => {
@@ -289,6 +289,96 @@ const Donate = () => {
                 }}
               />
             </div>
+            {/* Image Upload */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              <label style={{ fontWeight: 600 }}>Upload Image (optional)</label>
+
+              <label
+                htmlFor="imageUpload"
+                style={{
+                  width: "100%",
+                  padding: "1.5rem",
+                  border: "2px dashed #b0b8c5",
+                  borderRadius: 16,
+                  backgroundColor: "#fafbfd",
+                  textAlign: "center",
+                  cursor: "pointer",
+                  color: "#526079",
+                  fontSize: "0.95rem",
+                  transition: "0.3s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#0f2a66")}
+                onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#b0b8c5")}
+              >
+                📷 Click or Drop to Upload Image
+              </label>
+
+              <input
+                id="imageUpload"
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) setFormData({ ...formData, image: file });
+                }}
+              />
+
+              {formData.image && (
+                <div
+                  style={{
+                    marginTop: "10px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "1rem",
+                  }}
+                >
+                  <img
+                    src={URL.createObjectURL(formData.image)}
+                    alt="Preview"
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      objectFit: "cover",
+                      borderRadius: "12px",
+                      boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
+                    }}
+                  />
+
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: "0.9rem",
+                        fontWeight: 600,
+                        color: "#0f2a66",
+                      }}
+                    >
+                      {formData.image.name}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, image: null })}
+                      style={{
+                        marginTop: "0.5rem",
+                        background: "#ff4757",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "8px",
+                        padding: "0.35rem 0.75rem",
+                        cursor: "pointer",
+                        fontSize: "0.8rem",
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+
+
 
 
             <button
