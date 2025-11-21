@@ -53,9 +53,14 @@ export default function NGODashboard() {
       const fetchGamification = async () => {
         try {
           const token = localStorage.getItem("token");
-          const res = await axios.get(`${BaseURL}/api/v1/ngo/${user.ngo}/points`, {
-            headers: { Authorization: `Bearer ${token}` },
+          const ngoId = user.ngo?._id; // chaining in case ngo is undefined
+          console.log("Fetching NGO points for ID:", ngoId);
+          const res = await axios.get(`${BaseURL}/api/v1/ngo/${ngoId}/points`, {
+            headers: { Authorization: `Bearer ${token}` }
           });
+          console.log("NGO Gamification Data:", res.data);
+
+
           setPoints(res.data.points);
           setBadges(res.data.badges || []);
           setActivityHistory(res.data.activityHistory || []);
@@ -92,11 +97,10 @@ export default function NGODashboard() {
               <button
                 key={item.id}
                 onClick={() => setActive(item.id)}
-                className={`flex items-center gap-3 w-full text-left px-3 py-2 rounded-lg transition ${
-                  active === item.id
-                    ? "bg-blue-100 text-blue-700 font-medium"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
+                className={`flex items-center gap-3 w-full text-left px-3 py-2 rounded-lg transition ${active === item.id
+                  ? "bg-blue-100 text-blue-700 font-medium"
+                  : "text-gray-600 hover:bg-gray-100"
+                  }`}
               >
                 {item.icon}
                 {item.label}

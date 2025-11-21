@@ -5,6 +5,7 @@ import { DonationNotification } from "../Models/don_notification.model.js";
 import { sendDonationNotification } from "../Utils/don_notification.utils.js";
 import { updateNGOPoints } from "./ngo.controller.js";
 import uploadCloudinary from "../Utils/cloudinary.js";
+import { updateUserPoints } from "../Controllers/user.controller.js"; // Add your badge, leaderboard logic hooks if they exist
 
 // ------------------------
 // Create new donation
@@ -31,19 +32,22 @@ export const createDonation = async (req, res) => {
       return res.status(400).json({ message: "You can select up to 3 NGOs only" });
     }
 
-    let imageUrl = "";
-    if (req.file && req.file.buffer) {
-      const uploadResult = await uploadCloudinary(req.file.buffer);
-      imageUrl = uploadResult.secure_url;
+    // Support multiple image uploads (from your original logic)
+    let imageUrls = [];
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        const uploaded = await uploadCloudinary(file.buffer);
+        imageUrls.push(uploaded.secure_url);
+      }
     }
 
-    // ✅ Automatically assign donor from logged-in user
+    // Automatically assign donor from logged-in user
     const donorId = req.user?._id;
     if (!donorId) {
       return res.status(401).json({ message: "User not authenticated" });
     }
 
-    // Create donation
+    // Create donation with images
     const donation = await Donation.create({
       full_name,
       phone,
@@ -52,25 +56,24 @@ export const createDonation = async (req, res) => {
       category,
       description,
       quantity,
-      image: imageUrl,
-      donatedBy: donorId, // ✅ fixed
+      images: imageUrls,
+      donatedBy: donorId,
       selectedNGOs,
       status: "open"
     });
 
     console.log("Donation Created:", donation._id);
 
-    // Assign donation to selected NGOs
+    // Assign donation to selected NGOs and notify
     const assignments = await Promise.all(
       selectedNGOs.map(async (ngoId) => {
         const handling = await DonationHandling.create({
-          donar_id: donation._id, // ✅ fixed variable name
+          donar_id: donation._id,
           handledBy: ngoId,
           status: "pending",
           assignedAt: new Date()
         });
 
-        // Notify NGOs
         await DonationNotification.create({
           user: ngoId,
           userModel: "NGO",
@@ -92,6 +95,9 @@ export const createDonation = async (req, res) => {
       })
     );
 
+    // Your user point update and badge check (preserve your extra features)
+    await updateUserPoints(donorId, "donation_request", 50);
+
     return res.status(201).json({
       message: "Donation submitted successfully",
       donation,
@@ -103,7 +109,6 @@ export const createDonation = async (req, res) => {
     return res.status(500).json({ message: "Server error", error: err.message });
   }
 };
-
 
 // ------------------------
 // Get all donations for logged-in user
@@ -159,7 +164,6 @@ export const updateDonationStatus = async (req, res) => {
 
     console.log("Updating notifications for user:", handling.donar_id.donatedBy);
 
-    // Determine userModel for notification, assuming req.user has role
     const userModel = req.user.role === "ngo" ? "NGO" : "User";
 
     await DonationNotification.create({
@@ -207,7 +211,7 @@ export const updateDonationStatus = async (req, res) => {
 // ------------------------
 export const getIncomingDonationsForNGO = async (req, res) => {
   try {
-    const ngoId = req.user.ngo; // logged-in NGO
+    const ngoId = req.user.ngo;
     console.log("NGO ID:", ngoId);
     const incoming = await DonationHandling.find({ handledBy: ngoId })
       .sort({ assignedAt: -1 })
