@@ -215,6 +215,15 @@ const UserDonation = () => {
               <h2 style={{ fontSize: 20, fontWeight: 600, color: "#123180" }}>
                 Donation ID: {donation._id}
               </h2>
+              {donation.image && (
+                <div style={{ marginTop: 10 }}>
+                  <img
+                    src={donation.image}
+                    alt={`Donation ${donation._id}`}
+                    style={{ width: "100%", maxHeight: 250, objectFit: "cover", borderRadius: 8 }}
+                  />
+                </div>
+              )}
               <p><strong>Category:</strong> {donation.category}</p>
               <p><strong>Description:</strong> {donation.description}</p>
               <p><strong>Quantity:</strong> {donation.quantity || "Not specified"}</p>

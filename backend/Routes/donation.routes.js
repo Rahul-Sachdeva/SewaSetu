@@ -2,12 +2,17 @@ import express from "express";
 import { authMiddleware } from "../Middlewares/auth.middleware.js";
 import { createDonation, getUserDonations, getIncomingDonationsForNGO, updateDonationStatus } from "../Controllers/donation.controller.js";
 import { confirmPickup, submitFeedback } from "../Controllers/user_donation_handling.controller.js";
+import multer from "multer";
 
 // Assign selected NGOs to a request
 const router = express.Router();
 
+// Multer setup for in-memory file storage (no disk)
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
 // Create new request
-router.post("/", authMiddleware, createDonation);
+router.post("/", authMiddleware, upload.single("image"),createDonation);
 // router.post("/assign-ngos", assignNGOsToRequest);
 
 // Get all requests by logged-in user

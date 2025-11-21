@@ -4,6 +4,7 @@ import { NGO } from "../Models/ngo.model.js";
 import { DonationNotification } from "../Models/don_notification.model.js";
 import { sendDonationNotification } from "../Utils/don_notification.utils.js";
 import { updateNGOPoints } from "./ngo.controller.js";
+import uploadCloudinary from "../Utils/cloudinary.js";
 
 // ------------------------
 // Create new donation
@@ -30,6 +31,12 @@ export const createDonation = async (req, res) => {
       return res.status(400).json({ message: "You can select up to 3 NGOs only" });
     }
 
+    let imageUrl = "";
+    if (req.file && req.file.buffer) {
+      const uploadResult = await uploadCloudinary(req.file.buffer);
+      imageUrl = uploadResult.secure_url;
+    }
+
     // ✅ Automatically assign donor from logged-in user
     const donorId = req.user?._id;
     if (!donorId) {
@@ -45,6 +52,7 @@ export const createDonation = async (req, res) => {
       category,
       description,
       quantity,
+      image: imageUrl,
       donatedBy: donorId, // ✅ fixed
       selectedNGOs,
       status: "open"

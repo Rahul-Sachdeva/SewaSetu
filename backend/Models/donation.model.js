@@ -45,6 +45,9 @@ const DonationSchema = new mongoose.Schema(
       required: true,
       min: 1,
     },
+    image: {
+      type: String,
+    },
     status: {
       type: String,
       enum: ["open", "in_progress", "completed", "cancelled"],
