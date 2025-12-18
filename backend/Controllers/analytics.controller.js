@@ -140,7 +140,7 @@ export const getAnalytics = async (req, res) => {
     ]);
 
     // 🔹 Donation handling distribution
-    const donationHandlingDist = await UserDonationHandling.aggregate([
+    const donationHandlingDist = await DonationHandling.aggregate([
       { $group: { _id: "$status", count: { $sum: 1 } } },
       { $project: { label: "$_id", value: "$count", _id: 0 } },
     ]);
@@ -212,7 +212,7 @@ export const getNgoAnalytics = async (req, res) => {
       status: "completed",
     });
 
-    const handledDonations = await UserDonationHandling.aggregate([
+    const handledDonations = await DonationHandling.aggregate([
       { $match: { handledBy: ngoId } },
       { $group: { _id: "$status", count: { $sum: 1 } } },
     ]);

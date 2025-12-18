@@ -4,7 +4,8 @@ import puppeteer from "puppeteer";
 import axios from "axios";
 import { backendURL } from "../constant.js";
 
-export const generateMonthlyReport = async () => {
+export const generateMonthlyReport = async (filters = {}) => {
+  console.log("Generating report with filters:", filters);
   const date = new Date();
   const reportsDir = path.resolve("reports");
   const reportFileName = `SewaSetu_PublicImpact_${date.toISOString().slice(0, 10)}.pdf`;
