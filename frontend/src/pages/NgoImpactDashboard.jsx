@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
+import { useAuth } from "@/context/AuthContext";
 import {
   ResponsiveContainer,
   LineChart,
@@ -19,59 +20,114 @@ import { BaseURL } from "@/BaseURL";
 
 const PIE_COLORS = ["#16A34A", "#3B82F6", "#F59E0B", "#DC2626", "#7C3AED"];
 
+/* =========================
+   HELPER
+========================= */
+const cleanFilters = (filters) =>
+  Object.fromEntries(
+    Object.entries(filters).filter(([_, v]) => v !== "" && v !== null)
+  );
+
 export default function NgoImpactDashboard() {
+  const { user } = useAuth(); // ✅ get logged-in user
+  const ngoId = user?.ngo?._id;
+
   const [data, setData] = useState(null);
+  const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [downloading, setDownloading] = useState(false);
+  const [error, setError] = useState(null);
+
+  /* =========================
+     FILTER STATE
+  ========================= */
+  const [filters, setFilters] = useState({
+    fromMonth: "",
+    toMonth: "",
+    campaignId: "",
+  });
+
+  /* =========================
+     FETCH NGO CAMPAIGNS (ONLY OWN NGO)
+  ========================= */
+  const fetchCampaigns = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+    const res = await axios.get(`${BaseURL}/api/v1/campaign`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    
+    // ✅ Frontend filter: only campaigns of logged-in NGO
+    const ngoCampaigns = (res.data || []).filter(
+      (campaign) => campaign.ngo?._id === ngoId
+    );
+    
+    setCampaigns(ngoCampaigns);
+    } catch (err) {
+      console.error("Failed to fetch NGO campaigns:", err);
+    }
+  };
+
+  /* =========================
+     FETCH NGO ANALYTICS
+  ========================= */
+  const fetchNgoData = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+
+      const res = await axios.get(`${BaseURL}/api/analytics/ngo`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: cleanFilters(filters),
+      });
+
+      setData(res.data);
+      setError(null);
+    } catch (err) {
+      console.error("NGO dashboard error:", err);
+      setError("Unable to load NGO analytics data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchNgoData = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get(`${BaseURL}/api/analytics/ngo`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setData(res.data);
-      } catch (err) {
-        console.error("NGO dashboard error:", err);
-        setError("Unable to load NGO analytics data");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchNgoData();
-  }, []);
+    if (ngoId) {
+      fetchCampaigns();
+      fetchNgoData();
+    }
+  }, [ngoId]);
 
-  // Dual Action PDF Generation (Browser + Backend)
+  /* =========================
+     PDF DOWNLOAD
+  ========================= */
   const handleDownloadPDF = async () => {
-    window.print();
-
     try {
       setDownloading(true);
       const token = localStorage.getItem("token");
+      const query = new URLSearchParams(cleanFilters(filters)).toString();
 
-      const response = await fetch(`${BaseURL}/api/reports/ngo`, {
-        method: "GET",
+      const response = await fetch(`${BaseURL}/api/reports/ngo?${query}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (!response.ok) throw new Error("Backend NGO PDF generation failed");
+      if (!response.ok) throw new Error("PDF generation failed");
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
+
       const a = document.createElement("a");
       a.href = url;
-      a.download = `SewaSetu_NGO_Report_${new Date().toISOString().slice(0, 10)}.pdf`;
+      a.download = `SewaSetu_NGO_Report_${new Date()
+        .toISOString()
+        .slice(0, 10)}.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-
-      console.log("✅ NGO PDF downloaded successfully!");
-    } catch (err) {
-      console.error("❌ Failed to download NGO report:", err);
-      alert("Failed to download backend-generated NGO report. See console for details.");
+    } catch {
+      alert("Failed to download NGO report");
     } finally {
       setDownloading(false);
     }
@@ -79,7 +135,7 @@ export default function NgoImpactDashboard() {
 
   if (loading) return <div className="p-10 text-center">Loading...</div>;
   if (error) return <div className="p-10 text-red-600 text-center">{error}</div>;
-  if (!data) return <div className="p-10 text-center ">No data available</div>;
+  if (!data) return <div className="p-10 text-center">No data available</div>;
 
   const {
     summary,
@@ -94,182 +150,232 @@ export default function NgoImpactDashboard() {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      <style>
-        {`
-          @media print {
-            body * { visibility: hidden; }
-            #ngo-dashboard-root, #ngo-dashboard-root * { visibility: visible; }
-            #ngo-dashboard-root { position: absolute; left: 0; top: 0; width: 100%; }
-            .print-hide { display: none !important; }
-            body { background: #fff !important; }
-          }
-        `}
-      </style>
-
-      <div id="ngo-dashboard-root" className="max-w-6xl mx-auto py-10 px-6 space-y-10">
-        {/* Header */}
-        <div className="flex items-center justify-between print-hide">
+      <div className="max-w-6xl mx-auto py-10 px-6 space-y-10">
+        {/* HEADER */}
+        <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">NGO Impact Dashboard</h1>
           <button
             onClick={handleDownloadPDF}
             disabled={downloading}
-            className={`px-5 py-2 rounded-lg font-semibold text-white shadow transition ${
-              downloading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+            className={`px-5 py-2 rounded-lg text-white ${
+              downloading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
             }`}
           >
             {downloading ? "Generating..." : "Download PDF"}
           </button>
         </div>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-          {[
-            { label: "Total Funds (₹)", value: summary.totalFunds, icon: "💰" },
-            { label: "Avg Donation (₹)", value: summary.avgDonation, icon: "📈" },
-            { label: "Total Donors", value: summary.totalDonors, icon: "🎁" },
-            { label: "Active Campaigns", value: summary.activeCampaigns, icon: "📅" },
-            { label: "Completed Requests", value: summary.completedRequests, icon: "✅" },
-            { label: "Total Campaigns", value: summary.totalCampaigns, icon: "🏕️" },
-          ].map((item, i) => (
-            <div key={i} className="bg-white rounded-xl shadow p-5 text-center">
-              <span className="text-4xl mb-2">{item.icon}</span>
-              <h3 className="text-2xl font-bold">{item.value}</h3>
-              <p className="text-gray-600 font-medium">{item.label}</p>
-            </div>
-          ))}
+        {/* FILTERS */}
+        <div className="bg-white p-4 rounded-xl shadow">
+          <div className="grid md:grid-cols-3 gap-4">
+            <input
+              type="month"
+              value={filters.fromMonth}
+              onChange={(e) =>
+                setFilters({ ...filters, fromMonth: e.target.value })
+              }
+              className="border rounded px-3 py-2"
+            />
+
+            <input
+              type="month"
+              value={filters.toMonth}
+              onChange={(e) =>
+                setFilters({ ...filters, toMonth: e.target.value })
+              }
+              className="border rounded px-3 py-2"
+            />
+
+            {/* ✅ CAMPAIGN DROPDOWN (ONLY OWN NGO) */}
+            <select
+              value={filters.campaignId}
+              onChange={(e) =>
+                setFilters({ ...filters, campaignId: e.target.value })
+              }
+              className="border rounded px-3 py-2"
+            >
+              <option value="">All Campaigns</option>
+              {campaigns.map((c) => (
+                <option key={c._id} value={c._id}>
+                  {c.title}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            onClick={fetchNgoData}
+            className="mt-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+          >
+            Apply Filters
+          </button>
         </div>
 
-        {/* Section 1: Donation Handling Overview */}
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h2 className="text-xl font-semibold mb-4">Donation Handling Overview</h2>
-          {!handledDonations || handledDonations.length === 0 ? (
-            <p className="text-center text-gray-500 italic">No donation handling data yet</p>
-          ) : (
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={handledDonations}
-                  dataKey="count"
-                  nameKey="_id"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={90}
-                  label={({ _id, percent }) => `${_id}: ${(percent * 100).toFixed(0)}%`}
-                  isAnimationActive={false}
-                >
-                  {handledDonations.map((_, i) => (
-                    <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          )}
-        </div>
+        {/* SUMMARY */}
+        <SummaryGrid summary={summary} />
 
-        {/* Section 2: Top Donors Table */}
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h2 className="text-xl font-semibold mb-4">Top Donors</h2>
-          <table className="min-w-full text-left border">
-            <thead className="bg-gray-100 border-b">
-              <tr>
-                <th className="px-4 py-2">Rank</th>
-                <th className="px-4 py-2">Donor Name</th>
-                <th className="px-4 py-2">Total Donated (₹)</th>
+        {/* CHARTS */}
+        <ChartSection title="Donation Handling Overview">
+          <PieWrapper
+            data={handledDonations?.map((h) => ({
+              label: h._id,
+              value: h.count,
+            }))}
+          />
+        </ChartSection>
+
+        <ChartSection title="Monthly Fund Inflow">
+          <LineWrapper data={donationsOverTime} />
+        </ChartSection>
+
+        <ChartSection title="Donor Contribution Ranges">
+          <BarWrapper data={donorContributionDist} />
+        </ChartSection>
+
+        {/* TABLES */}
+        <TableSection title="Top Donors">
+          {topDonors?.length ? (
+            topDonors.map((d, i) => (
+              <tr key={i}>
+                <td>{i + 1}</td>
+                <td>{d.donorName || "Anonymous"}</td>
+                <td>₹{d.totalDonated.toLocaleString()}</td>
               </tr>
-            </thead>
-            <tbody>
-              {topDonors && topDonors.length > 0 ? (
-                topDonors.map((donor, i) => (
-                  <tr key={i} className="border-b hover:bg-gray-50">
-                    <td className="px-4 py-2 font-medium">{i + 1}</td>
-                    <td className="px-4 py-2">{donor.donorName || "Anonymous"}</td>
-                    <td className="px-4 py-2">{donor.totalDonated.toLocaleString()}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="3" className="text-center py-3">
-                    No donor data available
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+            ))
+          ) : (
+            <EmptyRow colSpan={3} />
+          )}
+        </TableSection>
 
-        {/* Section 3: Campaign Performance Table */}
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h2 className="text-xl font-semibold mb-4">Campaign Performance</h2>
-          <table className="min-w-full text-left border">
-            <thead className="bg-gray-100 border-b">
-              <tr>
-                <th className="px-4 py-2">Campaign</th>
-                <th className="px-4 py-2">Total Funds (₹)</th>
+        <TableSection title="Campaign Performance">
+          {donationsByCampaign?.length ? (
+            donationsByCampaign.map((c, i) => (
+              <tr key={i}>
+                <td>{c.campaignName}</td>
+                <td>₹{c.amount.toLocaleString()}</td>
               </tr>
-            </thead>
-            <tbody>
-              {donationsByCampaign && donationsByCampaign.length > 0 ? (
-                donationsByCampaign.map((c, i) => (
-                  <tr key={i} className="border-b hover:bg-gray-50">
-                    <td className="px-4 py-2">{c.campaignName}</td>
-                    <td className="px-4 py-2">{c.amount.toLocaleString()}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="2" className="text-center py-3">
-                    No campaign data
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Section 4: Monthly Fund Inflow */}
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h2 className="text-xl font-semibold mb-4">Monthly Fund Inflow</h2>
-          {!donationsOverTime || donationsOverTime.length === 0 ? (
-            <p className="text-center text-gray-500 italic">No donation data yet</p>
+            ))
           ) : (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={donationsOverTime}>
-                <Line
-                  type="monotone"
-                  dataKey="value"
-                  stroke="#3B82F6"
-                  strokeWidth={2}
-                  isAnimationActive={false}
-                />
-                <Tooltip />
-                <Legend />
-                <XAxis dataKey="label" />
-                <YAxis />
-              </LineChart>
-            </ResponsiveContainer>
+            <EmptyRow colSpan={2} />
           )}
-        </div>
+        </TableSection>
 
-        {/* Section 5: Donor Contribution Ranges */}
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h2 className="text-xl font-semibold mb-4">Donor Contribution Ranges</h2>
-          {!donorContributionDist || donorContributionDist.length === 0 ? (
-            <p className="text-center text-gray-500 italic">No donor contribution data yet</p>
+        <TableSection title="Monthly Donation Breakdown">
+          {donationsOverTime?.length ? (
+            donationsOverTime.map((m, i) => (
+              <tr key={i}>
+                <td>{m.label}</td>
+                <td>₹{m.value.toLocaleString()}</td>
+              </tr>
+            ))
           ) : (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={donorContributionDist}>
-                <XAxis dataKey="_id" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="count" fill="#16A34A" />
-              </BarChart>
-            </ResponsiveContainer>
+            <EmptyRow colSpan={2} />
           )}
-        </div>
+        </TableSection>
       </div>
     </div>
   );
 }
+
+/* =========================
+   SUB COMPONENTS
+========================= */
+
+const SummaryGrid = ({ summary }) => (
+  <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+    {[
+      ["Total Funds (₹)", summary.totalFunds],
+      ["Avg Donation (₹)", summary.avgDonation],
+      ["Total Donors", summary.totalDonors],
+      ["Active Campaigns", summary.activeCampaigns],
+      ["Completed Requests", summary.completedRequests],
+      ["Total Campaigns", summary.totalCampaigns],
+    ].map(([label, value], i) => (
+      <div key={i} className="bg-white p-5 rounded-xl shadow text-center">
+        <h3 className="text-2xl font-bold">{value?.toLocaleString() || 0}</h3>
+        <p className="text-gray-600">{label}</p>
+      </div>
+    ))}
+  </div>
+);
+
+const ChartSection = ({ title, children }) => (
+  <div className="bg-white p-6 rounded-xl shadow">
+    <h2 className="text-xl font-semibold mb-4">{title}</h2>
+    {children}
+  </div>
+);
+
+const TableSection = ({ title, children }) => (
+  <div className="bg-white p-6 rounded-xl shadow">
+    <h2 className="text-xl font-semibold mb-4">{title}</h2>
+    <table className="min-w-full border">
+      <thead className="bg-gray-100">
+        <tr>
+          <th># / Label</th>
+          <th>Name</th>
+          <th>Amount</th>
+        </tr>
+      </thead>
+      <tbody>{children}</tbody>
+    </table>
+  </div>
+);
+
+const EmptyRow = ({ colSpan }) => (
+  <tr>
+    <td colSpan={colSpan} className="text-center py-4 text-gray-500">
+      No data available
+    </td>
+  </tr>
+);
+
+/* =========================
+   CHARTS
+========================= */
+const PieWrapper = ({ data }) =>
+  data?.length ? (
+    <ResponsiveContainer width="100%" height={300}>
+      <PieChart>
+        <Pie data={data} dataKey="value" nameKey="label" outerRadius={90}>
+          {data.map((_, i) => (
+            <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+          ))}
+        </Pie>
+        <Tooltip />
+        <Legend />
+      </PieChart>
+    </ResponsiveContainer>
+  ) : (
+    <p className="text-center text-gray-500">No data available</p>
+  );
+
+const LineWrapper = ({ data }) =>
+  data?.length ? (
+    <ResponsiveContainer width="100%" height={300}>
+      <LineChart data={data}>
+        <XAxis dataKey="label" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Line dataKey="value" stroke="#3B82F6" strokeWidth={2} />
+      </LineChart>
+    </ResponsiveContainer>
+  ) : (
+    <p className="text-center text-gray-500">No data available</p>
+  );
+
+const BarWrapper = ({ data }) =>
+  data?.length ? (
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart data={data}>
+        <XAxis dataKey="_id" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Bar dataKey="count" fill="#16A34A" />
+      </BarChart>
+    </ResponsiveContainer>
+  ) : (
+    <p className="text-center text-gray-500">No data available</p>
+  );

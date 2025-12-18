@@ -7,35 +7,97 @@ import { DonationHandling } from "../Models/user_donation_handling.model.js";
 import { User } from "../Models/user.model.js";
 
 /* ===========================================================
-   ADMIN / GLOBAL ANALYTICS CONTROLLER
+   HELPER: BUILD DATE RANGE FROM YYYY-MM
+   =========================================================== */
+const buildDateRange = (fromMonth, toMonth) => {
+  if (!fromMonth && !toMonth) return null;
+
+  const range = {};
+
+  if (fromMonth) {
+    range.$gte = new Date(`${fromMonth}-01`);
+  }
+
+  if (toMonth) {
+    const end = new Date(`${toMonth}-01`);
+    end.setMonth(end.getMonth() + 1); // move to next month
+    range.$lt = end;
+  }
+
+  return range;
+};
+
+/* ===========================================================
+   ADMIN / GLOBAL ANALYTICS
    =========================================================== */
 export const getAnalytics = async (req, res) => {
   try {
+    const { fromMonth, toMonth, ngoId, city } = req.query;
+
+    const dateRange = buildDateRange(fromMonth, toMonth);
+
+    /* =============================
+       CAMPAIGN FILTER
+    ============================== */
+    const campaignMatch = {
+      ...(ngoId && { ngo: ngoId }),
+    };
+
+    const campaigns = await Campaign.find(campaignMatch, "_id");
+    const campaignIds = campaigns.map(c => c._id);
+
+    /* =============================
+       BASE MATCH OBJECTS
+    ============================== */
+    const fundMatch = {
+      ...(campaignIds.length && { campaign: { $in: campaignIds } }),
+      ...(dateRange && { createdAt: dateRange }),
+    };
+
+    const donationMatch = {
+      ...(dateRange && { createdAt: dateRange }),
+    };
+
+    const requestMatch = {
+      ...(city && { address: { $regex: city, $options: "i" } }),
+      ...(dateRange && { createdAt: dateRange }),
+    };
+
+    /* =============================
+       CORE METRICS
+    ============================== */
     const [
       totalFundsRaised,
       totalNGOs,
       activeCampaigns,
-      totalDonors,
       completedRequests,
+      totalDonations,
       citiesImpacted,
-      totalDonations
     ] = await Promise.all([
-      Fund.aggregate([{ $group: { _id: null, total: { $sum: "$amount" } } }]),
+      Fund.aggregate([
+        { $match: fundMatch },
+        { $group: { _id: null, total: { $sum: "$amount" } } },
+      ]),
       NGO.countDocuments({ verification_status: "verified" }),
       Campaign.countDocuments({ status: { $in: ["ongoing", "upcoming"] } }),
-      Fund.distinct("donor"),
-      AssistanceRequest.countDocuments({ status: "completed" }),
-      AssistanceRequest.distinct("address"),
-      Donation.countDocuments(),
+      AssistanceRequest.countDocuments({ ...requestMatch, status: "completed" }),
+      Donation.countDocuments(donationMatch),
+      AssistanceRequest.distinct("address", requestMatch),
     ]);
 
-    // 🔹 Average donation size (monetary)
+    /* =============================
+       AVERAGE DONATION
+    ============================== */
     const avgDonation = await Fund.aggregate([
+      { $match: fundMatch },
       { $group: { _id: null, avg: { $avg: "$amount" } } },
     ]);
 
-    // 🔹 Top donors globally
+    /* =============================
+       TOP DONORS
+    ============================== */
     const topDonors = await Fund.aggregate([
+      { $match: fundMatch },
       { $group: { _id: "$donor", totalDonated: { $sum: "$amount" } } },
       { $sort: { totalDonated: -1 } },
       { $limit: 5 },
@@ -55,8 +117,11 @@ export const getAnalytics = async (req, res) => {
       },
     ]);
 
-    // 🔹 Top performing campaigns
+    /* =============================
+       TOP CAMPAIGNS
+    ============================== */
     const topCampaigns = await Fund.aggregate([
+      { $match: fundMatch },
       { $group: { _id: "$campaign", totalAmount: { $sum: "$amount" } } },
       {
         $lookup: {
@@ -78,8 +143,11 @@ export const getAnalytics = async (req, res) => {
       { $limit: 5 },
     ]);
 
-    // 🔹 NGO leaderboard by funds
+    /* =============================
+       NGO LEADERBOARD
+    ============================== */
     const ngoLeaderboard = await Fund.aggregate([
+      { $match: fundMatch },
       {
         $lookup: {
           from: "campaigns",
@@ -115,8 +183,11 @@ export const getAnalytics = async (req, res) => {
       { $limit: 5 },
     ]);
 
-    // 🔹 Monthly donation trend
+    /* =============================
+       DONATIONS OVER TIME
+    ============================== */
     const donationsOverTime = await Fund.aggregate([
+      { $match: fundMatch },
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
@@ -127,20 +198,29 @@ export const getAnalytics = async (req, res) => {
       { $project: { label: "$_id", value: "$total", _id: 0 } },
     ]);
 
-    // 🔹 Requests breakdown
+    /* =============================
+       REQUEST STATUS
+    ============================== */
     const requestStatusDist = await AssistanceRequest.aggregate([
+      { $match: requestMatch },
       { $group: { _id: "$status", count: { $sum: 1 } } },
       { $project: { label: "$_id", value: "$count", _id: 0 } },
     ]);
 
-    // 🔹 Donation type breakdown (non-fund donations)
+    /* =============================
+       DONATION TYPES
+    ============================== */
     const donationTypeBreakdown = await Donation.aggregate([
+      { $match: donationMatch },
       { $group: { _id: "$type", count: { $sum: 1 } } },
       { $project: { label: "$_id", value: "$count", _id: 0 } },
     ]);
 
-    // 🔹 Donation handling distribution
-    const donationHandlingDist = await UserDonationHandling.aggregate([
+    /* =============================
+       DONATION HANDLING
+    ============================== */
+    const donationHandlingDist = await DonationHandling.aggregate([
+      { $match: donationMatch },
       { $group: { _id: "$status", count: { $sum: 1 } } },
       { $project: { label: "$_id", value: "$count", _id: 0 } },
     ]);
@@ -150,7 +230,7 @@ export const getAnalytics = async (req, res) => {
         totalFunds: totalFundsRaised[0]?.total || 0,
         totalNGOs,
         activeCampaigns,
-        totalDonors: totalDonors.length,
+        totalDonors: topDonors.length,
         avgDonation: avgDonation[0]?.avg?.toFixed(2) || 0,
         completedRequests,
         totalDonations,
@@ -171,23 +251,34 @@ export const getAnalytics = async (req, res) => {
 };
 
 /* ===========================================================
-   NGO-SPECIFIC ANALYTICS CONTROLLER
+   NGO-SPECIFIC ANALYTICS
    =========================================================== */
 export const getNgoAnalytics = async (req, res) => {
   try {
     const ngoId = req.user?.ngo || req.query.ngoId;
-    if (!ngoId) {
-      return res.status(400).json({ message: "NGO ID required" });
-    }
+    if (!ngoId) return res.status(400).json({ message: "NGO ID required" });
 
-    // fetch all campaigns for this NGO
-    const ngoCampaigns = await Campaign.find({ ngo: ngoId }, "_id title");
+    const { fromMonth, toMonth, campaignId } = req.query;
+    const dateRange = buildDateRange(fromMonth, toMonth);
 
-    const campaignIds = ngoCampaigns.map((c) => c._id);
+    const campaignMatch = {
+      ngo: ngoId,
+      ...(campaignId && { _id: campaignId }),
+    };
 
-    // 🔹 Total & average fund amount
+    const campaigns = await Campaign.find(campaignMatch, "_id title");
+    const campaignIds = campaigns.map(c => c._id);
+
+    const fundMatch = {
+      campaign: { $in: campaignIds },
+      ...(dateRange && { createdAt: dateRange }),
+    };
+
+    /* =============================
+       CORE METRICS
+    ============================== */
     const fundsAgg = await Fund.aggregate([
-      { $match: { campaign: { $in: campaignIds } } },
+      { $match: fundMatch },
       {
         $group: {
           _id: null,
@@ -198,10 +289,6 @@ export const getNgoAnalytics = async (req, res) => {
       },
     ]);
 
-    const totalFunds = fundsAgg[0]?.totalFunds || 0;
-    const avgDonation = fundsAgg[0]?.avgDonation?.toFixed(2) || 0;
-    const totalDonors = fundsAgg[0]?.donors?.length || 0;
-
     const activeCampaigns = await Campaign.countDocuments({
       ngo: ngoId,
       status: { $in: ["ongoing", "upcoming"] },
@@ -209,17 +296,22 @@ export const getNgoAnalytics = async (req, res) => {
 
     const completedRequests = await AssistanceRequest.countDocuments({
       selectedNGOs: ngoId,
+      ...(dateRange && { createdAt: dateRange }),
       status: "completed",
     });
 
-    const handledDonations = await UserDonationHandling.aggregate([
-      { $match: { handledBy: ngoId } },
+    const handledDonations = await DonationHandling.aggregate([
+      {
+        $match: {
+          handledBy: ngoId,
+          ...(dateRange && { createdAt: dateRange }),
+        },
+      },
       { $group: { _id: "$status", count: { $sum: 1 } } },
     ]);
 
-    // 🔹 Top donors for this NGO
     const topDonors = await Fund.aggregate([
-      { $match: { campaign: { $in: campaignIds } } },
+      { $match: fundMatch },
       { $group: { _id: "$donor", totalDonated: { $sum: "$amount" } } },
       { $sort: { totalDonated: -1 } },
       { $limit: 5 },
@@ -239,9 +331,8 @@ export const getNgoAnalytics = async (req, res) => {
       },
     ]);
 
-    // 🔹 Campaign-wise funds
     const donationsByCampaign = await Fund.aggregate([
-      { $match: { campaign: { $in: campaignIds } } },
+      { $match: fundMatch },
       {
         $group: {
           _id: "$campaign",
@@ -265,9 +356,8 @@ export const getNgoAnalytics = async (req, res) => {
       { $sort: { amount: -1 } },
     ]);
 
-    // 🔹 Monthly inflow
     const donationsOverTime = await Fund.aggregate([
-      { $match: { campaign: { $in: campaignIds } } },
+      { $match: fundMatch },
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
@@ -275,47 +365,42 @@ export const getNgoAnalytics = async (req, res) => {
         },
       },
       { $sort: { "_id": 1 } },
+      { $project: { label: "$_id", value: "$total", _id: 0 } },
+    ]);
+
+    const donorContributionDist = await Fund.aggregate([
+      { $match: fundMatch },
       {
-        $project: { label: "$_id", value: "$total", _id: 0 },
+        $group: {
+          _id: "$donor",
+          totalDonated: { $sum: "$amount" },
+        },
+      },
+      {
+        $bucket: {
+          groupBy: "$totalDonated",
+          boundaries: [0, 500, 1000, 5000, 10000, 50000, Infinity],
+          default: "Unknown",
+          output: { count: { $sum: 1 } },
+        },
       },
     ]);
 
-    // Add new donor distribution (optional)
-const donorContributionDist = await Fund.aggregate([
-  { $match: { campaign: { $in: campaignIds } } },
-  {
-    $group: {
-      _id: "$donor",
-      totalDonated: { $sum: "$amount" },
-    },
-  },
-  {
-    $bucket: {
-      groupBy: "$totalDonated",
-      boundaries: [0, 500, 1000, 5000, 10000, 50000, Infinity],
-      default: "Unknown",
-      output: { count: { $sum: 1 } },
-    },
-  },
-]);
-
-res.json({
-  summary: {
-    totalFunds,
-    avgDonation,
-    totalDonors,
-    activeCampaigns,
-    completedRequests,
-    totalCampaigns: ngoCampaigns.length,
-  },
-  topDonors,
-  donationsByCampaign,
-  donationsOverTime,
-  handledDonations,
-  donorContributionDist, // NEW
-});
-
-
+    res.json({
+      summary: {
+        totalFunds: fundsAgg[0]?.totalFunds || 0,
+        avgDonation: fundsAgg[0]?.avgDonation?.toFixed(2) || 0,
+        totalDonors: fundsAgg[0]?.donors?.length || 0,
+        activeCampaigns,
+        completedRequests,
+        totalCampaigns: campaigns.length,
+      },
+      topDonors,
+      donationsByCampaign,
+      donationsOverTime,
+      handledDonations,
+      donorContributionDist,
+    });
   } catch (err) {
     console.error("NGO analytics error:", err);
     res.status(500).json({ message: "Failed to fetch NGO analytics", err });

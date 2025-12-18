@@ -68,6 +68,8 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
       const res = await axios.post(
         `${BaseURL}/api/v1/user/login`,
         { email, password },
@@ -75,8 +77,7 @@ export const AuthProvider = ({ children }) => {
       );
 
       const userData = res.data.user;
-      console.log("User data from login response:", userData);
-
+     
       setUser(userData);
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(userData));
