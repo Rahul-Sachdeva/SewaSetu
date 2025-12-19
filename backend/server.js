@@ -14,7 +14,7 @@ import "./cron/monthlyReportJob.js";
 
 
 
-const port = process.env.PORT               // Localhost PORT where backend Runs
+const port = process.env.PORT || 5000;          // Localhost PORT where backend Runs
 
 const server = http.createServer(app); // Wrap Express app inside HTTP server
 

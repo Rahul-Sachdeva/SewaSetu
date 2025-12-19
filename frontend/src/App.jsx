@@ -6,7 +6,7 @@ import VerifyEmail from "./pages/VerifyEmail";
 import RegisterNGO from "./pages/RegisterNGO";
 import PrivateRoute from "./components/PrivateRoute";
 import UserProfile from "./pages/UserProfile";
-import NGOProfile from "./pages/NgoProfile";
+import NGOProfile from "./pages/NGOProfile.jsx";
 import CampaignCreatePage from "./pages/CampaignCreatePage";
 import Campaigns from "./pages/Campaigns";
 import ChatLayout from "./pages/ChatLayout";
