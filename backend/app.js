@@ -27,7 +27,8 @@ const app = express();
 
 // configure CORS
 app.use(cors({
-    origin: "http://localhost:5173", // replace with deployed domain or * for allowing all
+    // origin: "http://localhost:5173",
+    origin: process.env.CLIENT_URL,
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
     credentials: true, // Allow credentials (cookies, authorization headers, etc.)
 }))

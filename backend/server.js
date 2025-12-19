@@ -14,14 +14,15 @@ import "./cron/monthlyReportJob.js";
 
 
 
-const port = process.env.PORT || 5000;          // Localhost PORT where backend Runs
+const port = process.env.PORT || 3000;          // Localhost PORT where backend Runs
 
 const server = http.createServer(app); // Wrap Express app inside HTTP server
 
 // Attach socket.io to server
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:5173",
+        // origin: "http://localhost:5173",
+        origin: process.env.CLIENT_URL,
         methods: ["GET", "POST"],
         credentials: true,
     }
